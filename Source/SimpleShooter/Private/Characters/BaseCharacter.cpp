@@ -60,5 +60,4 @@ void ABaseCharacter::InitializeAttributes() const
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
