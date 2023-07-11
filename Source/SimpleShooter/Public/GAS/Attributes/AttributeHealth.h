@@ -15,6 +15,14 @@ class SIMPLESHOOTER_API UAttributeHealth : public UAttributeBase
 	GENERATED_BODY()
 public:
 	UAttributeHealth();
+
+	static const UAttributeHealth* Find(const UAbilitySystemComponent* AbilitySystemComponent)
+	{
+		if (!AbilitySystemComponent) return nullptr;
+
+		TSubclassOf<UAttributeHealth> HealthPoints = UAttributeHealth::StaticClass();
+		return Cast<UAttributeHealth>(AbilitySystemComponent->GetAttributeSet(HealthPoints));
+	};
 	
 	mutable FAttributeEvent OnOutOfHealthPoints;
 	
