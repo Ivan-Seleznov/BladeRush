@@ -11,6 +11,8 @@
  * 
  */
 
+class UWidgetAnimation;
+class UAttributeStamina;
 class UInputMappingContext;
 class UInputAction;
 UCLASS()
@@ -36,7 +38,10 @@ protected:
 	//Look Input Action
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* LookAction;
-
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gameplay|GAS")
+	TObjectPtr<UAttributeStamina> StaminaPoints;
+	
 	//Called for movement input 
 	void Move(const FInputActionValue& Value);
 	//Called for looking input
@@ -46,5 +51,5 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 };

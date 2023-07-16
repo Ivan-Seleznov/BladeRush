@@ -8,8 +8,8 @@
 
 UAttributeHealth::UAttributeHealth()
 {
-	HealthPoints = 100.f;
-	MaxHealthPoints = 100.f;
+	// HealthPoints = 100.f;
+	// MaxHealthPoints = 100.f;
 	bOutOfHealthPoints = false;
 }
 

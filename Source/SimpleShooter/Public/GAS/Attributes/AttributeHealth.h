@@ -43,9 +43,9 @@ protected:
 	UFUNCTION()
 	void OnRep_MaxHealthPoints(const FGameplayAttributeData& OldValue);
 private:
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_HealthPoints, Category = "Health", Meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, ReplicatedUsing = OnRep_HealthPoints, Category = "Health", Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData HealthPoints;
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxHealthPoints, Category = "Healath", Meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, ReplicatedUsing = OnRep_MaxHealthPoints, Category = "Healath", Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData MaxHealthPoints;
 
 	bool bOutOfHealthPoints;

@@ -27,7 +27,7 @@ protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="GAS")
 	TObjectPtr<UPlayerAbilitySystemComponent> AbilitySystemComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GAS|Character")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gameplay|GAS")
 	TObjectPtr<UAttributeHealth> HealthPoints;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay|GAS")

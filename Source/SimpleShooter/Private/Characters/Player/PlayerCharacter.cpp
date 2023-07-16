@@ -4,12 +4,15 @@
 #include "Characters/Player/PlayerCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "GAS/Attributes/AttributeStamina.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	
+	StaminaPoints = CreateDefaultSubobject<UAttributeStamina>("UAttributeStamina");
 }
 
 // Called when the game starts or when spawned
