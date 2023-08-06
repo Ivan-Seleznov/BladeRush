@@ -4,6 +4,8 @@
 #include "Characters/Player/PlayerCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Characters/Components/ShooterCharacterComponent.h"
+#include "GAS/PlayerAbilitySystemComponent.h"
 #include "GAS/Attributes/AttributeStamina.h"
 
 // Sets default values
@@ -13,6 +15,7 @@ APlayerCharacter::APlayerCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	
 	StaminaPoints = CreateDefaultSubobject<UAttributeStamina>("UAttributeStamina");
+	ShooterCharacterComponent = CreateDefaultSubobject<UShooterCharacterComponent>(TEXT("ShooterCharacterComponent"));
 }
 
 // Called when the game starts or when spawned
@@ -25,6 +28,10 @@ void APlayerCharacter::BeginPlay()
 		{
 			Subsystem->AddMappingContext(PlayerMappingContext, 0);
 		}
+	}
+	if (InputComponent)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("PlayerInput component is not nullptr"));
 	}
 }
 
@@ -52,6 +59,10 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->ProcessAbilityInput(DeltaTime,false);
+	}
 }
 
 // Called to bind functionality to input
@@ -59,6 +70,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 {
 	UEnhancedInputComponent* Input = Cast<UEnhancedInputComponent>(PlayerInputComponent);
 	
-	Input->BindAction(MoveAction,ETriggerEvent::Triggered,this,&APlayerCharacter::Move);
-	Input->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
+	ShooterCharacterComponent->InitCharacter();
+	
+	//Input->BindAction(MoveAction,ETriggerEvent::Triggered,this,&APlayerCharacter::Move);
+	//Input->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
 }

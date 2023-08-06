@@ -21,6 +21,20 @@ void ABaseCharacter::PossessedBy(AController* NewController)
 	//server gas init
 	if (HasAuthority())
 	{
+		//default abilities
+		for(const FCharacterAbilities& TakedAbility : DefaultAbilities)
+		{
+			FGameplayAbilitySpec GameplayAbilitySpec(TakedAbility.Ability,TakedAbility.Level,static_cast<int32>(TakedAbility.InputID), TakedAbility.InSourceObject);
+			GameplayAbilitySpec.DynamicAbilityTags.AddTag(TakedAbility.InputTag);
+			
+			AbilitySystemComponent->GiveAbility(GameplayAbilitySpec);
+
+			if (TakedAbility.bAutoActivate)
+			{
+				AbilitySystemComponent->TryActivateAbilityByClass(TakedAbility.Ability);
+				
+			}
+		}
 		//set owner
 		AbilitySystemComponent->InitAbilityActorInfo(this,this);
 		InitializeAttributes();
@@ -41,6 +55,11 @@ void ABaseCharacter::OnRep_PlayerState()
 UAbilitySystemComponent* ABaseCharacter::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
+}
+
+const UShooterCharacterData* ABaseCharacter::GetCharacterData()
+{
+	return CharacterData.Get();
 }
 
 void ABaseCharacter::InitializeAttributes() const

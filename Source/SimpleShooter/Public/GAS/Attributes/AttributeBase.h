@@ -22,6 +22,8 @@ class SIMPLESHOOTER_API UAttributeBase : public UAttributeSet
 public:
 	template <class T>
 	T* GetAbilitySystemComponent() const;
+protected:
+	virtual void ClampAttribute(const FGameplayAttribute& Attribute,float& NewValue) const {}
 };
 template <class T>
 T* UAttributeBase::GetAbilitySystemComponent() const
