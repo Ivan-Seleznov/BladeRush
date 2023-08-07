@@ -11,11 +11,12 @@
  * 
  */
 
-class UShooterCharacterComponent;
 class UWidgetAnimation;
 class UAttributeStamina;
 class UInputMappingContext;
 class UInputAction;
+class UShooterInputComponent;
+
 UCLASS()
 class SIMPLESHOOTER_API APlayerCharacter : public ABaseCharacter
 {
@@ -23,7 +24,6 @@ class SIMPLESHOOTER_API APlayerCharacter : public ABaseCharacter
 public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
-	UEnhancedInputComponent* EnhancedInputComponent;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -43,8 +43,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gameplay|GAS")
 	TObjectPtr<UAttributeStamina> StaminaPoints;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<UShooterCharacterComponent> ShooterCharacterComponent;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UShooterInputComponent> ShooterInputComponent;
+
 public:
 	//Called for movement input 
 	void Move(const FInputActionValue& Value);
@@ -56,4 +57,5 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+	
 };

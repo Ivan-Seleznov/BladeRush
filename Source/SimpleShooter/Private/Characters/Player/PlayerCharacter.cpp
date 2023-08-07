@@ -4,7 +4,7 @@
 #include "Characters/Player/PlayerCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "Characters/Components/ShooterCharacterComponent.h"
+#include "Characters/Components/ShooterInputComponent.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
 #include "GAS/Attributes/AttributeStamina.h"
 
@@ -15,7 +15,8 @@ APlayerCharacter::APlayerCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	
 	StaminaPoints = CreateDefaultSubobject<UAttributeStamina>("UAttributeStamina");
-	ShooterCharacterComponent = CreateDefaultSubobject<UShooterCharacterComponent>(TEXT("ShooterCharacterComponent"));
+
+	ShooterInputComponent = CreateDefaultSubobject<UShooterInputComponent>(TEXT("ShooterInputComponent"));
 }
 
 // Called when the game starts or when spawned
@@ -68,10 +69,8 @@ void APlayerCharacter::Tick(float DeltaTime)
 // Called to bind functionality to input
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	UEnhancedInputComponent* Input = Cast<UEnhancedInputComponent>(PlayerInputComponent);
-	
-	ShooterCharacterComponent->InitCharacter();
-	
-	//Input->BindAction(MoveAction,ETriggerEvent::Triggered,this,&APlayerCharacter::Move);
-	//Input->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
+	UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+
+	/*Init player native input & ability input*/
+	ShooterInputComponent->InitializePlayerInput(EnhancedInput);
 }

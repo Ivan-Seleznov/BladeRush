@@ -7,7 +7,7 @@
 #include "Characters/Components/BaseCharacterComponent.h"
 #include "InputActionValue.h"
 #include "Input/ShooterInputConfig.h"
-#include "ShooterCharacterComponent.generated.h"
+#include "ShooterInputComponent.generated.h"
 
 class UInputMappingContext;
 class UInputComponent;
@@ -15,22 +15,24 @@ class UInputComponent;
  * 
  */
 UCLASS(Blueprintable, Meta=(BlueprintSpawnableComponent))
-class SIMPLESHOOTER_API UShooterCharacterComponent : public UBaseCharacterComponent
+class SIMPLESHOOTER_API UShooterInputComponent : public UBaseCharacterComponent
 {
 	GENERATED_BODY()
 public:
-	virtual void BeginPlay() override;
-	void InitCharacter();
+	void InitializePlayerInput(UEnhancedInputComponent* PlayerInputComponent);
 
+	FORCEINLINE UInputMappingContext* GetMappingContext() const {return  MappingContext;}
+
+	void ChangeMappingContext(UInputMappingContext* NewMappingContext);
 protected:
-	void InitializePlayerInput(UInputComponent* PlayerInputComponent);
-
 	void Input_AbilityInputTagPressed(FGameplayTag InputTag);
 	void Input_AbilityInputTagReleased(FGameplayTag InputTag);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
 	UInputMappingContext* MappingContext;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
+	UShooterInputConfig* InputConfig;
 	
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
@@ -39,27 +41,17 @@ private:
 	//@TODO: Must be in custom input component
 
 	template<class UserClass, typename PressedFuncType, typename ReleasedFuncType>
-	void BindAbilityActions(const UShooterInputConfig* InputConfig, UserClass* Object, PressedFuncType PressedFunc, ReleasedFuncType ReleasedFunc, TArray<uint32>& BindHandles);
+	void BindAbilityActions(UEnhancedInputComponent* PlayerInputComponent,UserClass* Object, PressedFuncType PressedFunc, ReleasedFuncType ReleasedFunc, TArray<uint32>& BindHandles);
 
 	template<class UserClass, typename FuncType>
-	void BindNativeAction(const UShooterInputConfig* InputConfig, const FGameplayTag& InputTag, ETriggerEvent TriggerEvent, UserClass* Object, FuncType Func, bool bLogIfNotFound);
+	void BindNativeAction(UEnhancedInputComponent* PlayerInputComponent, const FGameplayTag& InputTag, ETriggerEvent TriggerEvent, UserClass* Object, FuncType Func, bool bLogIfNotFound);
 };
 
 template <class UserClass, typename PressedFuncType, typename ReleasedFuncType>
-void UShooterCharacterComponent::BindAbilityActions(const UShooterInputConfig* InputConfig, UserClass* Object,
+void UShooterInputComponent::BindAbilityActions(UEnhancedInputComponent* PlayerInputComponent, UserClass* Object,
 	PressedFuncType PressedFunc, ReleasedFuncType ReleasedFunc, TArray<uint32>& BindHandles)
 {
-	check(InputConfig);
-	ABaseCharacter* Character = GetCharacter<ABaseCharacter>();
-	if (!Character)
-	{
-		return;
-	}
-	UEnhancedInputComponent* Input = Cast<UEnhancedInputComponent>(Character->InputComponent);
-	if (!Input)
-	{
-		return;
-	}
+	if (!PlayerInputComponent) return;
 	
 	for (const FShooterInputAction& Action : InputConfig->AbilityInputActions)
 	{
@@ -67,36 +59,26 @@ void UShooterCharacterComponent::BindAbilityActions(const UShooterInputConfig* I
 		{
 			if (PressedFunc)
 			{
-				Input->BindAction(Action.InputAction, ETriggerEvent::Triggered, Object, PressedFunc, Action.InputTag);
+				PlayerInputComponent->BindAction(Action.InputAction, ETriggerEvent::Triggered, Object, PressedFunc, Action.InputTag);
 			}
 
 			if (ReleasedFunc)
 			{
-				Input->BindAction(Action.InputAction,ETriggerEvent::Completed, Object, ReleasedFunc, Action.InputTag);
+				PlayerInputComponent->BindAction(Action.InputAction,ETriggerEvent::Completed, Object, ReleasedFunc, Action.InputTag);
 			}
 		}
 	}
 }
 
 template <class UserClass, typename FuncType>
-void UShooterCharacterComponent::BindNativeAction(const UShooterInputConfig* InputConfig, const FGameplayTag& InputTag,
+void UShooterInputComponent::BindNativeAction(UEnhancedInputComponent* PlayerInputComponent, const FGameplayTag& InputTag,
 	ETriggerEvent TriggerEvent, UserClass* Object, FuncType Func, bool bLogIfNotFound)
 {
-	check(InputConfig);
-	ABaseCharacter* Character = GetCharacter<ABaseCharacter>();
-	if (!Character)
-	{
-		return;
-	}
-	UEnhancedInputComponent* Input = Cast<UEnhancedInputComponent>(Character->InputComponent);
-	if (!Input)
-	{
-		return;
-	}
+	if (!PlayerInputComponent) return;
 	
 	if (const UInputAction* IA = InputConfig->FindNativeInputActionForTag(InputTag, bLogIfNotFound))
 	{
 		UE_LOG(LogTemp,Display,TEXT("IA - %s | TagName %s"),*IA->GetName(), *InputTag.GetTagName().ToString())
-		Input->BindAction(IA, TriggerEvent, Object, Func);
+		PlayerInputComponent->BindAction(IA, TriggerEvent, Object, Func);
 	}
 }	

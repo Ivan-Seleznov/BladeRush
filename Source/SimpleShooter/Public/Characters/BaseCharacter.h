@@ -49,10 +49,10 @@ public:
 	ABaseCharacter();
 
 	void PossessedBy(AController* NewController) override;
-	virtual void OnRep_PlayerState() override;
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
-	const UShooterCharacterData* GetCharacterData();
+	virtual void OnRep_PlayerState() override;
+	
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="GAS")
 	TObjectPtr<UPlayerAbilitySystemComponent> AbilitySystemComponent;
@@ -66,8 +66,6 @@ protected:
 	UPROPERTY(EditAnywhere,Category = "GAS")
 	TArray<FCharacterAbilities> DefaultAbilities;
 	
-	UPROPERTY(EditAnywhere, Category = "GAS")
-	TObjectPtr<const UShooterCharacterData> CharacterData;
 	
 	virtual void InitializeAttributes() const;
 	virtual void BeginPlay() override;

@@ -3,6 +3,7 @@
 
 #include "Characters/BaseCharacter.h"
 
+#include "Characters/Components/ShooterInputComponent.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
 #include "GAS/Attributes/AttributeHealth.h"
 
@@ -55,11 +56,6 @@ void ABaseCharacter::OnRep_PlayerState()
 UAbilitySystemComponent* ABaseCharacter::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
-}
-
-const UShooterCharacterData* ABaseCharacter::GetCharacterData()
-{
-	return CharacterData.Get();
 }
 
 void ABaseCharacter::InitializeAttributes() const
