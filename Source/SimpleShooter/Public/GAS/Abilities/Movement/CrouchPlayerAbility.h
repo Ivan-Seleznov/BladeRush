@@ -14,8 +14,9 @@ class SIMPLESHOOTER_API UCrouchPlayerAbility : public UMovementAbilityBase
 {
 	GENERATED_BODY()
 public:
-	virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
-
+	UCrouchPlayerAbility();
+	
+	virtual void InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
@@ -23,4 +24,6 @@ protected:
 
 	UFUNCTION()
 	void MovementModeChanged(ACharacter* Character,EMovementMode PrevMovementMode, uint8 PreviousCustomMode);
+private:
+	bool bCrouching;
 };

@@ -5,24 +5,39 @@
 
 #include "Characters/BaseCharacter.h"
 
-void UCrouchPlayerAbility::InputReleased(const FGameplayAbilitySpecHandle Handle,
-                                         const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
+
+UCrouchPlayerAbility::UCrouchPlayerAbility()
 {
-	Super::InputReleased(Handle, ActorInfo, ActivationInfo);
-	
-	EndAbility(Handle,ActorInfo,ActivationInfo, true, true);
+	bCrouching = false;
 }
 
-void UCrouchPlayerAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
-	const FGameplayEventData* TriggerEventData)
+void UCrouchPlayerAbility::InputPressed(const FGameplayAbilitySpecHandle Handle,
+                                        const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
 {
 	ABaseCharacter* Character = GetCharacterFromActorInfo();
 	if (!Character) return;
+	
+	if (bCrouching)
+	{
+		EndAbility(Handle,ActorInfo,ActivationInfo,true,true);
+		return;
+	}
 
+	Super::InputPressed(Handle, ActorInfo, ActivationInfo);
+}
+
+void UCrouchPlayerAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
+                                           const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+                                           const FGameplayEventData* TriggerEventData)
+{
+	ABaseCharacter* Character = GetCharacterFromActorInfo();
+	if (!Character) return;
+	
 	if (!Character->CanCrouch()) return;
 	
 	Character->Crouch();
+	bCrouching = true;
+	
 	UE_LOG(LogTemp,Display,TEXT("ActivateCrouch"));
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
