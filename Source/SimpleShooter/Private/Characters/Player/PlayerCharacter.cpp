@@ -4,7 +4,7 @@
 #include "Characters/Player/PlayerCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "Characters/Components/ShooterInputComponent.h"
+#include "Characters/Components/ShooterHeroComponent.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
 #include "GAS/Attributes/AttributeStamina.h"
 
@@ -16,7 +16,7 @@ APlayerCharacter::APlayerCharacter()
 	
 	StaminaPoints = CreateDefaultSubobject<UAttributeStamina>("UAttributeStamina");
 
-	ShooterInputComponent = CreateDefaultSubobject<UShooterInputComponent>(TEXT("ShooterInputComponent"));
+	ShooterInputComponent = CreateDefaultSubobject<UShooterHeroComponent>(TEXT("ShooterInputComponent"));
 }
 
 // Called when the game starts or when spawned

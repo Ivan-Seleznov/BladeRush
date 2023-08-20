@@ -22,8 +22,6 @@ struct FShooterInputAction
 {
 	GENERATED_BODY()
 
-public:
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UInputAction* InputAction;
 
@@ -50,7 +48,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Pawn")
 	const UInputAction* FindAbilityInputActionForTag(const FGameplayTag& InputTag, bool bLogNotFound = true) const;
 
-public:
 	// List of input actions used by the owner.  These input actions are mapped to a gameplay tag and must be manually bound.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (TitleProperty = "InputAction"))
 	TArray<FShooterInputAction> NativeInputActions;

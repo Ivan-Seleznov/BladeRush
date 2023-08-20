@@ -15,7 +15,7 @@ class UWidgetAnimation;
 class UAttributeStamina;
 class UInputMappingContext;
 class UInputAction;
-class UShooterInputComponent;
+class UShooterHeroComponent;
 
 UCLASS()
 class SIMPLESHOOTER_API APlayerCharacter : public ABaseCharacter
@@ -44,7 +44,7 @@ protected:
 	TObjectPtr<UAttributeStamina> StaminaPoints;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	TObjectPtr<UShooterInputComponent> ShooterInputComponent;
+	TObjectPtr<UShooterHeroComponent> ShooterInputComponent;
 
 public:
 	//Called for movement input 

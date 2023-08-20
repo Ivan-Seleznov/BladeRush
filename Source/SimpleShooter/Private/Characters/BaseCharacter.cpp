@@ -3,7 +3,7 @@
 
 #include "Characters/BaseCharacter.h"
 
-#include "Characters/Components/ShooterInputComponent.h"
+#include "Characters/Components/ShooterHeroComponent.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
 #include "GAS/Attributes/AttributeHealth.h"
 
@@ -13,32 +13,18 @@ ABaseCharacter::ABaseCharacter()
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
-	HealthPoints = CreateDefaultSubobject<UAttributeHealth>("UAttributeHealth");
 }
 
 void ABaseCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-	//server gas init
+	
+	if (!AbilitySystemComponent) return;
+	AbilitySystemComponent->InitAbilityActorInfo(this, this);
+
 	if (HasAuthority())
 	{
-		//default abilities
-		for(const FCharacterAbilities& TakedAbility : DefaultAbilities)
-		{
-			FGameplayAbilitySpec GameplayAbilitySpec(TakedAbility.Ability,TakedAbility.Level,static_cast<int32>(TakedAbility.InputID), TakedAbility.InSourceObject);
-			GameplayAbilitySpec.DynamicAbilityTags.AddTag(TakedAbility.InputTag);
-			
-			AbilitySystemComponent->GiveAbility(GameplayAbilitySpec);
-
-			if (TakedAbility.bAutoActivate)
-			{
-				AbilitySystemComponent->TryActivateAbilityByClass(TakedAbility.Ability);
-				
-			}
-		}
-		//set owner
-		AbilitySystemComponent->InitAbilityActorInfo(this,this);
-		InitializeAttributes();
+		TryApplyAbilitySet(DefaultAbilitySet);
 	}
 }
 
@@ -50,7 +36,6 @@ void ABaseCharacter::OnRep_PlayerState()
 	if (!AbilitySystemComponent) return;
 	
 	AbilitySystemComponent->InitAbilityActorInfo(this,this);
-	InitializeAttributes();
 }
 
 UAbilitySystemComponent* ABaseCharacter::GetAbilitySystemComponent() const
@@ -58,17 +43,49 @@ UAbilitySystemComponent* ABaseCharacter::GetAbilitySystemComponent() const
 	return AbilitySystemComponent;
 }
 
-void ABaseCharacter::InitializeAttributes() const
+void ABaseCharacter::TryApplyAbilitySet(const UShooterAbilitySet* AbilitySet, bool bCancelEarlySet)
 {
-	if (AbilitySystemComponent && !DefaultEffects.IsEmpty())
+	// Clear all
+	if (bCancelEarlySet)
 	{
-		FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext();
-		EffectContext.AddSourceObject(this);
+		//AbilitySystemComponent->ClearAllAbilities();
+		//AbilitySystemComponent->RemoveAllSpawnedAttributes();
 
-		for (TSubclassOf<UGameplayEffect> Effect : DefaultEffects)
-		{
-			AbilitySystemComponent->ApplyGameplayEffectToSelf(Effect.GetDefaultObject(),1.f,EffectContext);
-		}
+		GrantedHandles.TakeFromAbilitySystem(AbilitySystemComponent);
+		
+		//FGameplayEffectQuery Query;
+		//AbilitySystemComponent->RemoveActiveEffects(Query);
+	}
+
+	if (!HasAuthority())
+	{
+		TryApplyAbilitySet_Server(AbilitySet, bCancelEarlySet);
+	}
+
+	if (AbilitySet)
+	{
+		AbilitySet->GiveToAbilitySystem(AbilitySystemComponent, &GrantedHandles);
+	}
+}
+
+void ABaseCharacter::TryApplyAbilitySet_Server_Implementation(const UShooterAbilitySet* AbilitySet,
+	bool bCancelEarlySet)
+{
+	// Clear all
+	if (bCancelEarlySet)
+	{
+		//GetAbilitySystemComponent()->ClearAllAbilities();
+		//GetAbilitySystemComponent()->RemoveAllSpawnedAttributes();
+
+		GrantedHandles.TakeFromAbilitySystem(AbilitySystemComponent);
+		
+		//FGameplayEffectQuery Query;
+		//GetAbilitySystemComponent()->RemoveActiveEffects(Query);
+	}
+	
+	if (AbilitySet)
+	{
+		AbilitySet->GiveToAbilitySystem(AbilitySystemComponent, &GrantedHandles);
 	}
 }
 

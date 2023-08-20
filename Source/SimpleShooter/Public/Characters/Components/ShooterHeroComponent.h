@@ -7,7 +7,7 @@
 #include "Characters/Components/BaseCharacterComponent.h"
 #include "InputActionValue.h"
 #include "Input/ShooterInputConfig.h"
-#include "ShooterInputComponent.generated.h"
+#include "ShooterHeroComponent.generated.h"
 
 class UInputMappingContext;
 class UInputComponent;
@@ -15,7 +15,7 @@ class UInputComponent;
  * 
  */
 UCLASS(Blueprintable, Meta=(BlueprintSpawnableComponent))
-class SIMPLESHOOTER_API UShooterInputComponent : public UBaseCharacterComponent
+class SIMPLESHOOTER_API UShooterHeroComponent : public UBaseCharacterComponent
 {
 	GENERATED_BODY()
 public:
@@ -48,7 +48,7 @@ private:
 };
 
 template <class UserClass, typename PressedFuncType, typename ReleasedFuncType>
-void UShooterInputComponent::BindAbilityActions(UEnhancedInputComponent* PlayerInputComponent, UserClass* Object,
+void UShooterHeroComponent::BindAbilityActions(UEnhancedInputComponent* PlayerInputComponent, UserClass* Object,
 	PressedFuncType PressedFunc, ReleasedFuncType ReleasedFunc, TArray<uint32>& BindHandles)
 {
 	if (!PlayerInputComponent) return;
@@ -71,7 +71,7 @@ void UShooterInputComponent::BindAbilityActions(UEnhancedInputComponent* PlayerI
 }
 
 template <class UserClass, typename FuncType>
-void UShooterInputComponent::BindNativeAction(UEnhancedInputComponent* PlayerInputComponent, const FGameplayTag& InputTag,
+void UShooterHeroComponent::BindNativeAction(UEnhancedInputComponent* PlayerInputComponent, const FGameplayTag& InputTag,
 	ETriggerEvent TriggerEvent, UserClass* Object, FuncType Func, bool bLogIfNotFound)
 {
 	if (!PlayerInputComponent) return;

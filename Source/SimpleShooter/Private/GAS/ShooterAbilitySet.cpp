@@ -92,12 +92,9 @@ void UShooterAbilitySet::GiveToAbilitySystem(UPlayerAbilitySystemComponent* Lyra
 			UE_LOG(LogTemp, Error, TEXT("GrantedGameplayAbilities[%d] on ability set [%s] is not valid."), AbilityIndex, *GetNameSafe(this));
 			continue;
 		}
-
-		UGameplayAbilityBase* AbilityCDO = AbilityToGrant.Ability->GetDefaultObject<UGameplayAbilityBase>();
-
-		FGameplayAbilitySpec AbilitySpec(AbilityCDO, AbilityToGrant.AbilityLevel);
-		AbilitySpec.SourceObject = SourceObject;
-		AbilitySpec.DynamicAbilityTags.AddTag(AbilityToGrant.InputTag);
+		
+		FGameplayAbilitySpec AbilitySpec(AbilityToGrant.Ability->GetDefaultObject<UGameplayAbilityBase>());
+		SetupAbilitySpec(AbilitySpec,AbilityToGrant,SourceObject);
 
 		const FGameplayAbilitySpecHandle AbilitySpecHandle = LyraASC->GiveAbility(AbilitySpec);
 
@@ -146,4 +143,12 @@ void UShooterAbilitySet::GiveToAbilitySystem(UPlayerAbilitySystemComponent* Lyra
 			OutGrantedHandles->AddAttributeSet(NewSet);
 		}
 	}
+}
+
+void UShooterAbilitySet::SetupAbilitySpec(FGameplayAbilitySpec& AbilitySpec,
+	const FAbilitySet_GameplayAbility& AbilityToGrant, UObject* SourceObject) const
+{
+	AbilitySpec.Level = AbilityToGrant.AbilityLevel;
+	AbilitySpec.InputID = INDEX_NONE;
+	AbilitySpec.SourceObject = SourceObject;
 }

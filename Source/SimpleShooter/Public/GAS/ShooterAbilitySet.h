@@ -24,15 +24,12 @@ public:
 
 	// Gameplay ability to grant.
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UGameplayAbilityBase> Ability = nullptr;
+	TSubclassOf<UGameplayAbility> Ability = nullptr;
 
 	// Level of ability to grant.
 	UPROPERTY(EditDefaultsOnly)
 	int32 AbilityLevel = 1;
-
-	// Tag used to process input for the ability.
-	UPROPERTY(EditDefaultsOnly, Meta = (Categories = "InputTag"))
-	FGameplayTag InputTag;
+	
 };
 
 
@@ -54,6 +51,9 @@ public:
 	// Level of gameplay effect to grant.
 	UPROPERTY(EditDefaultsOnly)
 	float EffectLevel = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bAtivateOnSpawn = false;
 };
 
 /**
@@ -124,6 +124,9 @@ public:
 
 protected:
 
+	// Setup FGameplayAbilitySpec
+	virtual void SetupAbilitySpec(FGameplayAbilitySpec& AbilitySpec,const FAbilitySet_GameplayAbility& AbilityToGrant, UObject* SourceObject) const;
+	
 	// Gameplay abilities to grant when this ability set is granted.
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Abilities", meta=(TitleProperty=Ability))
 	TArray<FAbilitySet_GameplayAbility> GrantedGameplayAbilities;

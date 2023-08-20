@@ -6,6 +6,7 @@
 UShooterInputConfig::UShooterInputConfig(const FObjectInitializer& ObjectInitializer)
 {
 }
+
 const UInputAction* UShooterInputConfig::FindNativeInputActionForTag(const FGameplayTag& InputTag, bool bLogNotFound) const
 {
 	for (const FShooterInputAction& Action : NativeInputActions)

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Characters/Components/ShooterInputComponent.h"
+#include "Characters/Components/ShooterHeroComponent.h"
 
 #include "AbilitySystemComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -9,7 +9,7 @@
 #include "Data/GameTags.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
 
-void UShooterInputComponent::InitializePlayerInput(UEnhancedInputComponent* PlayerInputComponent)
+void UShooterHeroComponent::InitializePlayerInput(UEnhancedInputComponent* PlayerInputComponent)
 {
 	if (!PlayerInputComponent) return;
 	if (!InputConfig) return;
@@ -30,14 +30,14 @@ void UShooterInputComponent::InitializePlayerInput(UEnhancedInputComponent* Play
 				TArray<uint32> BindHandles;
 				BindAbilityActions(PlayerInputComponent,this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
 					
-				BindNativeAction(PlayerInputComponent,GameTags.InputTag_Look, ETriggerEvent::Triggered, this, &UShooterInputComponent::Look, /*bLogIfNotFound=*/ false);
-				BindNativeAction(PlayerInputComponent,GameTags.InputTag_Move, ETriggerEvent::Triggered, this, &UShooterInputComponent::Move, /*bLogIfNotFound=*/ false);
+				BindNativeAction(PlayerInputComponent,GameTags.InputTag_Look, ETriggerEvent::Triggered, this, &UShooterHeroComponent::Look, /*bLogIfNotFound=*/ false);
+				BindNativeAction(PlayerInputComponent,GameTags.InputTag_Move, ETriggerEvent::Triggered, this, &UShooterHeroComponent::Move, /*bLogIfNotFound=*/ false);
 			}
 		}
 	}
 }
 
-void UShooterInputComponent::ChangeMappingContext(UInputMappingContext* NewMappingContext)
+void UShooterHeroComponent::ChangeMappingContext(UInputMappingContext* NewMappingContext)
 {
 	if (ABaseCharacter* Character = GetCharacter<ABaseCharacter>())
 	{
@@ -54,7 +54,7 @@ void UShooterInputComponent::ChangeMappingContext(UInputMappingContext* NewMappi
 	}
 }
 
-void UShooterInputComponent::Input_AbilityInputTagPressed(FGameplayTag InputTag)
+void UShooterHeroComponent::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 {
 	ABaseCharacter* Character = GetCharacter<ABaseCharacter>();
 	if (Character)
@@ -66,7 +66,7 @@ void UShooterInputComponent::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 	}
 }
 
-void UShooterInputComponent::Input_AbilityInputTagReleased(FGameplayTag InputTag)
+void UShooterHeroComponent::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 {
 	ABaseCharacter* Character = GetCharacter<ABaseCharacter>();
 	if (Character)
@@ -78,7 +78,7 @@ void UShooterInputComponent::Input_AbilityInputTagReleased(FGameplayTag InputTag
 	}
 }
 
-void UShooterInputComponent::Move(const FInputActionValue& Value)
+void UShooterHeroComponent::Move(const FInputActionValue& Value)
 {
 	ABaseCharacter* Character = GetCharacter<ABaseCharacter>();
 	if (!Character) return;
@@ -92,7 +92,7 @@ void UShooterInputComponent::Move(const FInputActionValue& Value)
 	}
 }
 
-void UShooterInputComponent::Look(const FInputActionValue& Value)
+void UShooterHeroComponent::Look(const FInputActionValue& Value)
 {
 	ABaseCharacter* Character = GetCharacter<ABaseCharacter>();
 	if (!Character) return;
