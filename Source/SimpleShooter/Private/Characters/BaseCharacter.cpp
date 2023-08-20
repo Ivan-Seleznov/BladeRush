@@ -4,6 +4,7 @@
 #include "Characters/BaseCharacter.h"
 
 #include "Characters/Components/ShooterHeroComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
 #include "GAS/Attributes/AttributeHealth.h"
 
@@ -13,6 +14,7 @@ ABaseCharacter::ABaseCharacter()
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 }
 
 void ABaseCharacter::PossessedBy(AController* NewController)

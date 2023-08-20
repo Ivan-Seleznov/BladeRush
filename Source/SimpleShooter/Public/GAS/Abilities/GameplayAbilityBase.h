@@ -7,9 +7,10 @@
 #include "GameplayAbilityBase.generated.h"
 
 class UGameplayEffect;
+class ABaseCharacter;
 
 USTRUCT(BlueprintType)
-struct FGameGameplayEffect
+struct FShooterGameplayEffect
 {
 	GENERATED_BODY()
 
@@ -42,4 +43,6 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability Activation")
 	EAbilityActivationPolicy ActivationPolicy;
+	
+	ABaseCharacter* GetCharacterFromActorInfo() const;
 };

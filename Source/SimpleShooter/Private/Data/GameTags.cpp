@@ -36,6 +36,8 @@ void FGameTags::AddTags()
 
 	/*AbilityInputTags*/
 	AddTag(InputTag_Abilities_Sprint, "InputTag.Abilities.Sprint", "On activation ability sprint.");
+	AddTag(InputTag_Abilities_Crouch, "InputTag.Abilities.Crouch", "On activation ability crouch.");
+	AddTag(InputTag_Abilities_Jump, "InputTag.Abilities.Jump", "On activation ability jump.");
 }
 
 void FGameTags::AddTag(FGameplayTag& OutTag, const ANSICHAR* TagName, const ANSICHAR* TagComment)

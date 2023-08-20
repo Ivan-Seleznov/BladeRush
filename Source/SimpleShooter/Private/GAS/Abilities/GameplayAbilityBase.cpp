@@ -3,3 +3,9 @@
 
 #include "GAS/Abilities/GameplayAbilityBase.h"
 
+#include "Characters/BaseCharacter.h"
+
+ABaseCharacter* UGameplayAbilityBase::GetCharacterFromActorInfo() const
+{
+	return (CurrentActorInfo ? Cast<ABaseCharacter>(CurrentActorInfo->AvatarActor.Get()) : nullptr);
+}

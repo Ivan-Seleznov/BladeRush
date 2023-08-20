@@ -21,8 +21,12 @@ protected:
 	void AddCustomMovementModeTag(FGameplayTag& OutTag, const ANSICHAR* TagName, uint8 CustomMovementMode);
 
 public:
+
+	/*Input tags*/
 	FGameplayTag InputTag_Abilities_Sprint;
-	
+	FGameplayTag InputTag_Abilities_Crouch;
+	FGameplayTag InputTag_Abilities_Jump;
+
 	FGameplayTag InputTag_Move;
 	FGameplayTag InputTag_Look;
 	
