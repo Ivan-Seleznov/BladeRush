@@ -72,8 +72,27 @@ void ABaseCharacter::TryApplyAbilitySet(const UShooterAbilitySet* AbilitySet, bo
 	}
 }
 
+void ABaseCharacter::StartSprinting()
+{
+	if (ShooterMovementComponent)
+	{
+		if (ShooterMovementComponent->CanSprint())
+		{
+			ShooterMovementComponent->Safe_bWantsToSprint = true;
+		}
+	}
+}
+
+void ABaseCharacter::StopSprinting()
+{
+	if (ShooterMovementComponent)
+	{
+		ShooterMovementComponent->Safe_bWantsToSprint = false;
+	}
+}
+
 void ABaseCharacter::TryApplyAbilitySet_Server_Implementation(const UShooterAbilitySet* AbilitySet,
-	bool bCancelEarlySet)
+                                                              bool bCancelEarlySet)
 {
 	// Clear all
 	if (bCancelEarlySet)

@@ -15,6 +15,9 @@ void UMovementAbilityBase::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 	ABaseCharacter* Character = GetCharacterFromActorInfo();
 	if (!Character) return;
 
+	UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
+	if (!MovementComponent) return;
+
 	if (AbilityTagEffect.GameplayEffect)
 	{
 		const FGameplayEffectContextHandle EffectHandle;
@@ -23,9 +26,35 @@ void UMovementAbilityBase::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 	}
 }
 
+bool UMovementAbilityBase::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags,
+	const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
+{
+	ABaseCharacter* Character = Cast<ABaseCharacter>(ActorInfo->AvatarActor.Get());
+	if (!Character) return false;
+
+	UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
+	if (!MovementComponent) return false;
+	
+	if (!CanActivateMovementAbility(Character,MovementComponent)) return false;
+	
+	if (!Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags))
+	{
+		return false;
+	}
+	
+	return true;
+}
+
+bool UMovementAbilityBase::CanActivateMovementAbility(ABaseCharacter* Character,
+	UShooterMovementComponent* ShooterMovementComponent) const
+{
+	return true;
+}
+
 void UMovementAbilityBase::EndAbility(const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
-	bool bReplicateEndAbility, bool bWasCancelled)
+                                      const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+                                      bool bReplicateEndAbility, bool bWasCancelled)
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }

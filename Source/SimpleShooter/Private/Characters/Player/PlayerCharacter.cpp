@@ -4,6 +4,7 @@
 #include "Characters/Player/PlayerCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "Characters/Components/ShooterHeroComponent.h"
+#include "Characters/Components/ShooterMovementComponent.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
 
 // Sets default values
@@ -42,6 +43,8 @@ void APlayerCharacter::Tick(float DeltaTime)
 	{
 		AbilitySystemComponent->ProcessAbilityInput(DeltaTime,false);
 	}
+	
+	UE_LOG(LogTemp,Display,TEXT("Character max speed: %f"), GetShooterMovementComponent()->GetMaxSpeed());
 }
 
 // Called to bind functionality to input

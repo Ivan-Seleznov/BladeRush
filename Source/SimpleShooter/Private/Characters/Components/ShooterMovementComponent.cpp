@@ -3,7 +3,9 @@
 
 #include "Characters/Components/ShooterMovementComponent.h"
 
+#include "Characters/BaseCharacter.h"
 #include "GameFramework/Character.h"
+#include "Net/UnrealNetwork.h"
 
 bool UShooterMovementComponent::FSavedMove_Shooter::CanCombineWith(const FSavedMovePtr& NewMove,
                                                                    ACharacter* InCharacter, float MaxDelta) const
@@ -65,6 +67,12 @@ UShooterMovementComponent::UShooterMovementComponent()
 {
 }
 
+void UShooterMovementComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+	ShooterCharacterOwner = Cast<ABaseCharacter>(GetOwner());
+}
+
 FNetworkPredictionData_Client* UShooterMovementComponent::GetPredictionData_Client() const
 {
 	check(PawnOwner)
@@ -107,7 +115,35 @@ float UShooterMovementComponent::GetMaxSpeed() const
 
 bool UShooterMovementComponent::CanSprint() const
 {
-	return IsMovementMode(MOVE_Walking) && !IsCrouching();
+	return IsMovementMode(MOVE_Walking) && !IsCrouching() && MoveVector.Y > 0.f;
+}
+
+void UShooterMovementComponent::Client_SetMoveVector_Implementation(const FVector2D& NewValue)
+{
+	if (ShooterCharacterOwner->HasAuthority())
+	{
+		// This function should only be called by clients
+		return;
+	}
+
+	// Apply the new move vector received from the client
+	MoveVector.X = NewValue.X;
+	MoveVector.Y = NewValue.Y;
+
+	// Call the server function to update the variable on the server
+	Server_SetMoveVector(NewValue);
+}
+
+void UShooterMovementComponent::Server_SetMoveVector_Implementation(const FVector2D& NewValue)
+{
+	MoveVector.X = NewValue.X;
+	MoveVector.Y = NewValue.Y;
+}
+
+void UShooterMovementComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ThisClass, MoveVector);
 }
 
 void UShooterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
@@ -115,4 +151,9 @@ void UShooterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
 	Super::UpdateFromCompressedFlags(Flags);
 
 	Safe_bWantsToSprint = (Flags & FSavedMove_Shooter::FLAG_Custom_0) != 0;
+}
+
+ACharacter* UShooterMovementComponent::GetDefaultCharacter() const
+{
+	return ShooterCharacterOwner ? ShooterCharacterOwner->GetClass()->GetDefaultObject<ACharacter>() : nullptr;
 }

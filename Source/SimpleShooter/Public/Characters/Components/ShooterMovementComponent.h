@@ -8,6 +8,8 @@
 
 #define ERROR_VALUE -1.f;
 
+class ABaseCharacter;
+
 /**
  * Custom shooter movement component
  */
@@ -42,10 +44,15 @@ class SIMPLESHOOTER_API UShooterMovementComponent : public UCharacterMovementCom
 	};
 	
 public:
+	
 	UShooterMovementComponent();
-
+	virtual void InitializeComponent() override;
+	
 	virtual FNetworkPredictionData_Client* GetPredictionData_Client() const override;
-
+	
+	/*Client flag*/
+	bool Safe_bWantsToSprint;
+	
 	UFUNCTION(BlueprintPure)
 	bool IsMovementMode(EMovementMode InMovementMode) const;
 	
@@ -53,11 +60,27 @@ public:
 	
 	bool CanSprint() const;
 	float MaxSprintSpeed = 700.f;
-	
-protected:
-	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
 
+	UFUNCTION()
+	FVector_NetQuantize GetMoveVector() const {return MoveVector;}
+	
+	UFUNCTION(Client, Unreliable)
+	void Client_SetMoveVector(const FVector2D& NewValue);
+	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+protected:
+	
+	UPROPERTY(Transient) ABaseCharacter* ShooterCharacterOwner;
+
+	UPROPERTY(Replicated)
+	FVector_NetQuantize MoveVector;
+	
+	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
+	ACharacter* GetDefaultCharacter() const;
+
+	UFUNCTION(Server, Unreliable)
+	void Server_SetMoveVector(const FVector2D& NewValue);
 private:
-	/*Client flag*/
-	bool Safe_bWantsToSprint;
+
 };

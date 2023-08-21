@@ -26,20 +26,23 @@ void UCrouchPlayerAbility::InputPressed(const FGameplayAbilitySpecHandle Handle,
 	Super::InputPressed(Handle, ActorInfo, ActivationInfo);
 }
 
+bool UCrouchPlayerAbility::CanActivateMovementAbility(ABaseCharacter* Character,
+	UShooterMovementComponent* ShooterMovementComponent) const
+{
+	return Character->CanCrouch();
+}
+
 void UCrouchPlayerAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                            const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
                                            const FGameplayEventData* TriggerEventData)
 {
+	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+
 	ABaseCharacter* Character = GetCharacterFromActorInfo();
 	if (!Character) return;
 	
-	if (!Character->CanCrouch()) return;
-	
 	Character->Crouch();
 	bCrouching = true;
-	
-	UE_LOG(LogTemp,Display,TEXT("ActivateCrouch"));
-	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
 void UCrouchPlayerAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,

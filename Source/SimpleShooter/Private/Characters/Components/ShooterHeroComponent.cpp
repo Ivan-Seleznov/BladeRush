@@ -5,6 +5,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Characters/Components/ShooterMovementComponent.h"
 #include "Characters/Player/PlayerCharacter.h"
 #include "Data/GameTags.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
@@ -83,8 +84,13 @@ void UShooterHeroComponent::Move(const FInputActionValue& Value)
 	ABaseCharacter* Character = GetCharacter<ABaseCharacter>();
 	if (!Character) return;
 
+	UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
+	if (!MovementComponent) return;
+
 	
 	const FVector2D MovementVector = Value.Get<FVector2D>();
+	MovementComponent->Client_SetMoveVector(MovementVector);
+	
 	if (Character->Controller != nullptr)
 	{
 		Character->AddMovementInput(Character->GetActorForwardVector(), MovementVector.Y);

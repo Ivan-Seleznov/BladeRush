@@ -33,7 +33,11 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void TryApplyAbilitySet(const UShooterAbilitySet* AbilitySet, bool bCancelEarlySet = false);
-	
+
+	FORCEINLINE UShooterMovementComponent* GetShooterMovementComponent() const {return ShooterMovementComponent;}
+
+	void StartSprinting();
+	void StopSprinting();
 protected:
 
 	UFUNCTION(Server, Unreliable)
