@@ -8,6 +8,7 @@
 #include "GAS/ShooterAbilitySet.h"
 #include "BaseCharacter.generated.h"
 
+class UShooterMovementComponent;
 class UShooterAbilitySet;
 class UPlayerAbilitySystemComponent;
 class UAbilitySystemComponent;
@@ -22,7 +23,7 @@ class SIMPLESHOOTER_API ABaseCharacter : public ACharacter,public IAbilitySystem
 	GENERATED_BODY()
 
 public:
-	ABaseCharacter();
+	ABaseCharacter(const FObjectInitializer& ObjectInitializer);
 
 	void PossessedBy(AController* NewController) override;
 
@@ -37,7 +38,10 @@ protected:
 
 	UFUNCTION(Server, Unreliable)
 	void TryApplyAbilitySet_Server(const UShooterAbilitySet* AbilitySet, bool bCancelEarlySet = false);
-	
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Movement")
+	UShooterMovementComponent* ShooterMovementComponent;
+
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="GAS")
 	TObjectPtr<UPlayerAbilitySystemComponent> AbilitySystemComponent;
 	

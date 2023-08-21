@@ -2,14 +2,16 @@
 
 
 #include "Characters/BaseCharacter.h"
-
-#include "Characters/Components/ShooterHeroComponent.h"
+#include "Characters/Components/ShooterMovementComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
 #include "GAS/Attributes/AttributeHealth.h"
 
-ABaseCharacter::ABaseCharacter()
+ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<UShooterMovementComponent>(CharacterMovementComponentName))
 {
+	ShooterMovementComponent = Cast<UShooterMovementComponent>(GetCharacterMovement());
+	
 	AbilitySystemComponent = CreateDefaultSubobject<UPlayerAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
