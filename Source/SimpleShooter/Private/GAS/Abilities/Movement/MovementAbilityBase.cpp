@@ -5,6 +5,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "Characters/BaseCharacter.h"
+#include "GAS/Attributes/AttributeStamina.h"
 
 void UMovementAbilityBase::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                            const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,

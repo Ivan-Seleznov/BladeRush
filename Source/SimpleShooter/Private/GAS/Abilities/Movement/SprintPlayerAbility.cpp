@@ -6,7 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "Characters/BaseCharacter.h"
 #include "Characters/Components/ShooterMovementComponent.h"
-#include "Net/UnrealNetwork.h"
+#include "GAS/Attributes/AttributeStamina.h"
 
 void USprintPlayerAbility::InputReleased(const FGameplayAbilitySpecHandle Handle,
                                          const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
@@ -18,7 +18,12 @@ void USprintPlayerAbility::InputReleased(const FGameplayAbilitySpecHandle Handle
 bool USprintPlayerAbility::CanActivateMovementAbility(ABaseCharacter* Character,
 	UShooterMovementComponent* ShooterMovementComponent) const
 {
-	return ShooterMovementComponent->CanSprint();
+	const UAttributeStamina* AttributeStamina = UAttributeStamina::Find(Character->GetAbilitySystemComponent());
+
+	const float StaminaPoints = AttributeStamina->GetStaminaPoints();
+	const float MaxStaminaPoints = AttributeStamina->GetMaxStaminaPoints();
+	
+	return StaminaPoints > MaxStaminaPoints * BlockSprintMultiplier && ShooterMovementComponent->CanSprint();
 }
 
 /*void USprintPlayerAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -67,7 +72,7 @@ void USprintPlayerAbility::OnMovementChanged(float DeltaSeconds, FVector OldLoca
 	if (!Character) return;
 	
 	UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
-	if (!MovementComponent->CanSprint())
+	if (!CanActivateMovementAbility(Character,MovementComponent))
 	{
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 	}

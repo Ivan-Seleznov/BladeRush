@@ -34,6 +34,7 @@ void FGameTags::AddTags()
 	AddTag(InputTag_Move, "InputTag.Move", "On activate Move");
 	AddTag(InputTag_Look, "InputTag.Look", "On activat Look");
 
+	
 	/*AbilityInputTags*/
 	AddTag(InputTag_Abilities_Sprint, "InputTag.Abilities.Sprint", "On activation ability sprint.");
 	AddTag(InputTag_Abilities_Crouch, "InputTag.Abilities.Crouch", "On activation ability crouch.");

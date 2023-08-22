@@ -26,7 +26,9 @@ public:
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 protected:
-	const FShooterGameplayEffect DebuffEffect;
+	UPROPERTY(EditAnywhere,Category="GameplayEffects")
+	FShooterGameplayEffect DebuffEffect;
+
 private:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category="GameplayEffects", meta=(AllowPrivateAccess="true"))
