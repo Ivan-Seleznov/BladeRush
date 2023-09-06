@@ -44,7 +44,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 		AbilitySystemComponent->ProcessAbilityInput(DeltaTime,false);
 	}
 	
-	UE_LOG(LogTemp,Display,TEXT("Character max speed: %f"), GetShooterMovementComponent()->GetMaxSpeed());
+	//UE_LOG(LogTemp,Display,TEXT("Character max speed: %f"), GetShooterMovementComponent()->GetMaxSpeed());
 }
 
 // Called to bind functionality to input

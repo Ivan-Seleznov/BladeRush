@@ -45,7 +45,6 @@ void UStaminaWidget::HandleStaminaPointsChanged(const FOnAttributeChangeData& Ch
 			TimerDelegate.BindLambda([&]()
 			{
 				PlayAnimationReverse(Fade);
-				//SetRenderOpacity(0);
 				isWidgetVisible = false;
 			});
 			
@@ -72,14 +71,11 @@ void UStaminaWidget::HandleStaminaPointsChanged(const FOnAttributeChangeData& Ch
 				TimerDelegate.BindLambda([&]()
 				{
 					PlayAnimationReverse(Fade);
-					//SetRenderOpacity(0);
 					isWidgetVisible = false;
 				});
 				GetWorld()->GetTimerManager().SetTimer(PeriodBarShowTimerHandle,TimerDelegate,2,false);
 			}
 		}
-
-		UE_LOG(LogTemp,Warning,TEXT("TimeSinceLastUpdate: %f"),TimeSinceLastUpdate);
 		LastHPUpdateTime = CurrentTime;
 	}
 }

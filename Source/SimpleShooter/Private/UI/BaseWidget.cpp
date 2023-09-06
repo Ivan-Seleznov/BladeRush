@@ -26,7 +26,6 @@ void UBaseWidget::ShowWidget()
 {
 	if (!isWidgetVisible)
 	{
-		UE_LOG(LogTemp,Display,TEXT("ShowWidget"));
 		SetRenderOpacity(1);
 		PlayAnimation(Fade);
 		isWidgetVisible = true;

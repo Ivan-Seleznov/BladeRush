@@ -35,7 +35,4 @@ protected:
 
 	UPROPERTY(EditAnywhere, meta = (ClampMin = 0.f,ClampMax = 1.f,UIMin = 0.f,UIMax = 1.f))
 	float BlockSprintMultiplier = 0.3f;
-	
-	//UPROPERTY(Replicated)
-	//ABaseCharacter* PlayerCharacter;
 };

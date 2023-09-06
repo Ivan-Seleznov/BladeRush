@@ -26,14 +26,6 @@ bool USprintPlayerAbility::CanActivateMovementAbility(ABaseCharacter* Character,
 	return StaminaPoints > MaxStaminaPoints * BlockSprintMultiplier && ShooterMovementComponent->CanSprint();
 }
 
-/*void USprintPlayerAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(ThisClass, PlayerCharacter);
-
-}*/
-
 void USprintPlayerAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                            const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
                                            const FGameplayEventData* TriggerEventData)
@@ -42,9 +34,13 @@ void USprintPlayerAbility::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 
 	ABaseCharacter* Character = GetCharacterFromActorInfo();
 	if (!Character) return;
+
+	const UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
+	if (!MovementComponent) return;
 	
 	Character->StartSprinting();
-	
+	UE_LOG(LogTemp,Warning,TEXT("SprintActivate"));
+
 	const FGameplayEffectContextHandle GameplayEffectContextHandle;
 	Character->GetAbilitySystemComponent()->ApplyGameplayEffectToSelf(SprintEffect.GameplayEffect.GetDefaultObject(), SprintEffect.Level, GameplayEffectContextHandle);
 		
@@ -68,12 +64,16 @@ void USprintPlayerAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 
 void USprintPlayerAbility::OnMovementChanged(float DeltaSeconds, FVector OldLocation, FVector OldVelocity)
 {
+	/*
 	ABaseCharacter* Character = GetCharacterFromActorInfo();
 	if (!Character) return;
 	
 	UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
 	if (!CanActivateMovementAbility(Character,MovementComponent))
 	{
+		const FGameplayEffectContextHandle GameplayEffectContextHandle;
+		Character->GetAbilitySystemComponent()->ApplyGameplayEffectToSelf(DebuffEffect.GameplayEffect.GetDefaultObject(), DebuffEffect.Level, GameplayEffectContextHandle);
+	
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
-	}
+	}*/
 }

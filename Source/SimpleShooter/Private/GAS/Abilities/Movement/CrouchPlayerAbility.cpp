@@ -4,6 +4,7 @@
 #include "GAS/Abilities/Movement/CrouchPlayerAbility.h"
 
 #include "Characters/BaseCharacter.h"
+#include "Characters/Components/ShooterMovementComponent.h"
 
 
 UCrouchPlayerAbility::UCrouchPlayerAbility()
@@ -40,8 +41,12 @@ void UCrouchPlayerAbility::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 
 	ABaseCharacter* Character = GetCharacterFromActorInfo();
 	if (!Character) return;
+
+	UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
+	if (!MovementComponent) return;
 	
 	Character->Crouch();
+	
 	bCrouching = true;
 }
 
@@ -54,11 +59,12 @@ void UCrouchPlayerAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	ABaseCharacter* Character = GetCharacterFromActorInfo();
 	if (!Character) return;
 
+	
 	Character->UnCrouch();
 }
 
 void UCrouchPlayerAbility::MovementModeChanged(ACharacter* Character, EMovementMode PrevMovementMode,
 	uint8 PreviousCustomMode)
 {
-	if (PrevMovementMode == MOVE_Walking) EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+	/*if (PrevMovementMode == MOVE_Walking) EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);*/
 }

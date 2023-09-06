@@ -38,6 +38,9 @@ public:
 
 	void StartSprinting();
 	void StopSprinting();
+	
+	FCollisionQueryParams GetIgnoreCharacterParams() const;
+
 protected:
 
 	UFUNCTION(Server, Unreliable)
@@ -57,5 +60,5 @@ protected:
 	FAbilitySet_GrantedHandles GrantedHandles;
 	
 	virtual void BeginPlay() override;
-
+	
 };
