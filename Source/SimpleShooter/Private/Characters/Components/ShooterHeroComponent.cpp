@@ -103,7 +103,7 @@ void UShooterHeroComponent::Look(const FInputActionValue& Value)
 	ABaseCharacter* Character = GetCharacter<ABaseCharacter>();
 	if (!Character) return;
 	
-	const FVector2D LookAxisVector = Value.Get<FVector2D>();
+	const FVector2D LookAxisVector = Value.Get<FVector2D>() * 0.5f;
 	if (Character->Controller != nullptr)
 	{
 		Character->AddControllerYawInput(LookAxisVector.X);

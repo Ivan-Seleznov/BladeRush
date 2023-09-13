@@ -3,8 +3,10 @@
 
 #include "Characters/Player/PlayerCharacter.h"
 #include "EnhancedInputComponent.h"
+#include "Camera/CameraComponent.h"
 #include "Characters/Components/ShooterHeroComponent.h"
 #include "Characters/Components/ShooterMovementComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
 
 // Sets default values
@@ -14,6 +16,13 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 	PrimaryActorTick.bCanEverTick = true;
 	
 	HeroComponent = CreateDefaultSubobject<UShooterHeroComponent>(TEXT("HeroComponent"));
+	
+	
+	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
+	CameraComponent->SetupAttachment(GetMesh(), "head");
+
+	CameraComponent->bUsePawnControlRotation = true;
+	ShooterMovementComponent->bOrientRotationToMovement = true;
 }
 
 // Called when the game starts or when spawned

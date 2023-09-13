@@ -108,6 +108,12 @@ bool UShooterMovementComponent::IsCustomMovementMode(ECustomMovementMode InCusto
 
 float UShooterMovementComponent::GetMaxSpeed() const
 {
+	if (IsMovementMode(MOVE_Walking) && Safe_bWantsToSprint)
+	{
+		if (bWantsToCrouch) return MaxCrouchingSprintSpeed;
+
+		return MaxSprintSpeed;
+	}
 	if (IsMovementMode(MOVE_Walking) && Safe_bWantsToSprint) return MaxSprintSpeed;
 
 	if (MovementMode != MOVE_Custom)
@@ -121,6 +127,20 @@ float UShooterMovementComponent::GetMaxSpeed() const
 		return MaxSlideSpeed;
 	default:
 		UE_LOG(LogTemp,Fatal,TEXT("Invalid Movement Mode (getmaxspeed)"));
+		return -1.f;
+	}
+}
+
+float UShooterMovementComponent::GetMaxBrakingDeceleration() const
+{
+	if (MovementMode != MOVE_Custom) return Super::GetMaxBrakingDeceleration();
+
+	switch (CustomMovementMode)
+	{
+	case CMOVE_Slide:
+		return BrakingDecelerationSliding;
+	default:
+		UE_LOG(LogTemp, Fatal, TEXT("Invalid Movement Mode"))
 		return -1.f;
 	}
 }
@@ -154,9 +174,11 @@ void UShooterMovementComponent::Server_SetMoveVector_Implementation(const FVecto
 
 bool UShooterMovementComponent::CanSlide() const
 {
-	FHitResult Hit; 
-	const bool bValidSurface = GetSlideSurface(Hit);
-	const bool bEnoughSpeed = Velocity.SizeSquared() > pow(MinSlideSpeed, 2);
+	FVector Start = UpdatedComponent->GetComponentLocation();
+	FVector End = Start + CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2.5f * FVector::DownVector;
+	FName ProfileName = TEXT("BlockAll");
+	bool bValidSurface = GetWorld()->LineTraceTestByProfile(Start, End, ProfileName, ShooterCharacterOwner->GetIgnoreCharacterParams());
+	bool bEnoughSpeed = Velocity.SizeSquared() > pow(MinSlideSpeed, 2);
 	
 	return bValidSurface && bEnoughSpeed;
 }
@@ -188,6 +210,7 @@ void UShooterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMove
 {
 	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);
 
+	
 	if (PreviousMovementMode == MOVE_Custom && PreviousCustomMode == CMOVE_Slide)
 	{
 		ExitSlide();
@@ -201,14 +224,23 @@ void UShooterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMove
 	{
 		EnterSlide();
 	}
+
+	if (IsFalling())
+	{
+		bOrientRotationToMovement = true;
+	}
 }
 
 void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSeconds)
 {
-	if (CanSlide() && IsMovementMode(MOVE_Walking) && bWantsToCrouch && Safe_bWantsToSprint)
+	Super::UpdateCharacterStateBeforeMovement(DeltaSeconds);
+
+	if (CanSlide() && IsMovementMode(MOVE_Walking) && bWantsToCrouch && Safe_bWantsToSlide)
 	{
 		SetMovementMode(MOVE_Custom,CMOVE_Slide);
+		Safe_bWantsToSlide = false;
 	}
+	
 	if (IsCustomMovementMode(CMOVE_Slide) && !bWantsToCrouch)
 	{
 		SetMovementMode(MOVE_Walking);
@@ -218,8 +250,6 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 	{
 		Safe_bWantsToSprint = false;
 	}
-	
-	Super::UpdateCharacterStateBeforeMovement(DeltaSeconds);
 }
 
 void UShooterMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
@@ -241,12 +271,14 @@ bool UShooterMovementComponent::CanCrouchInCurrentState() const
 	return Super::CanCrouchInCurrentState() && IsMovingOnGround();
 }
 
+
 void UShooterMovementComponent::EnterSlide()
 {
+	CharacterOwner->bUseControllerRotationYaw = false;
 	bWantsToCrouch = true;
 	bOrientRotationToMovement = false;
-	
-	Velocity += Velocity.GetSafeNormal2D() * EnterSlideImpulse;
+	Velocity += Velocity.GetSafeNormal2D() * SlideEnterImpulse;
+
 	FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, true, NULL);
 
 	UE_LOG(LogTemp,Warning,TEXT("EnterSlide"));
@@ -254,29 +286,36 @@ void UShooterMovementComponent::EnterSlide()
 
 void UShooterMovementComponent::ExitSlide()
 {
+	CharacterOwner->bUseControllerRotationYaw = true;
 	bWantsToCrouch = false;
 	bOrientRotationToMovement = true;
 
 	UE_LOG(LogTemp,Display,TEXT("ExitSlide"));
 }
 
-void UShooterMovementComponent::PhysSlide(float DeltaTime, int32 Iterations)
+void UShooterMovementComponent:: PhysSlide(float deltaTime, int32 Iterations)
 {
+	if (deltaTime < MIN_TICK_TIME)
+	{
+		return;
+	}
+
+	
 	if (!CanSlide())
 	{
 		SetMovementMode(MOVE_Walking);
-		StartNewPhysics(DeltaTime, Iterations);
+		StartNewPhysics(deltaTime, Iterations);
 		return;
 	}
+
 	bJustTeleported = false;
 	bool bCheckedFall = false;
 	bool bTriedLedgeMove = false;
-	float remainingTime = DeltaTime;
+	float remainingTime = deltaTime;
 
 	// Perform the move
 	while ( (remainingTime >= MIN_TICK_TIME) && (Iterations < MaxSimulationIterations) && CharacterOwner && (CharacterOwner->Controller || bRunPhysicsWithNoController || (CharacterOwner->GetLocalRole() == ROLE_SimulatedProxy)) )
 	{
-		UE_LOG(LogTemp,Display,TEXT("PhysSlide"));
 		Iterations++;
 		bJustTeleported = false;
 		const float timeTick = GetSimulationTimeStep(remainingTime, Iterations);
@@ -294,12 +333,12 @@ void UShooterMovementComponent::PhysSlide(float DeltaTime, int32 Iterations)
 
 		FVector SlopeForce = CurrentFloor.HitResult.Normal;
 		SlopeForce.Z = 0.f;
-		Velocity += SlopeForce * GravityForceSlide * DeltaTime;
+		Velocity += SlopeForce * SlideGravityForce * deltaTime;
 		
 		Acceleration = Acceleration.ProjectOnTo(UpdatedComponent->GetRightVector().GetSafeNormal2D());
 
 		// Apply acceleration
-		CalcVelocity(timeTick, GroundFriction * FrictionSlide, false, GetMaxBrakingDeceleration());
+		CalcVelocity(timeTick, GroundFriction * SlideFrictionFactor, false, GetMaxBrakingDeceleration());
 		
 		// Compute move parameters
 		const FVector MoveVelocity = Velocity;

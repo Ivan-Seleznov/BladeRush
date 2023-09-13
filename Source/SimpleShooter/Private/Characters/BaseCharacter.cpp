@@ -93,6 +93,25 @@ void ABaseCharacter::StopSprinting()
 	}
 }
 
+void ABaseCharacter::StartSliding()
+{
+	if (ShooterMovementComponent)
+	{
+		ShooterMovementComponent->Safe_bWantsToSlide = true;
+		ShooterMovementComponent->bWantsToCrouch = true;
+	}
+}
+
+bool ABaseCharacter::IsSliding() const
+{
+	if (ShooterMovementComponent)
+	{
+		return ShooterMovementComponent->IsCustomMovementMode(CMOVE_Slide);
+	}
+	
+	return false;
+}
+
 FCollisionQueryParams ABaseCharacter::GetIgnoreCharacterParams() const
 {
 	FCollisionQueryParams Params;

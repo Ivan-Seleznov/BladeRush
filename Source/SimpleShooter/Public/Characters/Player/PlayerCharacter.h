@@ -10,11 +10,13 @@
  * 
  */
 
+class UCameraComponent;
 class UWidgetAnimation;
 class UAttributeStamina;
 class UInputMappingContext;
 class UInputAction;
 class UShooterHeroComponent;
+class USpringArmComponent;
 
 UCLASS()
 class SIMPLESHOOTER_API APlayerCharacter : public ABaseCharacter
@@ -37,5 +39,7 @@ public:
 	
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
-	
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UCameraComponent> CameraComponent;
 };

@@ -38,6 +38,11 @@ public:
 
 	void StartSprinting();
 	void StopSprinting();
+
+	void StartSliding();
+
+	UFUNCTION(BlueprintCallable)
+	bool IsSliding() const;
 	
 	FCollisionQueryParams GetIgnoreCharacterParams() const;
 

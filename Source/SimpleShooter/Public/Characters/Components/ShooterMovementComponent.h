@@ -74,29 +74,24 @@ public:
 	bool IsCustomMovementMode(ECustomMovementMode InCustomMovementMode) const;
 
 	virtual float GetMaxSpeed() const override;
-	
+	virtual float GetMaxBrakingDeceleration() const override;
+
 	bool CanSprint() const;
 
 	/*Sprint*/
 	UPROPERTY(EditDefaultsOnly)
 	float MaxSprintSpeed = 500.f;
 
+	UPROPERTY(EditDefaultsOnly)
+	float MaxCrouchingSprintSpeed = 350.f;
+	
 	/*Slide*/
-	UPROPERTY(EditDefaultsOnly)
-	float MinSlideSpeed = 350.f;
-	
-	UPROPERTY(EditDefaultsOnly)
-	float MaxSlideSpeed = 400.f;
-	
-	UPROPERTY(EditDefaultsOnly)
-	float EnterSlideImpulse = 500.f;
-
-	UPROPERTY(EditDefaultsOnly)
-	float GravityForceSlide = 5000.f;
-
-	/*How fast you lose velocity*/
-	UPROPERTY(EditDefaultsOnly)
-	float FrictionSlide = 1.3f;
+	UPROPERTY(EditDefaultsOnly) float MinSlideSpeed=400.f;
+	UPROPERTY(EditDefaultsOnly) float MaxSlideSpeed=400.f;
+	UPROPERTY(EditDefaultsOnly) float SlideEnterImpulse=400.f;
+	UPROPERTY(EditDefaultsOnly) float SlideGravityForce=4000.f;
+	UPROPERTY(EditDefaultsOnly) float SlideFrictionFactor=.06f;
+	UPROPERTY(EditDefaultsOnly) float BrakingDecelerationSliding=1000.f;
 
 	bool CanSlide() const;
 	
