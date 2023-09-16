@@ -26,6 +26,7 @@ uint8 UShooterMovementComponent::FSavedMove_Shooter::GetCompressedFlags() const
 	uint8 Result = FSavedMove_Character::GetCompressedFlags();
 
 	if (Saved_bWantsToSprint) Result |= FLAG_Custom_0;
+	if (Saved_bPressedPlayerJump) Result |= FLAG_JumpPressed;
 	
 	return Result;
 }
@@ -39,6 +40,11 @@ void UShooterMovementComponent::FSavedMove_Shooter::SetMoveFor(ACharacter* C, fl
 	
 	Saved_bWantsToSprint = ShooterMovementComponent->Safe_bWantsToSprint;
 	Saved_bWantsToSlide = ShooterMovementComponent->Safe_bWantsToSlide;
+	
+	Saved_bPressedPlayerJump = ShooterMovementComponent->ShooterCharacterOwner->bPlayerPressedJump;
+
+	//Saved_bHadAnimRootMotion = ShooterMovementComponent->Safe_bHadAnimRootMotion;
+	//Saved_bTransitionFinished = ShooterMovementComponent->Safe_bTransitionFinished;
 }
 
 void UShooterMovementComponent::FSavedMove_Shooter::PrepMoveFor(ACharacter* C)
@@ -49,6 +55,11 @@ void UShooterMovementComponent::FSavedMove_Shooter::PrepMoveFor(ACharacter* C)
 	
 	ShooterMovementComponent->Safe_bWantsToSprint = Saved_bWantsToSprint;
 	ShooterMovementComponent->Safe_bWantsToSlide = Saved_bWantsToSlide;
+	
+	ShooterMovementComponent->ShooterCharacterOwner->bPlayerPressedJump = Saved_bPressedPlayerJump;
+	
+	//ShooterMovementComponent->Safe_bHadAnimRootMotion = Saved_bHadAnimRootMotion;
+	//ShooterMovementComponent->Safe_bTransitionFinished = Saved_bTransitionFinished;
 }
 
 void UShooterMovementComponent::FSavedMove_Shooter::Clear()
@@ -56,6 +67,10 @@ void UShooterMovementComponent::FSavedMove_Shooter::Clear()
 	FSavedMove_Character::Clear();
 
 	Saved_bWantsToSprint = 0;
+	Saved_bPressedPlayerJump = 0;
+
+	//Saved_bHadAnimRootMotion = 0;
+	//Saved_bTransitionFinished = 0;
 }
 
 UShooterMovementComponent::FNetworkPredictionDataClient_Shooter::FNetworkPredictionDataClient_Shooter(const UCharacterMovementComponent& ClientMovement)
@@ -114,8 +129,6 @@ float UShooterMovementComponent::GetMaxSpeed() const
 
 		return MaxSprintSpeed;
 	}
-	if (IsMovementMode(MOVE_Walking) && Safe_bWantsToSprint) return MaxSprintSpeed;
-
 	if (MovementMode != MOVE_Custom)
 	{
 		return Super::GetMaxSpeed();
@@ -147,7 +160,7 @@ float UShooterMovementComponent::GetMaxBrakingDeceleration() const
 
 bool UShooterMovementComponent::CanSprint() const
 {
-	return IsMovementMode(MOVE_Walking) && MoveVector.Y > 0.f && !IsCustomMovementMode(CMOVE_Slide);
+	return IsMovementMode(MOVE_Walking) && MoveVector.Y > 0.f;
 }
 
 void UShooterMovementComponent::Client_SetMoveVector_Implementation(const FVector2D& NewValue)
@@ -180,7 +193,7 @@ bool UShooterMovementComponent::CanSlide() const
 	bool bValidSurface = GetWorld()->LineTraceTestByProfile(Start, End, ProfileName, ShooterCharacterOwner->GetIgnoreCharacterParams());
 	bool bEnoughSpeed = Velocity.SizeSquared() > pow(MinSlideSpeed, 2);
 	
-	return bValidSurface && bEnoughSpeed;
+	return bValidSurface && bEnoughSpeed && !IsMovementMode(MOVE_Falling);
 }
 
 void UShooterMovementComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -250,6 +263,23 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 	{
 		Safe_bWantsToSprint = false;
 	}
+
+	if (ShooterCharacterOwner->bPlayerPressedJump)
+	{
+		if (TryMantle())
+		{
+			ShooterCharacterOwner->StopJumping();
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1,15,FColor::Orange,"FAILED MANTLE.. JUMP");
+			ShooterCharacterOwner->bPlayerPressedJump = false;
+			CharacterOwner->bPressedJump = true;
+			/*Perform jump physics*/
+			CharacterOwner->CheckJumpInput(DeltaSeconds);
+			bOrientRotationToMovement = true;
+		}
+	}
 }
 
 void UShooterMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
@@ -264,6 +294,11 @@ void UShooterMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
 		UE_LOG(LogTemp, Fatal,TEXT("Invalid Movement Mode"));
 		break;
 	}
+}
+
+bool UShooterMovementComponent::TryMantle() const
+{
+	return false;
 }
 
 bool UShooterMovementComponent::CanCrouchInCurrentState() const

@@ -18,6 +18,13 @@ enum ECustomMovementMode
 	CMOVE_Max		UMETA(Hidden)
 };
 
+UENUM(BlueprintType)
+enum ETransitionName
+{
+	TNAME_None		UMETA(DispayName="NoneTransition"),
+	TNAME_Mantle	UMETA(DispayName="MantleTransition"),
+};
+
 /**
  * Custom shooter movement component
  */
@@ -30,7 +37,8 @@ class SIMPLESHOOTER_API UShooterMovementComponent : public UCharacterMovementCom
 	{
 		/*SavedMove Flags*/
 		uint8 Saved_bWantsToSprint:1;
-
+		uint8 Saved_bPressedPlayerJump:1;
+		
 		/*SavedMove variable*/
 		uint8 Saved_bWantsToSlide:1;
 		
@@ -63,7 +71,6 @@ public:
 	
 	/*Client flag*/
 	bool Safe_bWantsToSprint;
-
 	
 	bool Safe_bWantsToSlide;
 	
@@ -127,6 +134,8 @@ protected:
 	virtual void PhysCustom(float deltaTime, int32 Iterations) override;
 
 private:
+	bool TryMantle() const;
+	
 	void EnterSlide();
 	void ExitSlide();
 

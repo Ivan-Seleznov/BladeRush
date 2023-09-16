@@ -36,6 +36,9 @@ public:
 
 	FORCEINLINE UShooterMovementComponent* GetShooterMovementComponent() const {return ShooterMovementComponent;}
 
+	virtual void Jump() override;
+	virtual void StopJumping() override;
+	
 	void StartSprinting();
 	void StopSprinting();
 
@@ -45,7 +48,8 @@ public:
 	bool IsSliding() const;
 	
 	FCollisionQueryParams GetIgnoreCharacterParams() const;
-
+	
+	bool bPlayerPressedJump;
 protected:
 
 	UFUNCTION(Server, Unreliable)

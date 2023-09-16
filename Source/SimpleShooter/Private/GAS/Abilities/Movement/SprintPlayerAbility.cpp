@@ -64,16 +64,15 @@ void USprintPlayerAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 
 void USprintPlayerAbility::OnMovementChanged(float DeltaSeconds, FVector OldLocation, FVector OldVelocity)
 {
-	/*
 	ABaseCharacter* Character = GetCharacterFromActorInfo();
 	if (!Character) return;
 	
 	UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
 	if (!CanActivateMovementAbility(Character,MovementComponent))
 	{
-		const FGameplayEffectContextHandle GameplayEffectContextHandle;
-		Character->GetAbilitySystemComponent()->ApplyGameplayEffectToSelf(DebuffEffect.GameplayEffect.GetDefaultObject(), DebuffEffect.Level, GameplayEffectContextHandle);
+		//const FGameplayEffectContextHandle GameplayEffectContextHandle;
+		//Character->GetAbilitySystemComponent()->ApplyGameplayEffectToSelf(DebuffEffect.GameplayEffect.GetDefaultObject(), DebuffEffect.Level, GameplayEffectContextHandle);
 	
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
-	}*/
+	}
 }

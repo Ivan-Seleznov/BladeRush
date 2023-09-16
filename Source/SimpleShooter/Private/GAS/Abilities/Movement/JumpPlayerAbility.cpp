@@ -23,6 +23,11 @@ void UJumpPlayerAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	ABaseCharacter* Character = GetCharacterFromActorInfo();
 	if (!Character) return;
 
+	if (Character->bIsCrouched)
+	{
+		Character->UnCrouch();
+	}
+	
 	Character->Jump();
 
 	FGameplayEffectContextHandle GameplayEffectContextHandle;
@@ -49,5 +54,5 @@ bool UJumpPlayerAbility::CanActivateMovementAbility(ABaseCharacter* Character,
 	const float StaminaPoints = AttributeStamina->GetStaminaPoints();
 	const float MaxStaminaPoints = AttributeStamina->GetMaxStaminaPoints();
 	
-	return StaminaPoints > MaxStaminaPoints * BlockJumpMultiplier && Character->CanJump();
+	return StaminaPoints > MaxStaminaPoints * BlockJumpMultiplier /*&& Character->CanJump()*/;
 }

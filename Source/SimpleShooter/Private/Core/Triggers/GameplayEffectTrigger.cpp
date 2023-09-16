@@ -23,5 +23,12 @@ void AGameplayEffectTrigger::OnOverlapBegin(UPrimitiveComponent* OverlappedCompo
 			Character->GetAbilitySystemComponent()->ApplyGameplayEffectToSelf(GameplayEffect.GetDefaultObject(),1.f,EffectContext);
 			UE_LOG(LogTemp,Warning,TEXT("ApplyGameplayEffect [%s] to [%s]"),*GameplayEffect->GetName(),*OtherActor->GetName());
 		}
+		if (bEnableTeleport)
+		{
+			if (Character->HasAuthority())
+			{
+				Character->SetActorLocation(NewActorLocation);
+			}
+		}
 	}
 }

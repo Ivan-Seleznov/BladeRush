@@ -74,6 +74,21 @@ void ABaseCharacter::TryApplyAbilitySet(const UShooterAbilitySet* AbilitySet, bo
 	}
 }
 
+void ABaseCharacter::Jump()
+{
+	Super::Jump();
+	bPlayerPressedJump = true;
+
+	bPressedJump = false;
+}
+
+void ABaseCharacter::StopJumping()
+{
+	Super::StopJumping();
+
+	bPlayerPressedJump = false;
+}
+
 void ABaseCharacter::StartSprinting()
 {
 	if (ShooterMovementComponent)

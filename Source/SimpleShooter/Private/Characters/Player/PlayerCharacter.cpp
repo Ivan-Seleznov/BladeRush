@@ -22,7 +22,7 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 	CameraComponent->SetupAttachment(GetMesh(), "head");
 
 	CameraComponent->bUsePawnControlRotation = true;
-	ShooterMovementComponent->bOrientRotationToMovement = true;
+	ShooterMovementComponent->bOrientRotationToMovement = false;
 }
 
 // Called when the game starts or when spawned
