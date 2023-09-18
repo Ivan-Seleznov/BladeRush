@@ -16,7 +16,6 @@ class UAttributeStamina;
 class UInputMappingContext;
 class UInputAction;
 class UShooterHeroComponent;
-class USpringArmComponent;
 
 UCLASS()
 class SIMPLESHOOTER_API APlayerCharacter : public ABaseCharacter

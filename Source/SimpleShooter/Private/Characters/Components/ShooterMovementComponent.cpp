@@ -88,6 +88,7 @@ UShooterMovementComponent::UShooterMovementComponent()
 	NavAgentProps.bCanCrouch = true;
 	NavAgentProps.bCanJump = true;
 	NavAgentProps.bCanWalk = true;
+	bOrientRotationToMovement = false;
 }
 
 void UShooterMovementComponent::InitializeComponent()
@@ -129,6 +130,7 @@ float UShooterMovementComponent::GetMaxSpeed() const
 
 		return MaxSprintSpeed;
 	}
+	
 	if (MovementMode != MOVE_Custom)
 	{
 		return Super::GetMaxSpeed();
@@ -237,11 +239,6 @@ void UShooterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMove
 	{
 		EnterSlide();
 	}
-
-	if (IsFalling())
-	{
-		bOrientRotationToMovement = true;
-	}
 }
 
 void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSeconds)
@@ -277,7 +274,6 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 			CharacterOwner->bPressedJump = true;
 			/*Perform jump physics*/
 			CharacterOwner->CheckJumpInput(DeltaSeconds);
-			bOrientRotationToMovement = true;
 		}
 	}
 }
@@ -311,7 +307,7 @@ void UShooterMovementComponent::EnterSlide()
 {
 	CharacterOwner->bUseControllerRotationYaw = false;
 	bWantsToCrouch = true;
-	bOrientRotationToMovement = false;
+
 	Velocity += Velocity.GetSafeNormal2D() * SlideEnterImpulse;
 
 	FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, true, NULL);
@@ -323,8 +319,7 @@ void UShooterMovementComponent::ExitSlide()
 {
 	CharacterOwner->bUseControllerRotationYaw = true;
 	bWantsToCrouch = false;
-	bOrientRotationToMovement = true;
-
+	
 	UE_LOG(LogTemp,Display,TEXT("ExitSlide"));
 }
 

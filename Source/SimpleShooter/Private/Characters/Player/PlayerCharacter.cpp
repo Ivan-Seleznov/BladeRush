@@ -7,6 +7,7 @@
 #include "Characters/Components/ShooterHeroComponent.h"
 #include "Characters/Components/ShooterMovementComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
 
 // Sets default values
@@ -16,7 +17,6 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 	PrimaryActorTick.bCanEverTick = true;
 	
 	HeroComponent = CreateDefaultSubobject<UShooterHeroComponent>(TEXT("HeroComponent"));
-	
 	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	CameraComponent->SetupAttachment(GetMesh(), "head");
