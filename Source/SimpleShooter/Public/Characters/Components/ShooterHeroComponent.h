@@ -38,8 +38,6 @@ protected:
 	void Look(const FInputActionValue& Value);
 
 private:
-	//@TODO: Must be in custom input component
-
 	template<class UserClass, typename PressedFuncType, typename ReleasedFuncType>
 	void BindAbilityActions(UEnhancedInputComponent* PlayerInputComponent,UserClass* Object, PressedFuncType PressedFunc, ReleasedFuncType ReleasedFunc, TArray<uint32>& BindHandles);
 

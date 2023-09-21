@@ -25,6 +25,13 @@ enum ETransitionName
 	TNAME_Mantle	UMETA(DispayName="MantleTransition"),
 };
 
+UENUM(BlueprintType)
+enum EMantleType
+{
+	TMANTLE_Tall	UMETA(DispayName="TallMantle"),
+	TMANTLE_Short	UMETA(DispayName="ShortMantle"),
+};
+
 /**
  * Custom shooter movement component
  */
@@ -41,6 +48,8 @@ class SIMPLESHOOTER_API UShooterMovementComponent : public UCharacterMovementCom
 		
 		/*SavedMove variable*/
 		uint8 Saved_bWantsToSlide:1;
+		uint8 Saved_bHadAnimRootMotion:1;
+		uint8 Saved_bTransitionFinished:1;
 		
 		/*Check can we combine two moves*/
 		virtual bool CanCombineWith(const FSavedMovePtr& NewMove, ACharacter* InCharacter, float MaxDelta) const override;
@@ -71,7 +80,8 @@ public:
 	
 	/*Client flag*/
 	bool Safe_bWantsToSprint;
-	
+
+	/*Other variables*/
 	bool Safe_bWantsToSlide;
 	
 	UFUNCTION(BlueprintPure)
@@ -115,6 +125,18 @@ public:
 	virtual bool CanCrouchInCurrentState() const override;
 
 protected:
+
+	UPROPERTY(EditDefaultsOnly,Category="Mantle") float MantleMaxWallHeight = 300.f;
+	UPROPERTY(EditDefaultsOnly,Category="Mantle") float MantleMaxDistance = 200.f;
+
+	UPROPERTY(EditDefaultsOnly,Category="Mantle") float MantleMaxSurfaceAngle = 45.f;
+
+	UPROPERTY(EditDefaultsOnly,Category="Mantle") float MantleMaxWallSteepnessAngle = 120.f;
+	UPROPERTY(EditDefaultsOnly,Category="Mantle") float MantleMinWallSteepnessAngle = 75.f;
+	UPROPERTY(EditDefaultsOnly,Category="Mantle") float MantleMaxAlignmentAngle = 45.f;
+
+	UPROPERTY(EditDefaultsOnly,Category="Mantle") int MantleRayCount = 6;
+
 	
 	UPROPERTY(Transient) ABaseCharacter* ShooterCharacterOwner;
 
@@ -129,16 +151,30 @@ protected:
 	UFUNCTION(Server, Unreliable)
 	void Server_SetMoveVector(const FVector2D& NewValue);
 
+	virtual void UpdateCharacterStateAfterMovement(float DeltaSeconds) override;
 	virtual void UpdateCharacterStateBeforeMovement(float DeltaSeconds) override;
 
 	virtual void PhysCustom(float deltaTime, int32 Iterations) override;
 
 private:
-	bool TryMantle() const;
-	
 	void EnterSlide();
 	void ExitSlide();
 
 	void PhysSlide(float DeltaTime, int32 Iterations);
 	bool GetSlideSurface(FHitResult& Hit) const;
+
+	bool TryMantle();
+	FVector GetMantleStartLocation(const FHitResult& FrontHit, const FHitResult& SurfaceHit, EMantleType MantleType) const;
+	float GetCapsuleRadius() const;
+	float GetCapsuleHalfHeight() const;
+
+	bool Safe_bTransitionFinished;
+	
+	bool Safe_bHadAnimRootMotion;
+	TSharedPtr<FRootMotionSource_MoveToForce> TransitionRMS;
+	UPROPERTY(Transient) UAnimMontage* TransitionQueuedMontage;
+	float TransitionQueuedMontageSpeed;
+	int TransitionRMS_ID;
+	ETransitionName TransitionName;
+
 };
