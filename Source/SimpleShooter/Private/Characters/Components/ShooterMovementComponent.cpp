@@ -78,6 +78,10 @@ bool UShooterMovementComponent::FSavedMove_Shooter::CanCombineWith(const FSavedM
 	{
 		return false;
 	}
+	if (Saved_bWallRunIsRight != NewShooterMove->Saved_bWallRunIsRight)
+	{
+		return false;
+	}
 	return FSavedMove_Character::CanCombineWith(NewMove, InCharacter, MaxDelta);
 }
 
@@ -106,6 +110,8 @@ void UShooterMovementComponent::FSavedMove_Shooter::SetMoveFor(ACharacter* C, fl
 
 	Saved_bHadAnimRootMotion = ShooterMovementComponent->Safe_bHadAnimRootMotion;
 	Saved_bTransitionFinished = ShooterMovementComponent->Safe_bTransitionFinished;
+
+	Saved_bWallRunIsRight = ShooterMovementComponent->Safe_bWallRunIsRight;
 }
 
 void UShooterMovementComponent::FSavedMove_Shooter::PrepMoveFor(ACharacter* C)
@@ -121,6 +127,8 @@ void UShooterMovementComponent::FSavedMove_Shooter::PrepMoveFor(ACharacter* C)
 	
 	ShooterMovementComponent->Safe_bHadAnimRootMotion = Saved_bHadAnimRootMotion;
 	ShooterMovementComponent->Safe_bTransitionFinished = Saved_bTransitionFinished;
+
+	ShooterMovementComponent->Safe_bWallRunIsRight = Saved_bWallRunIsRight;
 }
 
 void UShooterMovementComponent::FSavedMove_Shooter::Clear()
@@ -133,6 +141,8 @@ void UShooterMovementComponent::FSavedMove_Shooter::Clear()
 	Saved_bPressedPlayerJump = 0;
 	Saved_bHadAnimRootMotion = 0;
 	Saved_bTransitionFinished = 0;
+	
+	Saved_bWallRunIsRight = 0;
 }
 
 void UShooterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
@@ -185,6 +195,12 @@ void UShooterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMove
 	{
 		EnterSlide();
 	}
+	
+	if (IsCustomMovementMode(CMOVE_WallRun) && GetOwnerRole() == ROLE_SimulatedProxy)
+	{
+		FHitResult WallHit;
+		Safe_bWallRunIsRight = IsWallOnSideTrace(WallHit,true);
+	}
 }
 
 void UShooterMovementComponent::UpdateCharacterStateAfterMovement(float DeltaSeconds)
@@ -193,7 +209,9 @@ void UShooterMovementComponent::UpdateCharacterStateAfterMovement(float DeltaSec
 
 	if (!HasAnimRootMotion() && Safe_bHadAnimRootMotion && IsMovementMode(MOVE_Flying))
 	{
+		ShooterCharacterOwner->GetCapsuleComponent()->SetWorldRotation(GetDefaultCharacter()->GetCapsuleComponent()->GetComponentRotation());
 		SetMovementMode(MOVE_Walking);
+		ShooterCharacterOwner->bUseControllerRotationYaw = true;
 	}
 	if (GetRootMotionSourceByID(TransitionRMS_ID) && GetRootMotionSourceByID(TransitionRMS_ID)->Status.HasFlag(ERootMotionSourceStatusFlags::Finished))
 	{
@@ -208,6 +226,12 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 {
 	Super::UpdateCharacterStateBeforeMovement(DeltaSeconds);
 
+	//WallRun
+	if (IsFalling())
+	{
+		TryWallRun();
+	}
+	
 	if (CanSlide() && IsMovementMode(MOVE_Walking) && bWantsToCrouch && Safe_bWantsToSlide)
 	{
 		SetMovementMode(MOVE_Custom,CMOVE_Slide);
@@ -223,12 +247,14 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 	{
 		Safe_bWantsToSprint = false;
 	}
-	
+
+	//Mantle
 	if (ShooterCharacterOwner->bPlayerPressedJump)
 	{
 		if (TryMantle())
 		{
 			ShooterCharacterOwner->StopJumping();
+			ShooterCharacterOwner->bUseControllerRotationYaw = false;
 		}
 		else
 		{
@@ -240,6 +266,12 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 		}
 	}
 
+	//WallRun
+	if (IsFalling())
+	{
+		TryWallRun();
+	}
+	
 	if (Safe_bTransitionFinished)
 	{
 		SLOG(TEXT("Transition Finished"),FColor::Blue);
@@ -255,6 +287,7 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 			else
 			{
 				SetMovementMode(MOVE_Walking);
+				ShooterCharacterOwner->bUseControllerRotationYaw = true;
 			}
 			Safe_bTransitionFinished = false;
 		}
@@ -268,6 +301,9 @@ void UShooterMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
 	{
 	case CMOVE_Slide:
 		PhysSlide(deltaTime,Iterations);
+		break;
+	case CMOVE_WallRun:
+		PhysWallRun(deltaTime,Iterations);
 		break;
 	default:
 		UE_LOG(LogTemp, Fatal,TEXT("Invalid Movement Mode"));
@@ -293,6 +329,8 @@ float UShooterMovementComponent::GetMaxSpeed() const
 	{
 	case CMOVE_Slide:
 		return MaxSlideSpeed;
+	case CMOVE_WallRun:
+		return MaxWallRunSpeed;
 	default:
 		UE_LOG(LogTemp,Fatal,TEXT("Invalid Movement Mode (getmaxspeed)"));
 		return -1.f;
@@ -307,10 +345,35 @@ float UShooterMovementComponent::GetMaxBrakingDeceleration() const
 	{
 	case CMOVE_Slide:
 		return BrakingDecelerationSliding;
+	case CMOVE_WallRun:
+		return 0.f;
 	default:
 		UE_LOG(LogTemp, Fatal, TEXT("Invalid Movement Mode"))
 		return -1.f;
 	}
+}
+
+bool UShooterMovementComponent::CanAttemptJump() const
+{
+	return Super::CanAttemptJump() || IsWallRunning() || IsCrouching();
+}
+
+bool UShooterMovementComponent::DoJump(bool bReplayingMoves)
+{
+	//Need for pushing character when wall running and jump
+	bool bWasWallRunning = IsWallRunning(); //save this value because after super call we will be in falling
+	if (Super::DoJump(bReplayingMoves))
+	{
+		if (bWasWallRunning)
+		{
+			FHitResult WallHit;
+			IsWallOnSideTrace(WallHit,Safe_bWallRunIsRight);
+			
+			Velocity += WallHit.Normal * WallJumpOfForce;
+		}
+		return true;
+	}
+	return false;
 }
 
 bool UShooterMovementComponent::IsMovingOnGround() const
@@ -327,6 +390,7 @@ bool UShooterMovementComponent::CanCrouchInCurrentState() const
 #pragma region Mantle
 bool UShooterMovementComponent::TryMantle()
 {
+	//CharacterOwner->bUseControllerRotationYaw = false;
 	FCollisionQueryParams CollisionQueryParams = ShooterCharacterOwner->GetIgnoreCharacterParams();
 	const FVector BaseLoc = UpdatedComponent->GetComponentLocation() + FVector::DownVector * GetCapsuleHalfHeight(); 
 	const FVector Fwd = UpdatedComponent->GetForwardVector().GetSafeNormal2D();
@@ -382,8 +446,9 @@ bool UShooterMovementComponent::TryMantle()
 	if (GetWorld()->OverlapAnyTestByProfile(CapsuleLoc,FQuat::Identity,ProfileName,CapShape,CollisionQueryParams))
 	{
 		DEBUG_CAPSULE(CapsuleLoc,FColor::Red);
+		return false;
 	}
-	else DEBUG_CAPSULE(CapsuleLoc,FColor::Green);
+	DEBUG_CAPSULE(CapsuleLoc,FColor::Green);
 
 	//Mantle Selection
 	EMantleType MantleType = EMantleType::TMANTLE_Short;
@@ -428,7 +493,17 @@ bool UShooterMovementComponent::TryMantle()
 	TransitionName = ETransitionName::TNAME_Mantle;
 	
 	//Animations
-	
+	if (MantleType == EMantleType::TMANTLE_Tall)
+	{
+		TransitionQueuedMontage = TallMantleAnimData.MantleMontage;
+		//CharacterOwner->PlayAnimMontage(TallMantleAnimData.TransitionMontage);
+
+	}
+	else if (MantleType == EMantleType::TMANTLE_Short)
+	{
+		TransitionQueuedMontage = ShortMantleAnimData.MantleMontage;
+		//CharacterOwner->PlayAnimMontage(ShortMantleAnimData.TransitionMontage);
+	}
 	
 	return true;
 }
@@ -487,7 +562,7 @@ void UShooterMovementComponent::ExitSlide()
 	UE_LOG(LogTemp,Display,TEXT("ExitSlide"));
 }
 
-void UShooterMovementComponent:: PhysSlide(float deltaTime, int32 Iterations)
+void UShooterMovementComponent::PhysSlide(float deltaTime, int32 Iterations)
 {
 	if (deltaTime < MIN_TICK_TIME)
 	{
@@ -699,6 +774,7 @@ bool UShooterMovementComponent::GetSlideSurface(FHitResult& Hit) const
 	
 	return GetWorld()->LineTraceSingleByProfile(Hit,Start,End,FName("BlockAll"),ShooterCharacterOwner->GetIgnoreCharacterParams());
 }
+
 #pragma endregion
 
 #pragma region Helpers
@@ -712,6 +788,15 @@ bool UShooterMovementComponent::IsCustomMovementMode(ECustomMovementMode InCusto
 	return MovementMode == MOVE_Custom && CustomMovementMode == InCustomMovementMode;
 }
 
+bool UShooterMovementComponent::IsWallOnSideTrace(FHitResult& WallHit,bool bWallRight) const
+{
+	const FVector Start = UpdatedComponent->GetComponentLocation();
+	const FVector RightTraceDistance = UpdatedComponent->GetRightVector() * GetCapsuleRadius() * 2;
+	const FVector End = bWallRight ? Start + RightTraceDistance : Start - RightTraceDistance;
+
+	return GetWorld()->LineTraceSingleByProfile(WallHit,Start,End,"BlockAll",ShooterCharacterOwner->GetIgnoreCharacterParams());
+}
+
 float UShooterMovementComponent::GetCapsuleRadius() const
 {
 	return CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleRadius();
@@ -721,8 +806,148 @@ float UShooterMovementComponent::GetCapsuleHalfHeight() const
 {
 	return CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 }
+
 ACharacter* UShooterMovementComponent::GetDefaultCharacter() const
 {
 	return ShooterCharacterOwner ? ShooterCharacterOwner->GetClass()->GetDefaultObject<ACharacter>() : nullptr;
 }
-#pragma endregion 
+#pragma endregion
+
+#pragma region WallRun
+bool UShooterMovementComponent::TryWallRun()
+{
+	if (!IsFalling()) return false;
+	if (Velocity.SizeSquared2D() < pow(MinWallRunSpeed,2)) return false;
+	if (Velocity.Z < -MaxVerticalWallRunSpeed) return false; //If you fall quickly, you cannot enter the wall run
+	
+	FHitResult FloorHit;
+	//Player height check
+	if (GetWorld()->LineTraceSingleByProfile(FloorHit,
+		UpdatedComponent->GetComponentLocation(),
+		UpdatedComponent->GetComponentLocation() + FVector::DownVector * (GetCapsuleHalfHeight() + MinWallRunHeight),
+		"BlockAll",ShooterCharacterOwner->GetIgnoreCharacterParams()))
+	{
+		return false;
+	}
+
+	//Side casts . Velocity | WallHit.Normal must be less than 90 degrees to be able to enter wall run
+	FHitResult WallHit;
+	IsWallOnSideTrace(WallHit,false);
+	if (WallHit.IsValidBlockingHit() && (Velocity | WallHit.Normal) < 0) 
+	{
+		Safe_bWallRunIsRight = false;
+	}
+	else
+	{
+		IsWallOnSideTrace(WallHit,true);
+		if (WallHit.IsValidBlockingHit() && (Velocity | WallHit.Normal) < 0)
+		{
+			Safe_bWallRunIsRight = true;
+		}
+		else
+		{
+			return false;
+		}
+		
+	}
+	FVector ProjectedVelocity = FVector::VectorPlaneProject(Velocity,WallHit.Normal);
+	Velocity = ProjectedVelocity;
+	Velocity.Z = FMath::Clamp(Velocity.Z,0.f,MaxVerticalWallRunSpeed);
+	SetMovementMode(MOVE_Custom,CMOVE_WallRun);
+	SLOG("Start WallRun", FColor::Blue);
+	
+	return true;
+}
+
+void UShooterMovementComponent::PhysWallRun(float DeltaTime, int32 Iterations)
+{
+	if (DeltaTime < MIN_TICK_TIME)
+	{
+		return;
+	}
+
+	if (!CharacterOwner || (!CharacterOwner->Controller && !bRunPhysicsWithNoController && !HasAnimRootMotion() && !CurrentRootMotion.HasOverrideVelocity() && (CharacterOwner->GetLocalRole() != ROLE_SimulatedProxy)))
+	{
+		Acceleration = FVector::ZeroVector;
+		Velocity = FVector::ZeroVector;
+		return;
+	}
+	
+	bJustTeleported = false;
+	float remainingTime = DeltaTime;
+	// Perform the move
+	while ( (remainingTime >= MIN_TICK_TIME) && (Iterations < MaxSimulationIterations) && CharacterOwner && (CharacterOwner->Controller || bRunPhysicsWithNoController || (CharacterOwner->GetLocalRole() == ROLE_SimulatedProxy)) )
+	{
+		Iterations++;
+		bJustTeleported = false;
+		const float timeTick = GetSimulationTimeStep(remainingTime, Iterations);
+		remainingTime -= timeTick;
+		const FVector OldLocation = UpdatedComponent->GetComponentLocation();
+
+		//
+		FHitResult WallHit;
+		IsWallOnSideTrace(WallHit,Safe_bWallRunIsRight);
+
+		float SinPullAwayAngle = FMath::Sin(FMath::DegreesToRadians(WallRunPullAwayAngle));
+		bool bWantsToPullAway = WallHit.IsValidBlockingHit() && !Acceleration.IsNearlyZero() && (Acceleration.GetSafeNormal() | WallHit.Normal) > SinPullAwayAngle;
+		if (!WallHit.IsValidBlockingHit() || bWantsToPullAway)
+		{
+			SetMovementMode(MOVE_Falling);
+			StartNewPhysics(remainingTime,Iterations);
+			return;
+		}
+		
+		Acceleration = FVector::VectorPlaneProject(Acceleration,WallHit.Normal);
+		Acceleration.Z = 0;
+
+		CalcVelocity(timeTick,0.f,false,GetMaxBrakingDeceleration());
+		
+		Velocity = FVector::VectorPlaneProject(Velocity,WallHit.Normal);
+
+		float TangentAcceleration = Acceleration.GetSafeNormal() | Velocity.GetSafeNormal();
+		bool bVelUp = Velocity.Z > 0.f;
+
+		Velocity.Z += GetGravityZ() * WallRunGravityScaleCurve->GetFloatValue(bVelUp ? 0.f : TangentAcceleration) * timeTick; //?
+		if (Velocity.SizeSquared2D() < pow(MinWallRunSpeed,2) || Velocity.Z < -MaxVerticalWallRunSpeed)
+		{
+			SetMovementMode(MOVE_Falling);
+			StartNewPhysics(remainingTime,Iterations);
+			return;
+		}
+		
+		const FVector Delta = timeTick * Velocity;
+		const bool bZeroDelta = Delta.IsNearlyZero();
+
+		if (bZeroDelta)
+		{
+			remainingTime = 0.f;
+		}
+		else
+		{
+			FHitResult Hit;
+			SafeMoveUpdatedComponent(Delta,UpdatedComponent->GetComponentQuat(),true,Hit); //line that does all the movement. Keep same capsule rotation. sweep instead teleporting
+			FVector	WallAttractionDelta = -WallHit.Normal * WallAttractionForce * timeTick;
+			SafeMoveUpdatedComponent(WallAttractionDelta, UpdatedComponent->GetComponentQuat(), true, Hit);
+
+		}
+
+		if (UpdatedComponent->GetComponentLocation() == OldLocation)
+		{
+			remainingTime = 0.f;
+			break;
+		}
+		Velocity = (UpdatedComponent->GetComponentLocation() - OldLocation) / timeTick; // v = dx / dt . Need for losing velocity while player hits wall
+	}
+
+	FHitResult FloorHit, WallHit;
+	IsWallOnSideTrace(WallHit, Safe_bWallRunIsRight);
+	GetWorld()->LineTraceSingleByProfile(FloorHit,UpdatedComponent->GetComponentLocation(),
+		UpdatedComponent->GetComponentLocation() + FVector::DownVector * (GetCapsuleHalfHeight() + MinWallRunHeight * .5f),
+		"BlockAll",ShooterCharacterOwner->GetIgnoreCharacterParams());
+
+	if (FloorHit.IsValidBlockingHit() || !WallHit.IsValidBlockingHit() || Velocity.SizeSquared2D() < pow(MinWallRunSpeed,2))
+	{
+		SetMovementMode(MOVE_Falling);
+	}
+}
+#pragma endregion

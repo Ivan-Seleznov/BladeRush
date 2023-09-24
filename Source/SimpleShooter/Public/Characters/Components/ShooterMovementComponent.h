@@ -15,6 +15,7 @@ enum ECustomMovementMode
 {
 	CMOVE_None		UMETA(Hidden),
 	CMOVE_Slide		UMETA(DisplayName = "Slide"),
+	CMOVE_WallRun	UMETA(DisplayName="WallRun"),
 	CMOVE_Max		UMETA(Hidden)
 };
 
@@ -32,6 +33,20 @@ enum EMantleType
 	TMANTLE_Short	UMETA(DispayName="ShortMantle"),
 };
 
+USTRUCT()
+struct FMantleAnimData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly)
+	UAnimMontage* MantleMontage;
+
+	UPROPERTY(EditDefaultsOnly)
+	UAnimMontage* TransitionMontage;
+
+	UPROPERTY(EditDefaultsOnly)
+	UAnimMontage* ProxyMontage;
+};
 /**
  * Custom shooter movement component
  */
@@ -50,6 +65,7 @@ class SIMPLESHOOTER_API UShooterMovementComponent : public UCharacterMovementCom
 		uint8 Saved_bWantsToSlide:1;
 		uint8 Saved_bHadAnimRootMotion:1;
 		uint8 Saved_bTransitionFinished:1;
+		uint8 Saved_bWallRunIsRight:1;
 		
 		/*Check can we combine two moves*/
 		virtual bool CanCombineWith(const FSavedMovePtr& NewMove, ACharacter* InCharacter, float MaxDelta) const override;
@@ -92,23 +108,24 @@ public:
 
 	virtual float GetMaxSpeed() const override;
 	virtual float GetMaxBrakingDeceleration() const override;
-
+	
+	virtual bool CanAttemptJump() const override;
+	virtual bool DoJump(bool bReplayingMoves) override;
+	
 	bool CanSprint() const;
 
+	UFUNCTION(BlueprintPure)
+	bool IsWallRunning() const {return IsCustomMovementMode(CMOVE_WallRun);} 
+
+	UFUNCTION(BlueprintPure)
+	bool IsWallRunningRight() const {return Safe_bWallRunIsRight;}
+	
 	/*Sprint*/
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly,Category="Sprint")
 	float MaxSprintSpeed = 500.f;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly,Category="Sprint|Crouching")
 	float MaxCrouchingSprintSpeed = 350.f;
-	
-	/*Slide*/
-	UPROPERTY(EditDefaultsOnly) float MinSlideSpeed=400.f;
-	UPROPERTY(EditDefaultsOnly) float MaxSlideSpeed=400.f;
-	UPROPERTY(EditDefaultsOnly) float SlideEnterImpulse=400.f;
-	UPROPERTY(EditDefaultsOnly) float SlideGravityForce=4000.f;
-	UPROPERTY(EditDefaultsOnly) float SlideFrictionFactor=.06f;
-	UPROPERTY(EditDefaultsOnly) float BrakingDecelerationSliding=1000.f;
 
 	bool CanSlide() const;
 	
@@ -125,7 +142,7 @@ public:
 	virtual bool CanCrouchInCurrentState() const override;
 
 protected:
-
+	/*Mantle*/
 	UPROPERTY(EditDefaultsOnly,Category="Mantle") float MantleMaxWallHeight = 300.f;
 	UPROPERTY(EditDefaultsOnly,Category="Mantle") float MantleMaxDistance = 200.f;
 
@@ -137,6 +154,29 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly,Category="Mantle") int MantleRayCount = 6;
 
+	UPROPERTY(EditDefaultsOnly,Category="Mantle") FMantleAnimData ShortMantleAnimData;
+	UPROPERTY(EditDefaultsOnly,Category="Mantle") FMantleAnimData TallMantleAnimData;
+
+	/*Slide*/
+	UPROPERTY(EditDefaultsOnly,Category="Slide") float MinSlideSpeed=400.f;
+	UPROPERTY(EditDefaultsOnly,Category="Slide") float MaxSlideSpeed=400.f;
+	UPROPERTY(EditDefaultsOnly,Category="Slide") float SlideEnterImpulse=400.f;
+	UPROPERTY(EditDefaultsOnly,Category="Slide") float SlideGravityForce=4000.f;
+	UPROPERTY(EditDefaultsOnly,Category="Slide") float SlideFrictionFactor=.06f;
+	UPROPERTY(EditDefaultsOnly,Category="Slide") float BrakingDecelerationSliding=1000.f;
+
+	/*WallRun*/
+	UPROPERTY(EditDefaultsOnly,Category="WallRun") float MinWallRunSpeed = 300.f;
+	UPROPERTY(EditDefaultsOnly,Category="WallRun") float MaxWallRunSpeed = 800.f;
+	UPROPERTY(EditDefaultsOnly,Category="WallRun") float MaxVerticalWallRunSpeed = 180.f; //?
+	UPROPERTY(EditDefaultsOnly,Category="WallRun") float MinWallRunHeight = 75.f;
+	
+	UPROPERTY(EditDefaultsOnly,Category="WallRun") float WallJumpOfForce = 400.f; //Force with which a player jumps away from a wall
+
+	UPROPERTY(EditDefaultsOnly,Category="WallRun") float WallRunPullAwayAngle = 75.f;
+	UPROPERTY(EditDefaultsOnly,Category="WallRun") float WallAttractionForce = 200.f;
+
+	UPROPERTY(EditDefaultsOnly,Category="WallRun") UCurveFloat* WallRunGravityScaleCurve;
 	
 	UPROPERTY(Transient) ABaseCharacter* ShooterCharacterOwner;
 
@@ -163,11 +203,16 @@ private:
 	void PhysSlide(float DeltaTime, int32 Iterations);
 	bool GetSlideSurface(FHitResult& Hit) const;
 
+	bool IsWallOnSideTrace(FHitResult& WallHit, bool bWallRight) const;
+	
 	bool TryMantle();
 	FVector GetMantleStartLocation(const FHitResult& FrontHit, const FHitResult& SurfaceHit, EMantleType MantleType) const;
 	float GetCapsuleRadius() const;
 	float GetCapsuleHalfHeight() const;
 
+	bool TryWallRun();
+	void PhysWallRun(float DeltaTime, int32 Iterations);
+	
 	bool Safe_bTransitionFinished;
 	
 	bool Safe_bHadAnimRootMotion;
@@ -177,4 +222,5 @@ private:
 	int TransitionRMS_ID;
 	ETransitionName TransitionName;
 
+	bool Safe_bWallRunIsRight;
 };
