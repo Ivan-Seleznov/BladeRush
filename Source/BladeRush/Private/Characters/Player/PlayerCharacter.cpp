@@ -55,10 +55,6 @@ void APlayerCharacter::Tick(float DeltaTime)
 	}
 	
 	//UE_LOG(LogTemp,Display,TEXT("Character max speed: %f"), GetShooterMovementComponent()->GetMaxSpeed());
-	if (const UShooterMovementComponent* MoveComp = GetShooterMovementComponent())
-	{
-		GEngine->AddOnScreenDebugMessage(-1,-1,FColor::Yellow,FString::Printf(TEXT("Player Acceleration.Normal2D %s"),*MoveComp->GetCurrentAcceleration().GetSafeNormal2D().ToString()));
-	}
 }
 
 // Called to bind functionality to input

@@ -17,6 +17,9 @@ void UStaminaWidget::NativeConstruct()
 	OwnerCharacter = Cast<ABaseCharacter>(GetOwningPlayerPawn());
 	if (!OwnerCharacter) return;
 
+	isWidgetVisible = false;
+	SetRenderOpacity(0);
+	
 	OwnerCharacter->GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(UAttributeStamina::GetStaminaPointsAttribute()).AddUObject(this, &ThisClass::HandleStaminaPointsChanged);
 	HandleStaminaPointsChanged(FOnAttributeChangeData());
 }

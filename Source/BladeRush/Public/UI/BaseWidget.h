@@ -21,8 +21,7 @@ public:
 protected:
 	virtual void ShowWidget();
 
-	//virtual void PlayAnimation(bool bReverse = false);
-	bool isWidgetVisible = false;
+	bool isWidgetVisible = true;
 
 	UPROPERTY(Transient,meta = (BindWidgetAnim))
 	UWidgetAnimation* Fade;

@@ -43,8 +43,7 @@ void UShooterMovementComponent::GetLifetimeReplicatedProps(TArray<FLifetimePrope
 
 bool UShooterMovementComponent::CanSprint() const
 {
-	SLOG(FString::Printf(TEXT("(Velocity | Forawrdv): %f"),Velocity.GetSafeNormal2D() | UpdatedComponent->GetForwardVector().GetSafeNormal()), FColor::Green);
-	return IsMovementMode(MOVE_Walking) && (Velocity.GetSafeNormal2D() | UpdatedComponent->GetForwardVector().GetSafeNormal()) > 0.1f;
+	return IsMovementMode(MOVE_Walking) && (Velocity.GetSafeNormal2D() | UpdatedComponent->GetForwardVector().GetSafeNormal()) > 0.1f && Velocity.SizeSquared() > 4;
 }
 
 #pragma region MoveVector

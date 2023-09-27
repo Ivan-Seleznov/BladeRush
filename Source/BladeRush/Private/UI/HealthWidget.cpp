@@ -17,6 +17,7 @@ void UHealthWidget::NativeConstruct()
 
 	OwnerCharacter->GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(UAttributeHealth::GetHealthPointsAttribute()).AddUObject(this, &ThisClass::HandleHealthPointsChanged);
 	HandleHealthPointsChanged(FOnAttributeChangeData());
+	isWidgetVisible = true;
 }
 
 void UHealthWidget::NativeDestruct()
