@@ -1,2 +1,4 @@
 # SimpleShooter
-Multiplayer shooter made on unreal engine using gameplay ability system
+Multiplayer Movement-oriented shooter (with wall running, sliding) in cyberpunk style, developing on UE5. Using Gameplay Ability System, Custom Character Movement
+
+
