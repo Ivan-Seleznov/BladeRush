@@ -25,4 +25,11 @@ void UDeathScreenWidget::OnRespawnButtonClicked()
 	checkf(BladeRushPlayerController,TEXT("no owning player controller, death screen widget"));
 
 	BladeRushPlayerController->TrySetPlayerPlay_Server();
+	RespawnButton->SetIsEnabled(false);
+}
+
+void UDeathScreenWidget::OnPawnInitialize()
+{
+	Super::OnPawnInitialize();
+	RespawnButton->SetIsEnabled(false);
 }

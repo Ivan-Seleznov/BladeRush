@@ -18,22 +18,11 @@ class BLADERUSH_API UBaseWidget : public UUserWidget
 
 public:
 	virtual void NativeConstruct() override;
-	
+	virtual void NativeDestruct() override;
 protected:
-	
-	virtual void ShowWidget();
-
 	virtual void OnPawnInitialize();
 	
-	bool isWidgetVisible = true;
-
-	UPROPERTY(Transient,meta = (BindWidgetAnim))
-	UWidgetAnimation* Fade;
-	
 private:
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,meta = (AllowPrivateAccess),Category="Input")
-	UInputAction* ShowBarAction;
-
 	UFUNCTION()
 	void OnPawnChanged(APawn* OldPawn, APawn* NewPawn);
 };

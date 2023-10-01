@@ -18,7 +18,7 @@ void UStaminaWidget::NativeConstruct()
 	
 	BindStaminaChangedDelegate();
 
-	isWidgetVisible = false;
+	bWidgetVisible = false;
 	SetRenderOpacity(0);
 	
 }
@@ -35,9 +35,9 @@ void UStaminaWidget::HandleStaminaPointsChanged(const FOnAttributeChangeData& Ch
 		
 	if (TimeSinceLastUpdate >= 2.0f)
 	{
-		if (!isWidgetVisible)
+		if (!bWidgetVisible)
 		{
-			isWidgetVisible = true;
+			bWidgetVisible = true;
 			SetRenderOpacity(1);
 			PlayAnimation(Fade);
 		}
@@ -45,7 +45,7 @@ void UStaminaWidget::HandleStaminaPointsChanged(const FOnAttributeChangeData& Ch
 		TimerDelegate.BindLambda([&]()
 		{
 			PlayAnimationReverse(Fade);
-			isWidgetVisible = false;
+			bWidgetVisible = false;
 		});
 			
 		GetWorld()->GetTimerManager().SetTimer(BarShowTimerHandle,TimerDelegate,2,false);
@@ -54,9 +54,9 @@ void UStaminaWidget::HandleStaminaPointsChanged(const FOnAttributeChangeData& Ch
 	{
 		GetWorld()->GetTimerManager().ClearTimer(BarShowTimerHandle);
 			
-		if (!isWidgetVisible)
+		if (!bWidgetVisible)
 		{
-			isWidgetVisible = true;
+			bWidgetVisible = true;
 			SetRenderOpacity(1);
 			PlayAnimation(Fade);
 		}
@@ -71,7 +71,7 @@ void UStaminaWidget::HandleStaminaPointsChanged(const FOnAttributeChangeData& Ch
 			TimerDelegate.BindLambda([&]()
 			{
 				PlayAnimationReverse(Fade);
-				isWidgetVisible = false;
+				bWidgetVisible = false;
 			});
 			GetWorld()->GetTimerManager().SetTimer(PeriodBarShowTimerHandle,TimerDelegate,2,false);
 			}
@@ -83,6 +83,18 @@ void UStaminaWidget::OnPawnInitialize()
 {
 	Super::OnPawnInitialize();
 	BindStaminaChangedDelegate();
+}
+
+void UStaminaWidget::NativeDestruct()
+{
+	Super::NativeDestruct();
+
+	ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwningPlayerPawn());
+	if (!OwnerCharacter) return;
+
+	if (!OwnerCharacter->GetAbilitySystemComponent()) return;
+
+	OwnerCharacter->GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(UAttributeStamina::GetStaminaPointsAttribute()).RemoveAll(this);
 }
 
 void UStaminaWidget::BindStaminaChangedDelegate()

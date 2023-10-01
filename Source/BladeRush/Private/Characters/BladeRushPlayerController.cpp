@@ -3,6 +3,8 @@
 
 #include "Characters/BladeRushPlayerController.h"
 
+#include "AbilitySystemComponent.h"
+#include "Characters/BaseCharacter.h"
 #include "GameFramework/PlayerState.h"
 #include "GameMods/BladeRushGameMode.h"
 #include "Kismet/GameplayStatics.h"
@@ -55,6 +57,15 @@ void ABladeRushPlayerController::SetPlayerSpectate()
 	GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle, this, &ThisClass::OnRespawnTimerEnd,RespawnTimerTime,false);
 
 	HUDStateChanged_Client(EHUDState::OnlySpectating);
+}
+
+void ABladeRushPlayerController::AcknowledgePossession(APawn* P)
+{
+	Super::AcknowledgePossession(P);
+	if (ABaseCharacter* BaseCharacter = Cast<ABaseCharacter>(P))
+	{
+		BaseCharacter->GetAbilitySystemComponent()->InitAbilityActorInfo(BaseCharacter,BaseCharacter);
+	}
 }
 
 void ABladeRushPlayerController::OnRespawnTimerEnd()

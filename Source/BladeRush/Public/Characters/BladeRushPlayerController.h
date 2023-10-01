@@ -25,6 +25,8 @@ public:
 	void SetPlayerSpectate();
 
 	bool IsSpectating() const {return StateName == NAME_Spectating;}
+
+	virtual void AcknowledgePossession(APawn* P) override;
 	
 private:
 	UFUNCTION(Reliable, Client)

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "BaseWidget.h"
 #include "DeathScreenWidget.generated.h"
 
 class UButton;
@@ -11,15 +11,17 @@ class UButton;
  * 
  */
 UCLASS()
-class BLADERUSH_API UDeathScreenWidget : public UUserWidget
+class BLADERUSH_API UDeathScreenWidget : public UBaseWidget
 {
 	GENERATED_BODY()
+	
 public:
 	void ActivateRespawnButton();
 
 protected:
 	virtual void NativeConstruct() override;
-
+	virtual void OnPawnInitialize() override;
+	
 	UFUNCTION()
 	void OnRespawnButtonClicked();
 	

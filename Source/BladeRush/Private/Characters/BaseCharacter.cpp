@@ -6,10 +6,8 @@
 #include "Characters/Components/PlayerHealthComponent.h"
 #include "Characters/Components/ShooterMovementComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameMods/BladeRushGameMode.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
 #include "GAS/Attributes/AttributeHealth.h"
-#include "Kismet/GameplayStatics.h"
 
 ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UShooterMovementComponent>(CharacterMovementComponentName))
@@ -44,9 +42,9 @@ void ABaseCharacter::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 	//client gas init
 
-	if (!AbilitySystemComponent) return;
+	//if (!AbilitySystemComponent) return;
 	
-	AbilitySystemComponent->InitAbilityActorInfo(this,this);
+	//AbilitySystemComponent->InitAbilityActorInfo(this,this);
 }
 
 UAbilitySystemComponent* ABaseCharacter::GetAbilitySystemComponent() const

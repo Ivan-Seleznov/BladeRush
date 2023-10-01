@@ -14,21 +14,24 @@ void UHealthWidget::NativeConstruct()
 	if (!HealthPointsBar) return;
 	
 	BindHealthPointsChangeDelegate();
-
-	isWidgetVisible = true;
-}
-
-void UHealthWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	Super::NativeTick(MyGeometry, InDeltaTime);
-
-	//DisplayLog_Server();
 }
 
 void UHealthWidget::OnPawnInitialize()
 {
 	Super::OnPawnInitialize();
 	BindHealthPointsChangeDelegate();
+}
+
+void UHealthWidget::NativeDestruct()
+{
+	Super::NativeDestruct();
+	
+	ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwningPlayerPawn());
+	if (!OwnerCharacter) return;
+	
+	if (!OwnerCharacter->GetAbilitySystemComponent()) return;
+
+	OwnerCharacter->GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(UAttributeHealth::GetHealthPointsAttribute()).RemoveAll(this);
 }
 
 
@@ -62,4 +65,3 @@ void UHealthWidget::BindHealthPointsChangeDelegate()
 	OwnerCharacter->GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(UAttributeHealth::GetHealthPointsAttribute()).AddUObject(this, &ThisClass::HandleHealthPointsChanged);
 	SetFromHealthPointsAttribute();
 }
-
