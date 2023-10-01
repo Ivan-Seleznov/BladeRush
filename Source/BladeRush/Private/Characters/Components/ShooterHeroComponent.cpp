@@ -15,7 +15,7 @@ void UShooterHeroComponent::InitializePlayerInput(UEnhancedInputComponent* Playe
 	if (!PlayerInputComponent) return;
 	if (!InputConfig) return;
 
-	const ABaseCharacter* Character = GetCharacter<ABaseCharacter>();
+	const ABaseCharacter* Character = GetPawn<ABaseCharacter>(); //GetCharacter<ABaseCharacter>();
 	if (!Character) return;
 	
 	if (const APlayerController* PlayerController = Cast<APlayerController>(Character->Controller))
@@ -30,7 +30,7 @@ void UShooterHeroComponent::InitializePlayerInput(UEnhancedInputComponent* Playe
 			{
 				TArray<uint32> BindHandles;
 				BindAbilityActions(PlayerInputComponent,this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
-					
+				
 				BindNativeAction(PlayerInputComponent,GameTags.InputTag_Look, ETriggerEvent::Triggered, this, &UShooterHeroComponent::Look, /*bLogIfNotFound=*/ false);
 				BindNativeAction(PlayerInputComponent,GameTags.InputTag_Move, ETriggerEvent::Triggered, this, &UShooterHeroComponent::Move, /*bLogIfNotFound=*/ false);
 			}
@@ -40,7 +40,7 @@ void UShooterHeroComponent::InitializePlayerInput(UEnhancedInputComponent* Playe
 
 void UShooterHeroComponent::ChangeMappingContext(UInputMappingContext* NewMappingContext)
 {
-	if (ABaseCharacter* Character = GetCharacter<ABaseCharacter>())
+	if (ABaseCharacter* Character = GetPawn<ABaseCharacter>())
 	{
 		if (const APlayerController* PlayerController = Cast<APlayerController>(Character->Controller))
 		{
@@ -57,7 +57,7 @@ void UShooterHeroComponent::ChangeMappingContext(UInputMappingContext* NewMappin
 
 void UShooterHeroComponent::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 {
-	ABaseCharacter* Character = GetCharacter<ABaseCharacter>();
+	const ABaseCharacter* Character = GetPawn<ABaseCharacter>();
 	if (Character)
 	{
 		if (UPlayerAbilitySystemComponent* AbilitySystemComponent = Cast<UPlayerAbilitySystemComponent>(Character->GetAbilitySystemComponent()))
@@ -69,7 +69,7 @@ void UShooterHeroComponent::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 
 void UShooterHeroComponent::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 {
-	ABaseCharacter* Character = GetCharacter<ABaseCharacter>();
+	const ABaseCharacter* Character = GetPawn<ABaseCharacter>();
 	if (Character)
 	{
 		if (UPlayerAbilitySystemComponent* AbilitySystemComponent = Cast<UPlayerAbilitySystemComponent>(Character->GetAbilitySystemComponent()))
@@ -81,7 +81,7 @@ void UShooterHeroComponent::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 
 void UShooterHeroComponent::Move(const FInputActionValue& Value)
 {
-	ABaseCharacter* Character = GetCharacter<ABaseCharacter>();
+	ABaseCharacter* Character = GetPawn<ABaseCharacter>();
 	if (!Character) return;
 
 	UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
@@ -100,7 +100,7 @@ void UShooterHeroComponent::Move(const FInputActionValue& Value)
 
 void UShooterHeroComponent::Look(const FInputActionValue& Value)
 {
-	ABaseCharacter* Character = GetCharacter<ABaseCharacter>();
+	ABaseCharacter* Character = GetPawn<ABaseCharacter>();
 	if (!Character) return;
 	
 	const FVector2D LookAxisVector = Value.Get<FVector2D>() * 0.5f;

@@ -7,13 +7,12 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
-
 #if	1
-float MacroDuration = 3.f;
-#define SLOG(x,c)			GEngine->AddOnScreenDebugMessage(-1,MacroDuration,c,x);
-#define DEBUG_POINT(x,c)	DrawDebugPoint(GetWorld(),x,10,c, false,MacroDuration);
-#define DEBUG_LINE(x1,x2,c) DrawDebugLine(GetWorld(),x1,x2,c,false,MacroDuration);
-#define DEBUG_CAPSULE(x,c)	DrawDebugCapsule(GetWorld(),x,GetCapsuleHalfHeight(),GetCapsuleRadius(),FQuat::Identity,c,false,MacroDuration);
+float HM_MACRO_DURATION = 3.f;
+#define SLOG(x,c)			GEngine->AddOnScreenDebugMessage(-1,HM_MACRO_DURATION,c,x);
+#define DEBUG_POINT(x,c)	DrawDebugPoint(GetWorld(),x,10,c, false,HM_MACRO_DURATION);
+#define DEBUG_LINE(x1,x2,c) DrawDebugLine(GetWorld(),x1,x2,c,false,HM_MACRO_DURATION);
+#define DEBUG_CAPSULE(x,c)	DrawDebugCapsule(GetWorld(),x,GetCapsuleHalfHeight(),GetCapsuleRadius(),FQuat::Identity,c,false,HM_MACRO_DURATION);
 #else
 #define SLOG(x,c)
 #define DEBUG_POINT(x,c)

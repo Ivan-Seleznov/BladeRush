@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "EnhancedInputComponent.h"
-#include "Characters/Components/BaseCharacterComponent.h"
 #include "InputActionValue.h"
+#include "Components/PawnComponent.h"
 #include "Input/ShooterInputConfig.h"
 #include "ShooterHeroComponent.generated.h"
 
@@ -15,7 +15,7 @@ class UInputComponent;
  * 
  */
 UCLASS(Blueprintable, Meta=(BlueprintSpawnableComponent))
-class BLADERUSH_API UShooterHeroComponent : public UBaseCharacterComponent
+class BLADERUSH_API UShooterHeroComponent : public UPawnComponent
 {
 	GENERATED_BODY()
 public:

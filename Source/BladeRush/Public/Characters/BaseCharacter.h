@@ -8,6 +8,7 @@
 #include "GAS/ShooterAbilitySet.h"
 #include "BaseCharacter.generated.h"
 
+class UPlayerHealthComponent;
 class UShooterMovementComponent;
 class UShooterAbilitySet;
 class UPlayerAbilitySystemComponent;
@@ -35,9 +36,11 @@ public:
 	void TryApplyAbilitySet(const UShooterAbilitySet* AbilitySet, bool bCancelEarlySet = false);
 
 	FORCEINLINE UShooterMovementComponent* GetShooterMovementComponent() const {return ShooterMovementComponent;}
-
+	FORCEINLINE UPlayerHealthComponent* GetPlayerHealthComponent() const {return PlayerHealthComponent;}
+	
 	virtual void Jump() override;
 	virtual void StopJumping() override;
+
 	
 	void StartSprinting();
 	void StopSprinting();
@@ -49,15 +52,19 @@ public:
 	
 	FCollisionQueryParams GetIgnoreCharacterParams() const;
 	
+	
 	bool bPlayerPressedJump;
 protected:
 
-	UFUNCTION(Server, Unreliable)
+	UFUNCTION(Client, Unreliable)
 	void TryApplyAbilitySet_Server(const UShooterAbilitySet* AbilitySet, bool bCancelEarlySet = false);
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Movement")
 	UShooterMovementComponent* ShooterMovementComponent;
 
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Components")
+	UPlayerHealthComponent* PlayerHealthComponent;
+	
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="GAS")
 	TObjectPtr<UPlayerAbilitySystemComponent> AbilitySystemComponent;
 	
@@ -69,5 +76,6 @@ protected:
 	FAbilitySet_GrantedHandles GrantedHandles;
 	
 	virtual void BeginPlay() override;
-	
+private:
+	FVector CharacterSpawnLocation;
 };

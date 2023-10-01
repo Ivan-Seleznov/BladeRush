@@ -29,6 +29,7 @@ public:
 	ATTRIBUTE_ACCESSORS(UAttributeHealth, HealthPoints);
 	ATTRIBUTE_ACCESSORS(UAttributeHealth, MaxHealthPoints);
 	void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+
 protected:
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 	

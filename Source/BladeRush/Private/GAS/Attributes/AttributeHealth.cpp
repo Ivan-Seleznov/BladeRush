@@ -27,16 +27,16 @@ void UAttributeHealth::PostGameplayEffectExecute(const FGameplayEffectModCallbac
 
 	if (Data.EvaluatedData.Attribute == GetHealthPointsAttribute())
 	{
-		if (GetHealthPoints() <= 0 && bOutOfHealthPoints)
+		if (GetHealthPoints() <= 0)
 		{
-			if (OnOutOfHealthPoints.IsBound())
-			{
+			//if (OnOutOfHealthPoints.IsBound())
+			//{
 				const FGameplayEffectContextHandle& EffectContext = Data.EffectSpec.GetEffectContext();
 				AActor* Instigator = EffectContext.GetOriginalInstigator();
 				AActor* Causer = EffectContext.GetEffectCauser();
 
 				OnOutOfHealthPoints.Broadcast(Instigator, Causer, Data.EffectSpec, Data.EvaluatedData.Magnitude);
-			}
+			//}
 		}
 		bOutOfHealthPoints = GetHealthPoints() <= 0.0f;
 	}

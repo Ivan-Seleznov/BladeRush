@@ -16,10 +16,13 @@ UCLASS()
 class BLADERUSH_API UHealthWidget : public UBaseWidget
 {
 	GENERATED_BODY()
-
+	
 protected:
 	virtual void NativeConstruct() override;
-	virtual void NativeDestruct() override;
+	
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+	virtual void OnPawnInitialize() override;
 	
 	UPROPERTY(meta = (BindWidget))
 	UCanvasPanel* MainCanvas;
@@ -31,6 +34,8 @@ protected:
 	UProgressBar* HealthPointsBar;
 	
 	void HandleHealthPointsChanged(const FOnAttributeChangeData& ChangeData);
+	
 private:
-	ABaseCharacter* OwnerCharacter;
+	void SetFromHealthPointsAttribute();
+	void BindHealthPointsChangeDelegate();
 };

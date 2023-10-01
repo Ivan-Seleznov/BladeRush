@@ -9,76 +9,104 @@
 #include "Components/ProgressBar.h"
 #include "GAS/Attributes/AttributeStamina.h"
 
+
 void UStaminaWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
 	if (!StaminaPointsBar) return;
 	
-	OwnerCharacter = Cast<ABaseCharacter>(GetOwningPlayerPawn());
-	if (!OwnerCharacter) return;
+	BindStaminaChangedDelegate();
 
 	isWidgetVisible = false;
 	SetRenderOpacity(0);
 	
-	OwnerCharacter->GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(UAttributeStamina::GetStaminaPointsAttribute()).AddUObject(this, &ThisClass::HandleStaminaPointsChanged);
-	HandleStaminaPointsChanged(FOnAttributeChangeData());
 }
 
 void UStaminaWidget::HandleStaminaPointsChanged(const FOnAttributeChangeData& ChangeData)
 {
-	if (const UAttributeStamina* AttributeStaminaPoints = UAttributeStamina::Find(OwnerCharacter->GetAbilitySystemComponent()))
+	
+	GetWorld()->GetTimerManager().ClearTimer(PeriodBarShowTimerHandle);
+
+	SetFromStaminaAttribute();
+	
+	float CurrentTime = GetWorld()->GetTimeSeconds();
+	float TimeSinceLastUpdate = CurrentTime - LastHPUpdateTime;
+		
+	if (TimeSinceLastUpdate >= 2.0f)
 	{
-		GetWorld()->GetTimerManager().ClearTimer(PeriodBarShowTimerHandle);
-		float Percent = AttributeStaminaPoints->GetStaminaPoints() / AttributeStaminaPoints->GetMaxStaminaPoints();
-		Percent = FMath::Clamp(Percent, 0.f, 1.f);
-		StaminaPointsBar->SetPercent(Percent);
-		
-		float CurrentTime = GetWorld()->GetTimeSeconds();
-		float TimeSinceLastUpdate = CurrentTime - LastHPUpdateTime;
-		
-		if (TimeSinceLastUpdate >= 2.0f)
+		if (!isWidgetVisible)
 		{
-			if (!isWidgetVisible)
+			isWidgetVisible = true;
+			SetRenderOpacity(1);
+			PlayAnimation(Fade);
+		}
+		FTimerDelegate TimerDelegate;
+		TimerDelegate.BindLambda([&]()
+		{
+			PlayAnimationReverse(Fade);
+			isWidgetVisible = false;
+		});
+			
+		GetWorld()->GetTimerManager().SetTimer(BarShowTimerHandle,TimerDelegate,2,false);
+	}
+	else
+	{
+		GetWorld()->GetTimerManager().ClearTimer(BarShowTimerHandle);
+			
+		if (!isWidgetVisible)
+		{
+			isWidgetVisible = true;
+			SetRenderOpacity(1);
+			PlayAnimation(Fade);
+		}
+			
+		if (GetWorld()->GetTimerManager().IsTimerActive(PeriodBarShowTimerHandle))
+		{
+			GetWorld()->GetTimerManager().ClearTimer(PeriodBarShowTimerHandle);
+		}
+		else /*if it is last update - PlayAnimationReverse(Fade)*/
 			{
-				isWidgetVisible = true;
-				SetRenderOpacity(1);
-				PlayAnimation(Fade);
-			}
 			FTimerDelegate TimerDelegate;
 			TimerDelegate.BindLambda([&]()
 			{
 				PlayAnimationReverse(Fade);
 				isWidgetVisible = false;
 			});
-			
-			GetWorld()->GetTimerManager().SetTimer(BarShowTimerHandle,TimerDelegate,2,false);
-		}
-		else
-		{
-			GetWorld()->GetTimerManager().ClearTimer(BarShowTimerHandle);
-			
-			if (!isWidgetVisible)
-			{
-				isWidgetVisible = true;
-				SetRenderOpacity(1);
-				PlayAnimation(Fade);
+			GetWorld()->GetTimerManager().SetTimer(PeriodBarShowTimerHandle,TimerDelegate,2,false);
 			}
-			
-			if (GetWorld()->GetTimerManager().IsTimerActive(PeriodBarShowTimerHandle))
-			{
-				GetWorld()->GetTimerManager().ClearTimer(PeriodBarShowTimerHandle);
-			}
-			else /*if it is last update - PlayAnimationReverse(Fade)*/
-			{
-				FTimerDelegate TimerDelegate;
-				TimerDelegate.BindLambda([&]()
-				{
-					PlayAnimationReverse(Fade);
-					isWidgetVisible = false;
-				});
-				GetWorld()->GetTimerManager().SetTimer(PeriodBarShowTimerHandle,TimerDelegate,2,false);
-			}
-		}
-		LastHPUpdateTime = CurrentTime;
+	}
+	LastHPUpdateTime = CurrentTime;
+}
+
+void UStaminaWidget::OnPawnInitialize()
+{
+	Super::OnPawnInitialize();
+	BindStaminaChangedDelegate();
+}
+
+void UStaminaWidget::BindStaminaChangedDelegate()
+{
+	ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwningPlayerPawn());
+	if (!OwnerCharacter) return;
+
+	if (!OwnerCharacter->GetAbilitySystemComponent()) return;
+
+	OwnerCharacter->GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(UAttributeStamina::GetStaminaPointsAttribute()).AddUObject(this, &ThisClass::HandleStaminaPointsChanged);
+	SetFromStaminaAttribute();
+}
+
+void UStaminaWidget::SetFromStaminaAttribute()
+{
+	ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwningPlayerPawn());
+	if (!OwnerCharacter) return;
+
+	if (!OwnerCharacter->GetAbilitySystemComponent()) return;
+	
+	if (const UAttributeStamina* AttributeStaminaPoints = UAttributeStamina::Find(OwnerCharacter->GetAbilitySystemComponent()))
+	{
+		float Percent = AttributeStaminaPoints->GetStaminaPoints() / AttributeStaminaPoints->GetMaxStaminaPoints();
+		Percent = FMath::Clamp(Percent, 0.f, 1.f);
+		StaminaPointsBar->SetPercent(Percent);
 	}
 }

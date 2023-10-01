@@ -4,7 +4,10 @@
 #include "UI/BaseWidget.h"
 #include "EnhancedInputComponent.h"
 #include "InputTriggers.h"
+#include "Characters/BladeRushPlayerController.h"
 #include "Characters/Player/PlayerCharacter.h"
+#include "GameMods/BladeRushGameMode.h"
+#include "Kismet/GameplayStatics.h"
 
 void UBaseWidget::NativeConstruct()
 {
@@ -15,6 +18,8 @@ void UBaseWidget::NativeConstruct()
 	{
 		EnhancedInputComponent->BindAction(ShowBarAction, ETriggerEvent::Started, this, &UBaseWidget::ShowWidget);
 	}
+
+	GetOwningPlayer()->OnPossessedPawnChanged.AddDynamic(this,&ThisClass::OnPawnChanged);
 }
 
 void UBaseWidget::ShowWidget()
@@ -33,7 +38,18 @@ void UBaseWidget::ShowWidget()
 	}
 }
 
-// void UBaseWidget::PlayAnimation(bool bReverse)
-// {
-// 	
-// }
+void UBaseWidget::OnPawnInitialize()
+{
+	
+}
+
+void UBaseWidget::OnPawnChanged(APawn* OldPawn, APawn* NewPawn)
+{
+	ABladeRushPlayerController* PlayerController = Cast<ABladeRushPlayerController>(GetOwningPlayer());
+	if (!PlayerController) return;
+
+	if (PlayerController->IsSpectating()) return;
+
+	OnPawnInitialize();
+}
+

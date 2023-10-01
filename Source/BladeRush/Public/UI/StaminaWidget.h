@@ -20,9 +20,8 @@ UCLASS()
 class BLADERUSH_API UStaminaWidget : public UBaseWidget
 {
 	GENERATED_BODY()
+
 protected:
-	virtual void NativeConstruct() override;
-	
 	UPROPERTY(meta = (BindWidget))
 	UCanvasPanel* MainCanvas;
 
@@ -32,13 +31,18 @@ protected:
 	UPROPERTY(meta = (BindWidgetOptional))
 	UProgressBar* StaminaPointsBar;
 	
+	virtual void NativeConstruct() override;
+	
 	void HandleStaminaPointsChanged(const FOnAttributeChangeData& ChangeData);
-private:
-	ABaseCharacter* OwnerCharacter;
 
+	virtual void OnPawnInitialize() override;
+private:
 	float LastHPUpdateTime = 0.0f;
 
 	FTimerHandle BarShowTimerHandle;
 
 	FTimerHandle PeriodBarShowTimerHandle;
+
+	void BindStaminaChangedDelegate();
+	void SetFromStaminaAttribute();
 };

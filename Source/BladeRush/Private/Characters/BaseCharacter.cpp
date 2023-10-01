@@ -2,10 +2,14 @@
 
 
 #include "Characters/BaseCharacter.h"
+
+#include "Characters/Components/PlayerHealthComponent.h"
 #include "Characters/Components/ShooterMovementComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameMods/BladeRushGameMode.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
 #include "GAS/Attributes/AttributeHealth.h"
+#include "Kismet/GameplayStatics.h"
 
 ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UShooterMovementComponent>(CharacterMovementComponentName))
@@ -16,9 +20,10 @@ ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer)
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
+	PlayerHealthComponent = CreateDefaultSubobject<UPlayerHealthComponent>("HealthComponent");
+	
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCharacterMovement()->NavAgentProps.bCanJump = true;
-
 }
 
 void ABaseCharacter::PossessedBy(AController* NewController)
@@ -63,11 +68,7 @@ void ABaseCharacter::TryApplyAbilitySet(const UShooterAbilitySet* AbilitySet, bo
 		//AbilitySystemComponent->RemoveActiveEffects(Query);
 	}
 
-	if (!HasAuthority())
-	{
-		TryApplyAbilitySet_Server(AbilitySet, bCancelEarlySet);
-	}
-
+	//TryApplyAbilitySet_Server(AbilitySet,bCancelEarlySet);
 	if (AbilitySet)
 	{
 		AbilitySet->GiveToAbilitySystem(AbilitySystemComponent, &GrantedHandles);
@@ -156,6 +157,8 @@ void ABaseCharacter::TryApplyAbilitySet_Server_Implementation(const UShooterAbil
 	
 	if (AbilitySet)
 	{
+		UE_LOG(LogTemp,Warning,TEXT("TRY APPLY SERVER"))
+
 		AbilitySet->GiveToAbilitySystem(AbilitySystemComponent, &GrantedHandles);
 	}
 }
@@ -163,4 +166,6 @@ void ABaseCharacter::TryApplyAbilitySet_Server_Implementation(const UShooterAbil
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	CharacterSpawnLocation = GetActorLocation();
 }

@@ -2,32 +2,47 @@
 
 
 #include "UI/HealthWidget.h"
-
 #include "Characters/BaseCharacter.h"
 #include "Components/ProgressBar.h"
 #include "GAS/Attributes/AttributeHealth.h"
 
+
 void UHealthWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	
 	if (!HealthPointsBar) return;
 	
-	OwnerCharacter = Cast<ABaseCharacter>(GetOwningPlayerPawn());
-	if (!OwnerCharacter) return;
+	BindHealthPointsChangeDelegate();
 
-	OwnerCharacter->GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(UAttributeHealth::GetHealthPointsAttribute()).AddUObject(this, &ThisClass::HandleHealthPointsChanged);
-	HandleHealthPointsChanged(FOnAttributeChangeData());
 	isWidgetVisible = true;
 }
 
-void UHealthWidget::NativeDestruct()
+void UHealthWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
-	Super::NativeDestruct();
+	Super::NativeTick(MyGeometry, InDeltaTime);
+
+	//DisplayLog_Server();
 }
+
+void UHealthWidget::OnPawnInitialize()
+{
+	Super::OnPawnInitialize();
+	BindHealthPointsChangeDelegate();
+}
+
 
 void UHealthWidget::HandleHealthPointsChanged(const FOnAttributeChangeData& ChangeData)
 {
+	SetFromHealthPointsAttribute();
+}
+
+void UHealthWidget::SetFromHealthPointsAttribute()
+{
+	ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwningPlayerPawn());
 	if (!OwnerCharacter) return;
+
+	if (!OwnerCharacter->GetAbilitySystemComponent()) return;
 	
 	if (const UAttributeHealth* AttributeHealthPoints = UAttributeHealth::Find(OwnerCharacter->GetAbilitySystemComponent()))
 	{
@@ -35,5 +50,16 @@ void UHealthWidget::HandleHealthPointsChanged(const FOnAttributeChangeData& Chan
 		Percent = FMath::Clamp(Percent, 0.f, 1.f);
 		HealthPointsBar->SetPercent(Percent);
 	}
+}
+
+void UHealthWidget::BindHealthPointsChangeDelegate()
+{
+	ABaseCharacter* OwnerCharacter = Cast<ABaseCharacter>(GetOwningPlayerPawn());
+	if (!OwnerCharacter) return;
+	
+	if (!OwnerCharacter->GetAbilitySystemComponent()) return;
+
+	OwnerCharacter->GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(UAttributeHealth::GetHealthPointsAttribute()).AddUObject(this, &ThisClass::HandleHealthPointsChanged);
+	SetFromHealthPointsAttribute();
 }
 
