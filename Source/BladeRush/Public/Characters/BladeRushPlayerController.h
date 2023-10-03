@@ -27,6 +27,9 @@ public:
 	bool IsSpectating() const {return StateName == NAME_Spectating;}
 
 	virtual void AcknowledgePossession(APawn* P) override;
+
+protected:
+	virtual void ProcessPlayerInput(const float DeltaTime, const bool bGamePaused) override;
 	
 private:
 	UFUNCTION(Reliable, Client)

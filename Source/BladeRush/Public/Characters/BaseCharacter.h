@@ -31,7 +31,8 @@ public:
 	virtual void OnRep_PlayerState() override;
 	
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-
+	FORCEINLINE UPlayerAbilitySystemComponent* GetCharacterAbilitySystemComponent() const {return AbilitySystemComponent;}
+	
 	UFUNCTION(BlueprintCallable)
 	void TryApplyAbilitySet(const UShooterAbilitySet* AbilitySet, bool bCancelEarlySet = false);
 
@@ -49,7 +50,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool IsSliding() const;
-	
+
+	virtual FVector GetStartGrapplingHookLocation() const;
+	virtual FVector GetGrapplingHookForwardVector() const;
+
 	FCollisionQueryParams GetIgnoreCharacterParams() const;
 	
 	
@@ -59,7 +63,7 @@ protected:
 	UFUNCTION(Client, Unreliable)
 	void TryApplyAbilitySet_Server(const UShooterAbilitySet* AbilitySet, bool bCancelEarlySet = false);
 
-	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Movement")
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Movement") 
 	UShooterMovementComponent* ShooterMovementComponent;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Components")

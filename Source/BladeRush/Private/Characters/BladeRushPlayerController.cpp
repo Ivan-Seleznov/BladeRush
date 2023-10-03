@@ -5,8 +5,10 @@
 
 #include "AbilitySystemComponent.h"
 #include "Characters/BaseCharacter.h"
+#include "Characters/Player/PlayerCharacter.h"
 #include "GameFramework/PlayerState.h"
 #include "GameMods/BladeRushGameMode.h"
+#include "GAS/PlayerAbilitySystemComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/PlayerHUD.h"
 
@@ -65,6 +67,19 @@ void ABladeRushPlayerController::AcknowledgePossession(APawn* P)
 	if (ABaseCharacter* BaseCharacter = Cast<ABaseCharacter>(P))
 	{
 		BaseCharacter->GetAbilitySystemComponent()->InitAbilityActorInfo(BaseCharacter,BaseCharacter);
+	}
+}
+
+void ABladeRushPlayerController::ProcessPlayerInput(const float DeltaTime, const bool bGamePaused)
+{
+	Super::ProcessPlayerInput(DeltaTime, bGamePaused);
+
+	if (const ABaseCharacter* BaseCharacter = Cast<ABaseCharacter>(GetCharacter()))
+	{
+		if(UPlayerAbilitySystemComponent* AbilitySystemComponent = BaseCharacter->GetCharacterAbilitySystemComponent())
+		{
+			AbilitySystemComponent->ProcessAbilityInput(DeltaTime,bGamePaused);
+		}
 	}
 }
 

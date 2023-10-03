@@ -22,22 +22,19 @@ class BLADERUSH_API APlayerCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 public:
-	// Sets default values for this character's properties
-
 	APlayerCharacter(const FObjectInitializer& ObjectInitializer);
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+
+	virtual FVector GetStartGrapplingHookLocation() const override;
+	virtual FVector GetGrapplingHookForwardVector() const override;
+	
+protected:
+	virtual void BeginPlay() override;
+	
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UShooterHeroComponent> HeroComponent;
-
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 	
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> CameraComponent;

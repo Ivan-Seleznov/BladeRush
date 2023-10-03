@@ -30,6 +30,12 @@ public:
 
 	FGameplayTag InputTag_Move;
 	FGameplayTag InputTag_Look;
+
+	FGameplayTag Cost_Ability_TryGrapple;
+	
+	FGameplayTag Data_Cooldown;
+	
+	FGameplayTag Data_Cooldown_TryGrapple;
 	
 	TMap<uint8, FGameplayTag> MovementModeTagMap;
 	TMap<uint8, FGameplayTag> CustomMovementModeTagMap;

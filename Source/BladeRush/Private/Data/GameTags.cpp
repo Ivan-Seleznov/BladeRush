@@ -42,6 +42,14 @@ void FGameTags::AddTags()
 	AddTag(InputTag_Abilities_TryGrappleHook,"InputTag.Abilities.TryGrappleHook","On activation ability TryGrappleHook.");
 
 	AddTag(Disable_Ability_Sprint,"Disable.Ability.Sprint","Disabled sprint ability");
+
+
+	/*cost gameplay tags*/
+	AddTag(Cost_Ability_TryGrapple,"Cost.Ability.TryGrapple","TryGrapple ability cost");
+
+	AddTag(Data_Cooldown,"Data.Cooldown","Ability cooldown");
+	
+	AddTag(Data_Cooldown_TryGrapple,"Data.Cooldown.TryGrapple","Data Cooldown TryGrapple");
 }
 
 void FGameTags::AddTag(FGameplayTag& OutTag, const ANSICHAR* TagName, const ANSICHAR* TagComment)

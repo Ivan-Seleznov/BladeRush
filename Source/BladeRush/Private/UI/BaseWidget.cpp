@@ -16,14 +16,6 @@ void UBaseWidget::NativeConstruct()
 	GetOwningPlayer()->OnPossessedPawnChanged.AddDynamic(this,&ThisClass::OnPawnChanged);
 }
 
-void UBaseWidget::NativeDestruct()
-{
-	Super::NativeDestruct();
-
-	checkf(GetOwningPlayer(),TEXT("No widget owning player"));
-	GetOwningPlayer()->OnPossessedPawnChanged.RemoveAll(this);
-}
-
 void UBaseWidget::OnPawnInitialize() {}
 
 void UBaseWidget::OnPawnChanged(APawn* OldPawn, APawn* NewPawn)

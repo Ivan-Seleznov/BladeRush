@@ -7,6 +7,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
+
 #if	1
 float HM_MACRO_DURATION = 3.f;
 #define SLOG(x,c)			GEngine->AddOnScreenDebugMessage(-1,HM_MACRO_DURATION,c,x);
@@ -45,6 +46,11 @@ bool UShooterMovementComponent::CanSprint() const
 	return IsMovementMode(MOVE_Walking) && (Velocity.GetSafeNormal2D() | UpdatedComponent->GetForwardVector().GetSafeNormal()) > 0.1f && Velocity.SizeSquared() > 4;
 }
 
+bool UShooterMovementComponent::CanGrapple() const
+{
+	return true; /*Add condition and movement modes in which player can not grapple. Example - !IsCustomMovementMode(CMOVE_WallRun)*/
+}
+
 #pragma region MoveVector
 void UShooterMovementComponent::Client_SetMoveVector_Implementation(const FVector2D& NewValue)
 {
@@ -81,6 +87,11 @@ bool UShooterMovementComponent::FSavedMove_Shooter::CanCombineWith(const FSavedM
 	{
 		return false;
 	}
+	if (Saved_bWantsToGrapple != NewShooterMove->Saved_bWantsToGrapple)
+	{
+		return false;
+	}
+	
 	return FSavedMove_Character::CanCombineWith(NewMove, InCharacter, MaxDelta);
 }
 
@@ -90,8 +101,9 @@ uint8 UShooterMovementComponent::FSavedMove_Shooter::GetCompressedFlags() const
 	uint8 Result = FSavedMove_Character::GetCompressedFlags();
 
 	if (Saved_bWantsToSprint) Result |= FLAG_Custom_0;
+	if (Saved_bWantsToGrapple) Result |= FLAG_Custom_1;
 	if (Saved_bPressedPlayerJump) Result |= FLAG_JumpPressed;
-	
+
 	return Result;
 }
 
@@ -111,7 +123,7 @@ void UShooterMovementComponent::FSavedMove_Shooter::SetMoveFor(ACharacter* C, fl
 	Saved_bTransitionFinished = ShooterMovementComponent->Safe_bTransitionFinished;
 
 	Saved_bWallRunIsRight = ShooterMovementComponent->Safe_bWallRunIsRight;
-
+	
 	Saved_bWantsToGrapple = ShooterMovementComponent->Safe_bWantsToGrapple;
 }
 
@@ -130,7 +142,7 @@ void UShooterMovementComponent::FSavedMove_Shooter::PrepMoveFor(ACharacter* C)
 	ShooterMovementComponent->Safe_bTransitionFinished = Saved_bTransitionFinished;
 
 	ShooterMovementComponent->Safe_bWallRunIsRight = Saved_bWallRunIsRight;
-
+	
 	ShooterMovementComponent->Safe_bWantsToGrapple = Saved_bWantsToGrapple;
 }
 
@@ -140,12 +152,12 @@ void UShooterMovementComponent::FSavedMove_Shooter::Clear()
 
 	Saved_bWantsToSprint = 0;
 	Saved_bPressedPlayerJump = 0;
-
-	Saved_bPressedPlayerJump = 0;
+	
 	Saved_bHadAnimRootMotion = 0;
 	Saved_bTransitionFinished = 0;
 	
 	Saved_bWallRunIsRight = 0;
+	Saved_bWantsToGrapple = 0;
 }
 
 void UShooterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
@@ -153,6 +165,7 @@ void UShooterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
 	Super::UpdateFromCompressedFlags(Flags);
 
 	Safe_bWantsToSprint = (Flags & FSavedMove_Shooter::FLAG_Custom_0) != 0;
+	Safe_bWantsToGrapple = (Flags & FSavedMove_Shooter::FLAG_Custom_1) != 0;
 }
 
 UShooterMovementComponent::FNetworkPredictionDataClient_Shooter::FNetworkPredictionDataClient_Shooter(const UCharacterMovementComponent& ClientMovement)
@@ -234,6 +247,17 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 	{
 		TryWallRun();
 	}
+
+	if (!IsGrappling() && Safe_bWantsToGrapple)
+	{
+		SetMovementMode(MOVE_Custom,CMOVE_Grappling);
+		Safe_bWantsToGrapple = false;
+	}
+
+	//if (IsGrappling() && !Safe_bWantsToGrapple)
+	//{
+	//	SetMovementMode(MOVE_Falling);
+	//}
 	
 	if (CanSlide() && IsMovementMode(MOVE_Walking) && bWantsToCrouch && Safe_bWantsToSlide)
 	{
@@ -249,12 +273,6 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 	if (Safe_bWantsToSprint && !CanSprint())
 	{
 		Safe_bWantsToSprint = false;
-	}
-
-	//GrapplingHook
-	if (Safe_bWantsToGrapple)
-	{
-		TryGrapple();
 	}
 	
 	//Mantle
@@ -343,6 +361,8 @@ float UShooterMovementComponent::GetMaxSpeed() const
 		return MaxSlideSpeed;
 	case CMOVE_WallRun:
 		return MaxWallRunSpeed;
+	case CMOVE_Grappling:
+		return MaxGrapplingSpeed;
 	default:
 		UE_LOG(LogTemp,Fatal,TEXT("Invalid Movement Mode (getmaxspeed)"));
 		return -1.f;
@@ -359,6 +379,8 @@ float UShooterMovementComponent::GetMaxBrakingDeceleration() const
 		return BrakingDecelerationSliding;
 	case CMOVE_WallRun:
 		return 0.f;
+	case CMOVE_Grappling:
+	    return 0.f;
 	default:
 		UE_LOG(LogTemp, Fatal, TEXT("Invalid Movement Mode"))
 		return -1.f;
@@ -367,13 +389,15 @@ float UShooterMovementComponent::GetMaxBrakingDeceleration() const
 
 bool UShooterMovementComponent::CanAttemptJump() const
 {
-	return Super::CanAttemptJump() || IsWallRunning() || IsCrouching();
+	return Super::CanAttemptJump() || IsWallRunning() || IsCrouching() || IsGrappling();
 }
 
 bool UShooterMovementComponent::DoJump(bool bReplayingMoves)
 {
 	//Need for pushing character when wall running and jump
 	const bool bWasWallRunning = IsWallRunning(); //save this value because after super call player will be in falling
+	const bool bWasGrappling = IsGrappling();
+	
 	if (Super::DoJump(bReplayingMoves))
 	{
 		if (bWasWallRunning)
@@ -382,6 +406,10 @@ bool UShooterMovementComponent::DoJump(bool bReplayingMoves)
 			IsWallOnSideTrace(WallHit,Safe_bWallRunIsRight);
 			
 			Velocity += WallHit.Normal * WallJumpOfForce;
+		}
+		if (bWasGrappling)
+		{
+			Velocity += (UpdatedComponent->GetForwardVector().GetSafeNormal() * GrapplingHorizontalJumpBoost) + (FVector::UpVector * GrapplingVerticalJumpBoost);
 		}
 		return true;
 	}
@@ -619,7 +647,7 @@ void UShooterMovementComponent::PhysSlide(float deltaTime, int32 Iterations)
 		Acceleration = Acceleration.ProjectOnTo(UpdatedComponent->GetRightVector().GetSafeNormal2D());
 
 		// Apply acceleration
-		CalcVelocity(timeTick, GroundFriction * SlideFrictionFactor, false, GetMaxBrakingDeceleration());
+		CalcVelocity(timeTick,GroundFriction * SlideFrictionFactor, false, GetMaxBrakingDeceleration());
 		
 		// Compute move parameters
 		const FVector MoveVelocity = Velocity;
@@ -969,20 +997,127 @@ void UShooterMovementComponent::PhysWallRun(float DeltaTime, int32 Iterations)
 #pragma region GrappingHook
 bool UShooterMovementComponent::TryGrapple()
 {
-	FHitResult AttachPointHit;
-
-	FVector Start = UpdatedComponent->GetComponentLocation();
-	FVector End = UpdatedComponent->GetComponentLocation() + UpdatedComponent->GetForwardVector().GetSafeNormal() * GrapplingTraceLength;
-	bool bHit = GetWorld()->LineTraceSingleByProfile(AttachPointHit,Start,End,"BlockAll",ShooterCharacterOwner->GetIgnoreCharacterParams());
-	if (!bHit)
+	FVector Start = ShooterCharacterOwner->GetStartGrapplingHookLocation();
+	FVector End = Start + ShooterCharacterOwner->GetGrapplingHookForwardVector() *  GrapplingTraceLength;
+	FHitResult PointHit;
+	
+	if (!CharacterOwner->HasAuthority() || CharacterOwner->IsLocallyControlled())
 	{
-		DEBUG_LINE(Start,End,FColor::Red);
-		return false;
+		const bool bHit = GetWorld()->LineTraceSingleByProfile(PointHit,Start,End,"BlockAll",ShooterCharacterOwner->GetIgnoreCharacterParams());
+		if (!bHit)
+		{
+			DEBUG_LINE(Start,End,FColor::Red);
+			return false;
+		}
+		DEBUG_LINE(Start,End,FColor::Green);
+
+		AttachPointHit = PointHit;
+		Safe_bWantsToGrapple = true;
 	}
-	DEBUG_LINE(Start,End,FColor::Green);
+	if (!CharacterOwner->HasAuthority())
+	{
+		if (!PointHit.IsValidBlockingHit())
+		{
+			return false;
+		}
+		
+		AttachPointHit = PointHit;
+		StartGrapple_Server(PointHit);
+		Safe_bWantsToGrapple = true;
+	}
+	
 	return true;
 }
+void UShooterMovementComponent::StartGrapple_Server_Implementation(const FHitResult& Point)
+{
+	if (CharacterOwner->HasAuthority())
+	{
+		GEngine->AddOnScreenDebugMessage(-1,5,FColor::Red,"SERVER RPC");
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1,5,FColor::Green,"CLIENT RPC");
+
+	}
+	UE_LOG(LogTemp,Display,TEXT("BEFORE:  Point: %s | AttachPoint: %s"),*AttachPointHit.Location.ToString(),*Point.Location.ToString())
+
+	AttachPointHit = Point;
+	UE_LOG(LogTemp,Display,TEXT("Point: %s | AttachPoint: %s"),*AttachPointHit.Location.ToString(),*Point.Location.ToString())
+}
+
 void UShooterMovementComponent::PhysGrappling(float DeltaTime, int32 Iterations)
 {
+	if (DeltaTime < MIN_TICK_TIME)
+	{
+		return;
+	}
+
+	if (!CharacterOwner || (!CharacterOwner->Controller && !bRunPhysicsWithNoController && !HasAnimRootMotion() && !CurrentRootMotion.HasOverrideVelocity() && (CharacterOwner->GetLocalRole() != ROLE_SimulatedProxy)))
+	{
+		Acceleration = FVector::ZeroVector;
+		Velocity = FVector::ZeroVector;
+		return;
+	}
+
+	
+	if (CharacterOwner->HasAuthority())
+	{
+		GEngine->AddOnScreenDebugMessage(-1,-1,FColor::Green,FString::Printf(TEXT("SERVER AttachPointHit: %s"),*AttachPointHit.Location.ToString()));
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1,-1,FColor::Orange,FString::Printf(TEXT("CLIENT AttachPointHit: %s"),*AttachPointHit.Location.ToString()));
+	}
+
+	
+	bJustTeleported = false;
+	float remainingTime = DeltaTime;
+	
+	while ( (remainingTime >= MIN_TICK_TIME) && (Iterations < MaxSimulationIterations) && CharacterOwner && (CharacterOwner->Controller || bRunPhysicsWithNoController || (CharacterOwner->GetLocalRole() == ROLE_SimulatedProxy)) )
+	{
+		Iterations++;
+		bJustTeleported = false;
+		const float timeTick = GetSimulationTimeStep(remainingTime, Iterations);
+		remainingTime -= timeTick;
+		const FVector OldLocation = UpdatedComponent->GetComponentLocation();
+
+		const FVector CharacterToAttachPointVec = AttachPointHit.ImpactPoint - UpdatedComponent->GetComponentLocation();
+		if ((CharacterToAttachPointVec.GetSafeNormal() | AttachPointHit.Normal) > 0 || CharacterToAttachPointVec.Length() <= GrapplingReleasedDistance)
+		{
+			SetMovementMode(MOVE_Falling);
+			StartNewPhysics(DeltaTime, Iterations);
+			return;
+		}
+
+		Velocity = CharacterToAttachPointVec.GetSafeNormal() * GetMaxSpeed();
+		
+		const FVector Delta = timeTick * Velocity;
+		FHitResult Hit(1.f);
+		SafeMoveUpdatedComponent(Delta,UpdatedComponent->GetComponentQuat(),true,Hit); //line that does all the movement. Keep same capsule rotation. sweep instead teleporting
+
+		if (Hit.Time < 1.f)
+		{
+			HandleImpact(Hit,DeltaTime,Delta);
+			SlideAlongSurface(Delta,1.f-Hit.Time,Hit.Normal,Hit,true);
+		}
+
+		
+		if (UpdatedComponent->GetComponentLocation() == OldLocation)
+		{
+			remainingTime = 0.f;
+			break;
+		}
+		Velocity = (UpdatedComponent->GetComponentLocation() - OldLocation) / timeTick; // v = dx / dt . Need for losing velocity while player hits wall
+	}
+
+	const FVector CharacterToAttachPointVec = AttachPointHit.ImpactPoint - UpdatedComponent->GetComponentLocation();
+	if ((CharacterToAttachPointVec.GetSafeNormal() | AttachPointHit.Normal) > 0)
+	{
+		UE_LOG(LogTemp,Display,TEXT("Length: %f: "),CharacterToAttachPointVec.Length());
+		SetMovementMode(MOVE_Falling);
+		StartNewPhysics(DeltaTime, Iterations);
+		return;
+	}
+	
 }
 #pragma endregion

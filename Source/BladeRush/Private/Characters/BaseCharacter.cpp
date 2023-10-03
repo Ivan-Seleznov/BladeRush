@@ -13,6 +13,7 @@ ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UShooterMovementComponent>(CharacterMovementComponentName))
 {
 	ShooterMovementComponent = Cast<UShooterMovementComponent>(GetCharacterMovement());
+	ShooterMovementComponent->SetIsReplicated(true);
 	
 	AbilitySystemComponent = CreateDefaultSubobject<UPlayerAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AbilitySystemComponent->SetIsReplicated(true);
@@ -124,6 +125,16 @@ bool ABaseCharacter::IsSliding() const
 	}
 	
 	return false;
+}
+
+FVector ABaseCharacter::GetStartGrapplingHookLocation() const
+{
+	return GetActorLocation();
+}
+
+FVector ABaseCharacter::GetGrapplingHookForwardVector() const
+{
+	return GetActorForwardVector().GetSafeNormal();
 }
 
 FCollisionQueryParams ABaseCharacter::GetIgnoreCharacterParams() const

@@ -61,13 +61,13 @@ class BLADERUSH_API UShooterMovementComponent : public UCharacterMovementCompone
 		/*SavedMove Flags*/
 		uint8 Saved_bWantsToSprint:1;
 		uint8 Saved_bPressedPlayerJump:1;
+		uint8 Saved_bWantsToGrapple:1;
 
 		/*SavedMove variable*/
 		uint8 Saved_bWantsToSlide:1;
 		uint8 Saved_bHadAnimRootMotion:1;
 		uint8 Saved_bTransitionFinished:1;
 		uint8 Saved_bWallRunIsRight:1;
-		uint8 Saved_bWantsToGrapple:1;
 		
 		/*Check can we combine two moves*/
 		virtual bool CanCombineWith(const FSavedMovePtr& NewMove, ACharacter* InCharacter, float MaxDelta) const override;
@@ -98,14 +98,14 @@ public:
 	
 	/*Client flag*/
 	bool Safe_bWantsToSprint;
-
+	bool Safe_bWantsToGrapple;
+	
 	/*Other variables*/
 	bool Safe_bWantsToSlide;
-	bool Safe_bWantsToGrapple;
-
-
+	
+	UFUNCTION(BlueprintCallable)
 	bool TryGrapple();
-
+	
 	UFUNCTION(BlueprintPure)
 	bool IsMovementMode(EMovementMode InMovementMode) const;
 
@@ -119,10 +119,14 @@ public:
 	virtual bool DoJump(bool bReplayingMoves) override;
 	
 	bool CanSprint() const;
-
+	bool CanGrapple() const;
+	
 	UFUNCTION(BlueprintPure)
 	bool IsWallRunning() const {return IsCustomMovementMode(CMOVE_WallRun);} 
 
+	UFUNCTION(BlueprintPure)
+	bool IsGrappling() const {return IsCustomMovementMode(CMOVE_Grappling);} 
+	
 	UFUNCTION(BlueprintPure)
 	bool IsWallRunningRight() const {return Safe_bWallRunIsRight;}
 	
@@ -184,8 +188,16 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly,Category="WallRun") UCurveFloat* WallRunGravityScaleCurve;
 
+	
 	/*Grappling hook*/
-	UPROPERTY(EditDefaultsOnly,Category="Grappling") float GrapplingTraceLength = 300.f;
+	UPROPERTY(EditDefaultsOnly,Category="Grappling") float GrapplingTraceLength = 2000.f;
+	UPROPERTY(EditDefaultsOnly,Category="Grappling") float MaxGrapplingSpeed = 1090.f;
+	UPROPERTY(EditDefaultsOnly,Category="Grappling") float GrapplingBrakingDeceleration = 2000.f;
+	UPROPERTY(EditDefaultsOnly,Category="Grappling") float GrapplingGravityScale = 0.1f;
+	UPROPERTY(EditDefaultsOnly,Category="Grappling") float GrapplingReleasedDistance = 150.f;
+	
+	UPROPERTY(EditDefaultsOnly,Category="Grappling") float GrapplingVerticalJumpBoost = 295.f;
+	UPROPERTY(EditDefaultsOnly,Category="Grappling") float GrapplingHorizontalJumpBoost = 1.f;
 	
 	UPROPERTY(Transient) ABaseCharacter* ShooterCharacterOwner;
 
@@ -213,14 +225,19 @@ private:
 	bool GetSlideSurface(FHitResult& Hit) const;
 
 	bool IsWallOnSideTrace(FHitResult& WallHit, bool bWallRight) const;
-	
+
+	/*Call on client*/
 	bool TryMantle();
+	
 	FVector GetMantleStartLocation(const FHitResult& FrontHit, const FHitResult& SurfaceHit, EMantleType MantleType) const;
 	float GetCapsuleRadius() const;
 	float GetCapsuleHalfHeight() const;
 
 	bool TryWallRun();
 	void PhysWallRun(float DeltaTime, int32 Iterations);
+	
+	UFUNCTION(Server,Reliable)
+	void StartGrapple_Server(const FHitResult& Point);
 	
 	bool Safe_bTransitionFinished;
 	
@@ -235,5 +252,6 @@ private:
 
 	void PhysGrappling(float DeltaTime,int32 Iterations);
 	
-	UPROPERTY(Transient) FVector AttachPoint;
+	FHitResult AttachPointHit;
+	
 };

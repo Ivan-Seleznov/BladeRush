@@ -18,7 +18,6 @@ class BLADERUSH_API UBaseWidget : public UUserWidget
 
 public:
 	virtual void NativeConstruct() override;
-	virtual void NativeDestruct() override;
 protected:
 	virtual void OnPawnInitialize();
 	
