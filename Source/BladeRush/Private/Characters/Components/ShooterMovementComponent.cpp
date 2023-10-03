@@ -51,6 +51,11 @@ bool UShooterMovementComponent::CanGrapple() const
 	return true; /*Add condition and movement modes in which player can not grapple. Example - !IsCustomMovementMode(CMOVE_WallRun)*/
 }
 
+void UShooterMovementComponent::StopGrappling()
+{
+	Safe_bWantsToGrapple = false;
+}
+
 #pragma region MoveVector
 void UShooterMovementComponent::Client_SetMoveVector_Implementation(const FVector2D& NewValue)
 {
@@ -197,20 +202,10 @@ void UShooterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMove
 {
 	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);
 
+	if (PreviousMovementMode == MOVE_Custom && PreviousCustomMode == CMOVE_Grappling) ExitGrapple();
 	
-	if (PreviousMovementMode == MOVE_Custom && PreviousCustomMode == CMOVE_Slide)
-	{
-		ExitSlide();
-		if (IsMovementMode(MOVE_Walking))
-		{
-			UE_LOG(LogTemp,Display,TEXT("Current movement mode: WALKING"))
-		}
-	}
-	
-	if (IsCustomMovementMode(CMOVE_Slide))
-	{
-		EnterSlide();
-	}
+	if (PreviousMovementMode == MOVE_Custom && PreviousCustomMode == CMOVE_Slide) ExitSlide();
+	if (IsCustomMovementMode(CMOVE_Slide)) EnterSlide();
 	
 	if (IsCustomMovementMode(CMOVE_WallRun) && GetOwnerRole() == ROLE_SimulatedProxy)
 	{
@@ -251,13 +246,12 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 	if (!IsGrappling() && Safe_bWantsToGrapple)
 	{
 		SetMovementMode(MOVE_Custom,CMOVE_Grappling);
-		Safe_bWantsToGrapple = false;
 	}
 
-	//if (IsGrappling() && !Safe_bWantsToGrapple)
-	//{
-	//	SetMovementMode(MOVE_Falling);
-	//}
+	if (IsGrappling() && !Safe_bWantsToGrapple)
+	{
+		SetMovementMode(MOVE_Falling);
+	}
 	
 	if (CanSlide() && IsMovementMode(MOVE_Walking) && bWantsToCrouch && Safe_bWantsToSlide)
 	{
@@ -992,6 +986,11 @@ void UShooterMovementComponent::PhysWallRun(float DeltaTime, int32 Iterations)
 	}
 }
 
+void UShooterMovementComponent::ExitGrapple()
+{
+	Safe_bWantsToGrapple = false;
+}
+
 #pragma endregion
 
 #pragma region GrappingHook
@@ -1058,17 +1057,6 @@ void UShooterMovementComponent::PhysGrappling(float DeltaTime, int32 Iterations)
 		Velocity = FVector::ZeroVector;
 		return;
 	}
-
-	
-	if (CharacterOwner->HasAuthority())
-	{
-		GEngine->AddOnScreenDebugMessage(-1,-1,FColor::Green,FString::Printf(TEXT("SERVER AttachPointHit: %s"),*AttachPointHit.Location.ToString()));
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1,-1,FColor::Orange,FString::Printf(TEXT("CLIENT AttachPointHit: %s"),*AttachPointHit.Location.ToString()));
-	}
-
 	
 	bJustTeleported = false;
 	float remainingTime = DeltaTime;
@@ -1082,7 +1070,7 @@ void UShooterMovementComponent::PhysGrappling(float DeltaTime, int32 Iterations)
 		const FVector OldLocation = UpdatedComponent->GetComponentLocation();
 
 		const FVector CharacterToAttachPointVec = AttachPointHit.ImpactPoint - UpdatedComponent->GetComponentLocation();
-		if ((CharacterToAttachPointVec.GetSafeNormal() | AttachPointHit.Normal) > 0 || CharacterToAttachPointVec.Length() <= GrapplingReleasedDistance)
+		if ((CharacterToAttachPointVec.GetSafeNormal() | AttachPointHit.Normal) > 0 || CharacterToAttachPointVec.Length() <= GrapplingReleasedDistance /*|| !Safe_bWantsToGrapple*/)
 		{
 			SetMovementMode(MOVE_Falling);
 			StartNewPhysics(DeltaTime, Iterations);

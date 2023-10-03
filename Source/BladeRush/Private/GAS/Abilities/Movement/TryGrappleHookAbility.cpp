@@ -6,16 +6,22 @@
 #include "Characters/BaseCharacter.h"
 #include "Characters/Components/ShooterMovementComponent.h"
 
-void UTryGrappleHookAbility::InputReleased(const FGameplayAbilitySpecHandle Handle,
-                                           const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
-{
-	Super::InputReleased(Handle, ActorInfo, ActivationInfo);
-}
 
-bool UTryGrappleHookAbility::CanActivateMovementAbility(ABaseCharacter* Character,
-	UShooterMovementComponent* ShooterMovementComponent) const
+void UTryGrappleHookAbility::InputPressed(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
 {
-	return true;
+	Super::InputPressed(Handle, ActorInfo, ActivationInfo);
+	
+	ABaseCharacter* Character = GetCharacterFromActorInfo();
+	if (!Character) return;
+	
+	UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
+	if (!MovementComponent) return;
+	
+	if (MovementComponent->IsGrappling())
+	{
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+	}
 }
 
 void UTryGrappleHookAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
@@ -37,7 +43,6 @@ void UTryGrappleHookAbility::ActivateAbility(const FGameplayAbilitySpecHandle Ha
 	}
 	
 	Character->MovementModeChangedDelegate.AddDynamic(this,&ThisClass::OnMovementModeChanged);
-	//CommitAbility(Handle,ActorInfo,ActivationInfo);
 }
 
 void UTryGrappleHookAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
@@ -48,6 +53,11 @@ void UTryGrappleHookAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	
 	ABaseCharacter* Character = GetCharacterFromActorInfo();
 	if (!Character) return;
+
+	UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
+	if (!MovementComponent) return;
+
+	MovementComponent->StopGrappling();
 	
 	Character->MovementModeChangedDelegate.RemoveAll(this);
 }

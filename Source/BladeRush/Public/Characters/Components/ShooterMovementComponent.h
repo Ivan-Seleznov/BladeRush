@@ -120,6 +120,8 @@ public:
 	
 	bool CanSprint() const;
 	bool CanGrapple() const;
+
+	void StopGrappling();
 	
 	UFUNCTION(BlueprintPure)
 	bool IsWallRunning() const {return IsCustomMovementMode(CMOVE_WallRun);} 
@@ -238,6 +240,8 @@ private:
 	
 	UFUNCTION(Server,Reliable)
 	void StartGrapple_Server(const FHitResult& Point);
+
+	void ExitGrapple();
 	
 	bool Safe_bTransitionFinished;
 	
