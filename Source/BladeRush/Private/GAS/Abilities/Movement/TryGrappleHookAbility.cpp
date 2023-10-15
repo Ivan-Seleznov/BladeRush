@@ -5,10 +5,11 @@
 
 #include "Characters/BaseCharacter.h"
 #include "Characters/Components/ShooterMovementComponent.h"
+#include "GAS/Abilities/Movement/JumpPlayerAbility.h"
 
 
 void UTryGrappleHookAbility::InputPressed(const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
+                                          const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
 {
 	Super::InputPressed(Handle, ActorInfo, ActivationInfo);
 	
@@ -36,10 +37,13 @@ void UTryGrappleHookAbility::ActivateAbility(const FGameplayAbilitySpecHandle Ha
 	UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
 	if (!MovementComponent) return;
 
-	if (!MovementComponent->TryGrapple())
+	if (!Character->HasAuthority())
 	{
-		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
-		return;
+		if (!MovementComponent->TryGrapple())
+		{
+			EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+			return;
+		}
 	}
 	
 	Character->MovementModeChangedDelegate.AddDynamic(this,&ThisClass::OnMovementModeChanged);

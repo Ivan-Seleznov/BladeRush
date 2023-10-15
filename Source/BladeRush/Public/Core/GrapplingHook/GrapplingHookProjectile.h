@@ -18,7 +18,7 @@ public:
 	AGrapplingHookProjectile();
 	
 	void FireInDirection(const FVector& ShootDirection);
-
+	USphereComponent* GetProjectileCollisionComponent() const {return SphereCollisionComponent;}
 protected:
 	UPROPERTY(EditDefaultsOnly,Category="Components")
 	USphereComponent* SphereCollisionComponent;

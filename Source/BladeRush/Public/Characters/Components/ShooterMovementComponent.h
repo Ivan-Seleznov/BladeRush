@@ -9,6 +9,7 @@
 #define ERROR_VALUE -1.f;
 
 class ABaseCharacter;
+class AGrapplingHookProjectile;
 
 UENUM(BlueprintType)
 enum ECustomMovementMode
@@ -48,6 +49,19 @@ struct FMantleAnimData
 	UPROPERTY(EditDefaultsOnly)
 	UAnimMontage* ProxyMontage;
 };
+
+USTRUCT()
+struct FGrapplingHookAttachData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly)
+	FVector AttachPoint;
+
+	UPROPERTY(EditDefaultsOnly)
+	FVector SurfaceNormal;
+};
+
 /**
  * Custom shooter movement component
  */
@@ -239,9 +253,12 @@ private:
 	void PhysWallRun(float DeltaTime, int32 Iterations);
 	
 	UFUNCTION(Server,Reliable)
-	void StartGrapple_Server(const FHitResult& Point);
+	void StartGrapple_Server(const FGrapplingHookAttachData& AttachData);
 
 	void ExitGrapple();
+
+	UFUNCTION()
+	void OnGrappleProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 	
 	bool Safe_bTransitionFinished;
 	
@@ -256,6 +273,9 @@ private:
 
 	void PhysGrappling(float DeltaTime,int32 Iterations);
 	
-	FHitResult AttachPointHit;
-	
+	//FHitResult AttachPointHit;
+	FGrapplingHookAttachData GrapplingHookAttachData;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Grappling")
+	TSubclassOf<AGrapplingHookProjectile> ProjectileClass;
 };

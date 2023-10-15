@@ -5,6 +5,8 @@
 
 #include "Characters/BaseCharacter.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
+#include "Core/GrapplingHook/GrapplingHookProjectile.h"
 #include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
 
@@ -999,8 +1001,33 @@ bool UShooterMovementComponent::TryGrapple()
 	FVector Start = ShooterCharacterOwner->GetStartGrapplingHookLocation();
 	FVector End = Start + ShooterCharacterOwner->GetGrapplingHookForwardVector() *  GrapplingTraceLength;
 	FHitResult PointHit;
-	
-	if (!CharacterOwner->HasAuthority() || CharacterOwner->IsLocallyControlled())
+
+	/*const bool bHit = GetWorld()->LineTraceSingleByProfile(PointHit,Start,End,"BlockAll",ShooterCharacterOwner->GetIgnoreCharacterParams());
+	if (!bHit || !PointHit.IsValidBlockingHit())
+	{
+		DEBUG_LINE(Start,End,FColor::Red);
+		return false;
+	}*/
+
+	//GrapplingHookAttachData.AttachPoint  = PointHit.ImpactPoint;
+	//GrapplingHookAttachData.SurfaceNormal = PointHit.Normal;
+	//Safe_bWantsToGrapple = true;
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = ShooterCharacterOwner;
+	SpawnParams.Instigator = ShooterCharacterOwner;
+	AGrapplingHookProjectile* Projectile = GetWorld()->SpawnActor<AGrapplingHookProjectile>(ProjectileClass,Start,FRotator::ZeroRotator,SpawnParams);
+	if (Projectile)
+	{
+		Projectile->FireInDirection(ShooterCharacterOwner->GetGrapplingHookForwardVector() *  GrapplingTraceLength);
+		Projectile->GetProjectileCollisionComponent()->OnComponentHit.AddDynamic(this,&ThisClass::OnGrappleProjectileHit);
+
+		return true;
+	}
+
+	return false;
+
+	/*if (!CharacterOwner->HasAuthority() || CharacterOwner->IsLocallyControlled())
 	{
 		const bool bHit = GetWorld()->LineTraceSingleByProfile(PointHit,Start,End,"BlockAll",ShooterCharacterOwner->GetIgnoreCharacterParams());
 		if (!bHit)
@@ -1008,9 +1035,11 @@ bool UShooterMovementComponent::TryGrapple()
 			DEBUG_LINE(Start,End,FColor::Red);
 			return false;
 		}
+		
 		DEBUG_LINE(Start,End,FColor::Green);
 
-		AttachPointHit = PointHit;
+		GrapplingHookAttachData.AttachPoint  = PointHit.ImpactPoint;
+		GrapplingHookAttachData.SurfaceNormal = PointHit.Normal;
 		Safe_bWantsToGrapple = true;
 	}
 	if (!CharacterOwner->HasAuthority())
@@ -1020,28 +1049,32 @@ bool UShooterMovementComponent::TryGrapple()
 			return false;
 		}
 		
-		AttachPointHit = PointHit;
-		StartGrapple_Server(PointHit);
+		GrapplingHookAttachData.AttachPoint  = PointHit.ImpactPoint;
+		GrapplingHookAttachData.SurfaceNormal = PointHit.Normal;
+		
+		StartGrapple_Server(GrapplingHookAttachData);
 		Safe_bWantsToGrapple = true;
-	}
+	}*/
 	
 	return true;
 }
-void UShooterMovementComponent::StartGrapple_Server_Implementation(const FHitResult& Point)
+
+void UShooterMovementComponent::OnGrappleProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if (CharacterOwner->HasAuthority())
+	if (!ShooterCharacterOwner->HasAuthority())
 	{
-		GEngine->AddOnScreenDebugMessage(-1,5,FColor::Red,"SERVER RPC");
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1,5,FColor::Green,"CLIENT RPC");
+		Safe_bWantsToGrapple = true;
+		GrapplingHookAttachData.AttachPoint = Hit.ImpactPoint;
+		GrapplingHookAttachData.SurfaceNormal = Hit.Normal;
 
+		StartGrapple_Server(GrapplingHookAttachData);
 	}
-	UE_LOG(LogTemp,Display,TEXT("BEFORE:  Point: %s | AttachPoint: %s"),*AttachPointHit.Location.ToString(),*Point.Location.ToString())
+}
 
-	AttachPointHit = Point;
-	UE_LOG(LogTemp,Display,TEXT("Point: %s | AttachPoint: %s"),*AttachPointHit.Location.ToString(),*Point.Location.ToString())
+void UShooterMovementComponent::StartGrapple_Server_Implementation(const FGrapplingHookAttachData& AttachData)
+{
+	GrapplingHookAttachData = AttachData;
 }
 
 void UShooterMovementComponent::PhysGrappling(float DeltaTime, int32 Iterations)
@@ -1069,8 +1102,9 @@ void UShooterMovementComponent::PhysGrappling(float DeltaTime, int32 Iterations)
 		remainingTime -= timeTick;
 		const FVector OldLocation = UpdatedComponent->GetComponentLocation();
 
-		const FVector CharacterToAttachPointVec = AttachPointHit.ImpactPoint - UpdatedComponent->GetComponentLocation();
-		if ((CharacterToAttachPointVec.GetSafeNormal() | AttachPointHit.Normal) > 0 || CharacterToAttachPointVec.Length() <= GrapplingReleasedDistance /*|| !Safe_bWantsToGrapple*/)
+		UE_LOG(LogTemp,Display,TEXT("GrapplingHookAttachData.AttachPoint: %s"),*GrapplingHookAttachData.AttachPoint.ToString());
+		const FVector CharacterToAttachPointVec = GrapplingHookAttachData.AttachPoint - UpdatedComponent->GetComponentLocation();
+		if ((CharacterToAttachPointVec.GetSafeNormal() | GrapplingHookAttachData.SurfaceNormal) > 0 || CharacterToAttachPointVec.Length() <= GrapplingReleasedDistance /*|| !Safe_bWantsToGrapple*/)
 		{
 			SetMovementMode(MOVE_Falling);
 			StartNewPhysics(DeltaTime, Iterations);
@@ -1098,8 +1132,8 @@ void UShooterMovementComponent::PhysGrappling(float DeltaTime, int32 Iterations)
 		Velocity = (UpdatedComponent->GetComponentLocation() - OldLocation) / timeTick; // v = dx / dt . Need for losing velocity while player hits wall
 	}
 
-	const FVector CharacterToAttachPointVec = AttachPointHit.ImpactPoint - UpdatedComponent->GetComponentLocation();
-	if ((CharacterToAttachPointVec.GetSafeNormal() | AttachPointHit.Normal) > 0)
+	const FVector CharacterToAttachPointVec = GrapplingHookAttachData.AttachPoint - UpdatedComponent->GetComponentLocation();
+	if ((CharacterToAttachPointVec.GetSafeNormal() | GrapplingHookAttachData.SurfaceNormal) > 0)
 	{
 		UE_LOG(LogTemp,Display,TEXT("Length: %f: "),CharacterToAttachPointVec.Length());
 		SetMovementMode(MOVE_Falling);

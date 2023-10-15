@@ -24,5 +24,5 @@ AGrapplingHookProjectile::AGrapplingHookProjectile()
 
 void AGrapplingHookProjectile::FireInDirection(const FVector& ShootDirection)
 {
-	ProjectileMovementComponent->Velocity = ShootDirection * ProjectileMovementComponent->InitialSpeed;
+	ProjectileMovementComponent->Velocity = ShootDirection;
 }
