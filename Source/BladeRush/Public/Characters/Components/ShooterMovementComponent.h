@@ -251,14 +251,20 @@ private:
 
 	bool TryWallRun();
 	void PhysWallRun(float DeltaTime, int32 Iterations);
+
+	UFUNCTION()
+	void OnGrappleProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 	
 	UFUNCTION(Server,Reliable)
 	void StartGrapple_Server(const FGrapplingHookAttachData& AttachData);
 
+	UFUNCTION(NetMulticast,Unreliable)
+	void Multicast_GrappleProjectile(const FVector& ProjectileSpawnLocation,const FVector& ProjectileVelocity);
+	
+	UFUNCTION(Server,Unreliable)
+	void Server_GrappleProjectile(const FVector& ProjectileSpawnLocation,const FVector& ProjectileVelocity);
+	
 	void ExitGrapple();
-
-	UFUNCTION()
-	void OnGrappleProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 	
 	bool Safe_bTransitionFinished;
 	
@@ -276,6 +282,12 @@ private:
 	//FHitResult AttachPointHit;
 	FGrapplingHookAttachData GrapplingHookAttachData;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Grappling")
+	UPROPERTY(EditDefaultsOnly, Category = "Grappling|Projectile")
 	TSubclassOf<AGrapplingHookProjectile> ProjectileClass;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Grappling|Projectile")
+	AGrapplingHookProjectile* GrapplingHookProjectile;
+
+	//UPROPERTY(EditDefaultsOnly, Category = "Grappling|Cable")
+	//TSubclassOf<ACableActor> GrapplingCableClass;
 };
