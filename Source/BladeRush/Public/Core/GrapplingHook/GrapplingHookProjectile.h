@@ -9,6 +9,7 @@
 class UCableComponent;
 class USphereComponent;
 class UProjectileMovementComponent;
+class UMovementAttributeSet;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FProjectileDestroyed,AActor*/*Owner*/);
 
@@ -24,8 +25,8 @@ public:
 	
 	USphereComponent* GetProjectileCollisionComponent() const {return SphereCollisionComponent;}
 
-	FORCEINLINE float GetMaxDistance() const {return MaxDistance;}
-	FORCEINLINE void SetMaxDistance(float NewRange) {MaxDistance = NewRange;}
+	//FORCEINLINE float GetMaxDistance() const {return MaxDistance;}
+	//FORCEINLINE void SetMaxDistance(float NewRange) {MaxDistance = NewRange;}
 	
 	FProjectileDestroyed OnProjectileDestroyed;
 protected:
@@ -38,8 +39,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly,Category="Components")
 	UStaticMeshComponent* StaticMeshComponent;
 
-	UPROPERTY(EditDefaultsOnly)
-	float MaxDistance = 1500.0f;
+	//UPROPERTY(EditDefaultsOnly)
+	//float MaxDistance = 1500.0f;
 
 	virtual void BeginPlay() override;
 	virtual void Destroyed() override;
@@ -48,4 +49,6 @@ protected:
 
 private:
 	FVector ProjectileStartLocation;
+
+	UPROPERTY() const UMovementAttributeSet* MovementAttributeSet;
 };

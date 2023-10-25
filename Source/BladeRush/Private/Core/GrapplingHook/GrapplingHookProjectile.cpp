@@ -7,6 +7,7 @@
 #include "Characters/Components/ShooterMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "GAS/Attributes/MovementAttributeSet.h"
 
 
 AGrapplingHookProjectile::AGrapplingHookProjectile()
@@ -35,7 +36,7 @@ void AGrapplingHookProjectile::Tick(float DeltaSeconds)
 	if (HasAuthority())
 	{
 		const ABaseCharacter* Character = Cast<ABaseCharacter>(GetOwner());
-		if (Character && FVector::Distance(Character->GetActorLocation(),GetActorLocation()) >= MaxDistance)
+		if (Character && FVector::Distance(Character->GetActorLocation(),GetActorLocation()) >= MovementAttributeSet->GetGrapplingProjectileMaxDistance())
 		{
 			//GEngine->AddOnScreenDebugMessage(-1,5,FColor::Green,FString::Printf(TEXT("SERVER Projectile max distance reached: %f"),FVector::Distance(ProjectileStartLocation,GetActorLocation())));
 			Destroy();
@@ -48,6 +49,12 @@ void AGrapplingHookProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	ProjectileStartLocation = GetActorLocation();
+	const ABaseCharacter* Character = Cast<ABaseCharacter>(GetOwner());
+	if (Character)
+	{
+		MovementAttributeSet = UMovementAttributeSet::Find(Character->GetAbilitySystemComponent());
+	}
+
 }
 
 void AGrapplingHookProjectile::Destroyed()

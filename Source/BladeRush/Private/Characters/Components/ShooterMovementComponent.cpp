@@ -8,6 +8,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Core/GrapplingHook/GrapplingHookProjectile.h"
 #include "GameFramework/Character.h"
+#include "GAS/Attributes/MovementAttributeSet.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 
@@ -36,6 +37,8 @@ void UShooterMovementComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 	ShooterCharacterOwner = Cast<ABaseCharacter>(GetOwner());
+
+	MovementAttributeSet = UMovementAttributeSet::Find(ShooterCharacterOwner->GetAbilitySystemComponent());
 }
 void UShooterMovementComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -339,6 +342,11 @@ void UShooterMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
 		UE_LOG(LogTemp, Fatal,TEXT("Invalid Movement Mode"));
 		break;
 	}
+}
+
+void UShooterMovementComponent::BeginPlay()
+{
+	Super::BeginPlay();
 }
 
 float UShooterMovementComponent::GetMaxSpeed() const
@@ -1010,7 +1018,7 @@ void UShooterMovementComponent::ExitGrapple()
 #pragma region GrappingHook
 bool UShooterMovementComponent::TryGrapple()
 {
-	SLOG(FString::Printf(TEXT("StartGrapplingHookLocation CLIENT: %s | Projectile Direction: %s"), *ShooterCharacterOwner->GetStartGrapplingHookLocation().ToString(), *ShooterCharacterOwner->GetGrapplingHookForwardVector().ToString()),FColor::Green);
+	//SLOG(FString::Printf(TEXT("StartGrapplingHookLocation CLIENT: %s | Projectile Direction: %s"), *ShooterCharacterOwner->GetStartGrapplingHookLocation().ToString(), *ShooterCharacterOwner->GetGrapplingHookForwardVector().ToString()),FColor::Green);
 	ShooterCharacterOwner->GetCableComponent()->SetVisibility(true);
 
 	Server_TryGrapple(ShooterCharacterOwner->GetGrapplingHookForwardVector());
@@ -1044,13 +1052,13 @@ void UShooterMovementComponent::Server_TryGrapple_Implementation(const FVector& 
 	SpawnParams.Instigator = ShooterCharacterOwner;
 
 	FVector Start = UpdatedComponent->GetComponentLocation();
-	FVector End = ShooterCharacterOwner->GetStartGrapplingHookLocation() + ProjectileDirection * GrapplingTraceLength;
+	FVector End = ShooterCharacterOwner->GetStartGrapplingHookLocation() + ProjectileDirection * GrapplingHookDistance;
 	FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(Start, End);
 	
 	GrapplingHookProjectile = GetWorld()->SpawnActor<AGrapplingHookProjectile>(ProjectileClass,Start,Rotation,SpawnParams);
 	GrapplingHookProjectile->OnProjectileDestroyed.AddUObject(this,&ThisClass::OnGrapplingHookProjectileDestroyed);
 	
-	//DrawDebugLine(GetWorld(),ShooterCharacterOwner->GetStartGrapplingHookLocation(), ShooterCharacterOwner->GetStartGrapplingHookLocation() + ProjectileDirection * GrapplingTraceLength, FColor::White,false,2,0,2);
+	//DrawDebugLine(GetWorld(),ShooterCharacterOwner->GetStartGrapplingHookLocation(), ShooterCharacterOwner->GetStartGrapplingHookLocation() + ProjectileDirection * GrapplingHookDistance, FColor::White,false,2,0,2);
 	
 	Multicast_TryGrapple(GrapplingHookProjectile,ShooterCharacterOwner->GetCableComponent());
 }

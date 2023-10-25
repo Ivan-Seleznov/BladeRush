@@ -22,7 +22,7 @@ public:
 		return Cast<UMovementAttributeSet>(AbilitySystemComponent->GetAttributeSet(MovementAttributeSet));
 	};
 	
-	ATTRIBUTE_ACCESSORS(UMovementAttributeSet, GrapplingHookLength);
+	ATTRIBUTE_ACCESSORS(UMovementAttributeSet, GrapplingProjectileMaxDistance);
 	
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	
@@ -30,17 +30,11 @@ protected:
 	
 	virtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;
 	//virtual void PostAttributeBaseChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) const override;
-
-	UFUNCTION()
-	void OnRep_GrapplingHookLength(const FGameplayAttributeData& OldValue);
 	
 	UFUNCTION()
 	void OnRep_GrapplingProjectileMaxDistance(const FGameplayAttributeData& OldValue);
 	
 private:
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_GrapplingHookLength, Category = "Attributes", Meta = (AllowPrivateAccess = true))
-	FGameplayAttributeData GrapplingHookLength;
-
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_GrapplingProjectileMaxDistance, Category = "Attributes", Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData GrapplingProjectileMaxDistance;
 };

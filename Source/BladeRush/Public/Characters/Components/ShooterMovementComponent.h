@@ -8,7 +8,8 @@
 
 #define ERROR_VALUE -1.f;
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FGrappleFailed,AActor* /*Owner*/)
+class UMovementAttributeSet;
+DECLARE_MULTICAST_DELEGATE_OneParam(FGrappleFailed, AActor* /*Owner*/)
 
 class UCableComponent;
 class ABaseCharacter;
@@ -142,7 +143,7 @@ public:
 	
 	bool CanSprint() const;
 	bool CanGrapple() const;
-
+	
 	void StartGrappling(const FGrapplingHookAttachData& AttachData);
 	void StopGrappling();
 
@@ -216,7 +217,7 @@ protected:
 
 	
 	/*Grappling hook*/
-	UPROPERTY(EditDefaultsOnly,Category="Grappling") float GrapplingTraceLength = 2000.f;
+	UPROPERTY(EditDefaultsOnly,Category="Grappling") float GrapplingHookDistance = 2000.f;
 	UPROPERTY(EditDefaultsOnly,Category="Grappling") float MaxGrapplingSpeed = 1090.f;
 	UPROPERTY(EditDefaultsOnly,Category="Grappling") float GrapplingBrakingDeceleration = 2000.f;
 	UPROPERTY(EditDefaultsOnly,Category="Grappling") float GrapplingGravityScale = 0.1f;
@@ -243,6 +244,7 @@ protected:
 
 	virtual void PhysCustom(float deltaTime, int32 Iterations) override;
 
+	virtual void BeginPlay() override;
 private:
 	void EnterSlide();
 	void ExitSlide();
@@ -293,6 +295,8 @@ private:
 	UPROPERTY()
 	AGrapplingHookProjectile* GrapplingHookProjectile;
 
+	UPROPERTY() const UMovementAttributeSet* MovementAttributeSet;
+	
 	UFUNCTION()
 	void OnGrapplingHookProjectileDestroyed(AActor* ProjectileOwner);
 
