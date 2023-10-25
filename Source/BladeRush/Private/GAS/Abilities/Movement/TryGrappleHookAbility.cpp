@@ -19,7 +19,7 @@ void UTryGrappleHookAbility::InputPressed(const FGameplayAbilitySpecHandle Handl
 	UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
 	if (!MovementComponent) return;
 	
-	if (MovementComponent->IsGrappling())
+	if (IsActive())
 	{
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 	}
@@ -37,16 +37,13 @@ void UTryGrappleHookAbility::ActivateAbility(const FGameplayAbilitySpecHandle Ha
 	UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
 	if (!MovementComponent) return;
 
-	if (!Character->HasAuthority())
+	if (Character->IsLocallyControlled())
 	{
-		if (!MovementComponent->TryGrapple())
-		{
-			EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
-			return;
-		}
+		MovementComponent->TryGrapple();
 	}
 	
 	Character->MovementModeChangedDelegate.AddDynamic(this,&ThisClass::OnMovementModeChanged);
+	MovementComponent->OnGrappleFailed.AddUObject(this,&ThisClass::OnGrappleFailed);
 }
 
 void UTryGrappleHookAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
@@ -64,6 +61,7 @@ void UTryGrappleHookAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	MovementComponent->StopGrappling();
 	
 	Character->MovementModeChangedDelegate.RemoveAll(this);
+	MovementComponent->OnGrappleFailed.RemoveAll(this);
 }
 
 void UTryGrappleHookAbility::OnMovementModeChanged(ACharacter* Character, EMovementMode PrevMovementMode,
@@ -72,7 +70,14 @@ void UTryGrappleHookAbility::OnMovementModeChanged(ACharacter* Character, EMovem
 	if (PrevMovementMode == MOVE_Custom && PreviousCustomMode == CMOVE_Grappling)
 	{
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
-		GEngine->AddOnScreenDebugMessage(-1,2,FColor::Blue,"on movement mode changed end grapple ability");
+	}
+}
+
+void UTryGrappleHookAbility::OnGrappleFailed(AActor* ProjectileOwner)
+{
+	if (ProjectileOwner->HasAuthority())
+	{
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 	}
 }
 

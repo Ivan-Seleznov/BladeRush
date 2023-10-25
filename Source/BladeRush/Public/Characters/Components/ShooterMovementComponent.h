@@ -8,8 +8,12 @@
 
 #define ERROR_VALUE -1.f;
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FGrappleFailed,AActor* /*Owner*/)
+
+class UCableComponent;
 class ABaseCharacter;
 class AGrapplingHookProjectile;
+
 
 UENUM(BlueprintType)
 enum ECustomMovementMode
@@ -55,11 +59,15 @@ struct FGrapplingHookAttachData
 {
 	GENERATED_BODY()
 
+	FGrapplingHookAttachData();
+	
+	FGrapplingHookAttachData(FVector Point, FVector Normal);
+	
 	UPROPERTY(EditDefaultsOnly)
-	FVector AttachPoint;
+	FVector_NetQuantize AttachPoint;
 
 	UPROPERTY(EditDefaultsOnly)
-	FVector SurfaceNormal;
+	FVector_NetQuantizeNormal SurfaceNormal;
 };
 
 /**
@@ -135,7 +143,10 @@ public:
 	bool CanSprint() const;
 	bool CanGrapple() const;
 
+	void StartGrappling(const FGrapplingHookAttachData& AttachData);
 	void StopGrappling();
+
+	FGrappleFailed OnGrappleFailed;
 	
 	UFUNCTION(BlueprintPure)
 	bool IsWallRunning() const {return IsCustomMovementMode(CMOVE_WallRun);} 
@@ -166,7 +177,6 @@ public:
 
 	virtual bool IsMovingOnGround() const override;
 	virtual bool CanCrouchInCurrentState() const override;
-
 protected:
 	/*Mantle*/
 	UPROPERTY(EditDefaultsOnly,Category="Mantle") float MantleMaxWallHeight = 300.f;
@@ -251,18 +261,12 @@ private:
 
 	bool TryWallRun();
 	void PhysWallRun(float DeltaTime, int32 Iterations);
-
-	UFUNCTION()
-	void OnGrappleProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+	
+	UFUNCTION(NetMulticast,Unreliable)
+	void Multicast_TryGrapple(AGrapplingHookProjectile* Projectile,UCableComponent* CableComponent);
 	
 	UFUNCTION(Server,Reliable)
-	void StartGrapple_Server(const FGrapplingHookAttachData& AttachData);
-
-	UFUNCTION(NetMulticast,Unreliable)
-	void Multicast_GrappleProjectile(const FVector& ProjectileSpawnLocation,const FVector& ProjectileVelocity);
-	
-	UFUNCTION(Server,Unreliable)
-	void Server_GrappleProjectile(const FVector& ProjectileSpawnLocation,const FVector& ProjectileVelocity);
+	void Server_TryGrapple(const FVector& ProjectileDirection);
 	
 	void ExitGrapple();
 	
@@ -280,14 +284,21 @@ private:
 	void PhysGrappling(float DeltaTime,int32 Iterations);
 	
 	//FHitResult AttachPointHit;
+	
 	FGrapplingHookAttachData GrapplingHookAttachData;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Grappling|Projectile")
 	TSubclassOf<AGrapplingHookProjectile> ProjectileClass;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Grappling|Projectile")
+	UPROPERTY()
 	AGrapplingHookProjectile* GrapplingHookProjectile;
 
+	UFUNCTION()
+	void OnGrapplingHookProjectileDestroyed(AActor* ProjectileOwner);
+
+	UFUNCTION(NetMulticast,Unreliable)
+	void Multicast_ExitGrapple(ABaseCharacter* Character);
+	
 	//UPROPERTY(EditDefaultsOnly, Category = "Grappling|Cable")
 	//TSubclassOf<ACableActor> GrapplingCableClass;
 };

@@ -6,8 +6,11 @@
 #include "GameFramework/Actor.h"
 #include "GrapplingHookProjectile.generated.h"
 
+class UCableComponent;
 class USphereComponent;
 class UProjectileMovementComponent;
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FProjectileDestroyed,AActor*/*Owner*/);
 
 UCLASS()
 class BLADERUSH_API AGrapplingHookProjectile : public AActor
@@ -16,9 +19,15 @@ class BLADERUSH_API AGrapplingHookProjectile : public AActor
 	
 public:	
 	AGrapplingHookProjectile();
+
+	virtual void Tick(float DeltaSeconds) override;
 	
-	void FireInDirection(const FVector& ShootDirection);
 	USphereComponent* GetProjectileCollisionComponent() const {return SphereCollisionComponent;}
+
+	FORCEINLINE float GetMaxDistance() const {return MaxDistance;}
+	FORCEINLINE void SetMaxDistance(float NewRange) {MaxDistance = NewRange;}
+	
+	FProjectileDestroyed OnProjectileDestroyed;
 protected:
 	UPROPERTY(EditDefaultsOnly,Category="Components")
 	USphereComponent* SphereCollisionComponent;
@@ -28,4 +37,15 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly,Category="Components")
 	UStaticMeshComponent* StaticMeshComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	float MaxDistance = 1500.0f;
+
+	virtual void BeginPlay() override;
+	virtual void Destroyed() override;
+	UFUNCTION()
+	void OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+
+private:
+	FVector ProjectileStartLocation;
 };

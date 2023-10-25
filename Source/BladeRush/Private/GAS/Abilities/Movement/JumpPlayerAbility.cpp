@@ -23,16 +23,18 @@ void UJumpPlayerAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	ABaseCharacter* Character = GetCharacterFromActorInfo();
 	if (!Character) return;
 
-	if (Character->bIsCrouched)
+	if (Character->IsLocallyControlled() && !Character->bPlayerPressedJump)
 	{
-		Character->UnCrouch();
+		if (Character->bIsCrouched)
+		{
+			Character->UnCrouch();
+		}
+		
+		Character->Jump();
 	}
-	
-	Character->Jump();
 
 	FGameplayEffectContextHandle GameplayEffectContextHandle;
 	Character->GetAbilitySystemComponent()->ApplyGameplayEffectToSelf(DebuffEffect.GameplayEffect.GetDefaultObject(), DebuffEffect.Level, GameplayEffectContextHandle);
-
 }
 
 void UJumpPlayerAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
@@ -43,7 +45,10 @@ void UJumpPlayerAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, con
 	ABaseCharacter* Character = GetCharacterFromActorInfo();
 	if (!Character) return;
 
-	Character->StopJumping();
+	if (Character->IsLocallyControlled() && Character->bPlayerPressedJump)
+	{
+		Character->StopJumping();
+	}
 }
 
 bool UJumpPlayerAbility::CanActivateMovementAbility(ABaseCharacter* Character,
