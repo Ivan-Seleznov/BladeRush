@@ -8,7 +8,6 @@
 void ABladeRushSpectatorPawn::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	UE_LOG(LogTemp,Display,TEXT("TESTSPECT"))
 }
 
 void ABladeRushSpectatorPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

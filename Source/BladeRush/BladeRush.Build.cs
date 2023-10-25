@@ -17,6 +17,7 @@ public class BladeRush : ModuleRules
 		 "GameplayTasks",
 		 "Slate", "SlateCore",
 		 /*"OnlineSubsystem",*/
+		 "CableComponent",
 		 "ModularGameplay"
 		});
 	}

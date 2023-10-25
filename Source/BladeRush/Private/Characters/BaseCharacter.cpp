@@ -2,7 +2,7 @@
 
 
 #include "Characters/BaseCharacter.h"
-
+#include "CableComponent.h"
 #include "Characters/Components/PlayerHealthComponent.h"
 #include "Characters/Components/ShooterMovementComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -20,6 +20,9 @@ ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer)
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
 	PlayerHealthComponent = CreateDefaultSubobject<UPlayerHealthComponent>("HealthComponent");
+
+	CableComponent = CreateDefaultSubobject<UCableComponent>("Cable");
+	CableComponent->SetupAttachment(GetMesh(),FName("RightHand"));
 	
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCharacterMovement()->NavAgentProps.bCanJump = true;
@@ -176,5 +179,5 @@ void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CharacterSpawnLocation = GetActorLocation();
+	CableComponent->SetVisibility(false);
 }

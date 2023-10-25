@@ -13,7 +13,8 @@
 				"GameplayAbilities",
 				"UMG",
 				"EnhancedInput",
-				"ModularGameplay"
+				"ModularGameplay",
+				"CableComponent"
 			]
 		}
 	],

@@ -17,6 +17,7 @@ class UAttributeHealth;
 class UGameplayEffect;
 class UGameplayAbility;
 class UShooterCharacterData;
+class UCableComponent;
 
 UCLASS()
 class BLADERUSH_API ABaseCharacter : public ACharacter,public IAbilitySystemInterface
@@ -38,6 +39,7 @@ public:
 
 	FORCEINLINE UShooterMovementComponent* GetShooterMovementComponent() const {return ShooterMovementComponent;}
 	FORCEINLINE UPlayerHealthComponent* GetPlayerHealthComponent() const {return PlayerHealthComponent;}
+	FORCEINLINE UCableComponent* GetCableComponent() const {return CableComponent;}
 	
 	virtual void Jump() override;
 	virtual void StopJumping() override;
@@ -71,6 +73,9 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="GAS")
 	TObjectPtr<UPlayerAbilitySystemComponent> AbilitySystemComponent;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category="Components")
+	UCableComponent* CableComponent;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|AbiliySet")
 	TObjectPtr<const UShooterAbilitySet> DefaultAbilitySet;
@@ -80,6 +85,5 @@ protected:
 	FAbilitySet_GrantedHandles GrantedHandles;
 	
 	virtual void BeginPlay() override;
-private:
-	FVector CharacterSpawnLocation;
+
 };
