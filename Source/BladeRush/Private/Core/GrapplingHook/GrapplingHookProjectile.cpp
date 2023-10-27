@@ -38,11 +38,26 @@ void AGrapplingHookProjectile::Tick(float DeltaSeconds)
 		const ABaseCharacter* Character = Cast<ABaseCharacter>(GetOwner());
 		if (Character && FVector::Distance(Character->GetActorLocation(),GetActorLocation()) >= MovementAttributeSet->GetGrapplingProjectileMaxDistance())
 		{
-			//GEngine->AddOnScreenDebugMessage(-1,5,FColor::Green,FString::Printf(TEXT("SERVER Projectile max distance reached: %f"),FVector::Distance(ProjectileStartLocation,GetActorLocation())));
 			Destroy();
 		}
 	}
 }
+void AGrapplingHookProjectile::OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+                                               UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+{
+	ABaseCharacter* Character = Cast<ABaseCharacter>(GetInstigator());
+	if (!Character) return;
+		
+	UShooterMovementComponent* ShooterMovementComponent = Character->GetShooterMovementComponent();
+	if (!ShooterMovementComponent) return;
+
+	if (HasAuthority() || Character->IsLocallyControlled())
+	{
+		GEngine->AddOnScreenDebugMessage(-1,5,FColor::White,FString::Printf(TEXT("Point: %s , Normal: %s"),*Hit.ImpactPoint.ToString(),*Hit.ImpactNormal.ToString()));
+		ShooterMovementComponent->StartGrappling(FGrapplingHookAttachData(Hit.ImpactPoint,Hit.ImpactNormal));
+	}
+}
+
 
 
 void AGrapplingHookProjectile::BeginPlay()
@@ -61,16 +76,4 @@ void AGrapplingHookProjectile::Destroyed()
 {
 	Super::Destroyed();
 	OnProjectileDestroyed.Broadcast(GetOwner());
-}
-
-void AGrapplingHookProjectile::OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
-                                               UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
-{
-	ABaseCharacter* Character = Cast<ABaseCharacter>(GetInstigator());
-	if (!Character) return;
-		
-	UShooterMovementComponent* ShooterMovementComponent = Character->GetShooterMovementComponent();
-	if (!ShooterMovementComponent) return;
-	
-	ShooterMovementComponent->StartGrappling(FGrapplingHookAttachData(Hit.ImpactPoint,Hit.Normal));
 }
