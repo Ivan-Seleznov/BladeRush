@@ -229,7 +229,7 @@ void UShooterMovementComponent::UpdateCharacterStateAfterMovement(float DeltaSec
 
 	if (!HasAnimRootMotion() && Safe_bHadAnimRootMotion && IsMovementMode(MOVE_Flying))
 	{
-		ShooterCharacterOwner->GetCapsuleComponent()->SetWorldRotation(GetDefaultCharacter()->GetCapsuleComponent()->GetComponentRotation());
+		//ShooterCharacterOwner->GetCapsuleComponent()->SetWorldRotation(GetDefaultCharacter()->GetCapsuleComponent()->GetComponentRotation());
 		SetMovementMode(MOVE_Walking);
 		ShooterCharacterOwner->bUseControllerRotationYaw = true;
 	}
@@ -313,6 +313,12 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 				CharacterOwner->PlayAnimMontage(TransitionQueuedMontage,TransitionQueuedMontageSpeed);
 				TransitionQueuedMontageSpeed = 0.f;
 				TransitionQueuedMontage = nullptr;
+
+				if (CurrentProxyMontage)
+				{
+					Multicast_PlayMantleProxyAnim(ShooterCharacterOwner,CurrentProxyMontage);
+					CurrentProxyMontage = nullptr;
+				}
 			}
 			else
 			{
@@ -541,16 +547,26 @@ bool UShooterMovementComponent::TryMantle()
 	TransitionName = ETransitionName::TNAME_Mantle;
 	
 	//Animations
+	UAnimMontage* TransitionMontage = nullptr;
+	CurrentProxyMontage = nullptr;
 	if (MantleType == EMantleType::TMANTLE_Tall)
 	{
 		TransitionQueuedMontage = TallMantleAnimData.MantleMontage;
-		//CharacterOwner->PlayAnimMontage(TallMantleAnimData.TransitionMontage);
-
+		TransitionMontage = TallMantleAnimData.TransitionMontage;
+		CurrentProxyMontage = TallMantleAnimData.ProxyMontage;
 	}
 	else if (MantleType == EMantleType::TMANTLE_Short)
 	{
 		TransitionQueuedMontage = ShortMantleAnimData.MantleMontage;
-		//CharacterOwner->PlayAnimMontage(ShortMantleAnimData.TransitionMontage);
+		TransitionMontage = ShortMantleAnimData.TransitionMontage;
+		CurrentProxyMontage = ShortMantleAnimData.ProxyMontage;
+	}
+
+	if (TransitionMontage && CurrentProxyMontage)
+	{
+		ShooterCharacterOwner->PlayAnimMontage(TransitionMontage);
+		Multicast_PlayMantleProxyAnim(ShooterCharacterOwner,CurrentProxyMontage);
+		CurrentProxyMontage = nullptr;
 	}
 	
 	return true;
@@ -1151,6 +1167,14 @@ void UShooterMovementComponent::OnGrapplingHookProjectileDestroyed(AActor* Proje
 			Multicast_ExitGrapple(Character);
 		}
 	}
+}
+
+void UShooterMovementComponent::Multicast_PlayMantleProxyAnim_Implementation(ABaseCharacter* Character,UAnimMontage* ProxyMontage)
+{
+	if (!Character) return;
+	if (ShooterCharacterOwner->IsLocallyControlled()) return;
+
+	Character->PlayAnimMontage(ProxyMontage);
 }
 
 void UShooterMovementComponent::Multicast_ExitGrapple_Implementation(ABaseCharacter* Character)

@@ -154,6 +154,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	bool IsGrappling() const {return IsCustomMovementMode(CMOVE_Grappling);} 
+
+	UFUNCTION(BlueprintPure)
+	bool IsSliding() const {return IsCustomMovementMode(CMOVE_Slide);} 
 	
 	UFUNCTION(BlueprintPure)
 	bool IsWallRunningRight() const {return Safe_bWallRunIsRight;}
@@ -302,6 +305,12 @@ private:
 
 	UFUNCTION(NetMulticast,Unreliable)
 	void Multicast_ExitGrapple(ABaseCharacter* Character);
+
+	UFUNCTION(NetMulticast,Unreliable)
+	void Multicast_PlayMantleProxyAnim(ABaseCharacter* Character,UAnimMontage* ProxyMontage);
+
+	UPROPERTY()
+	UAnimMontage* CurrentProxyMontage;
 	
 	//UPROPERTY(EditDefaultsOnly, Category = "Grappling|Cable")
 	//TSubclassOf<ACableActor> GrapplingCableClass;
