@@ -197,6 +197,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly,Category="Mantle") FMantleAnimData ShortMantleAnimData;
 	UPROPERTY(EditDefaultsOnly,Category="Mantle") FMantleAnimData TallMantleAnimData;
 
+	UPROPERTY(EditDefaultsOnly,Category="Mantle") float ShortMantleTransitionZOffset = 0.0f;
+	UPROPERTY(EditDefaultsOnly,Category="Mantle") float TallMantleTransitionZOffset = 0.0f;
+
 	/*Slide*/
 	UPROPERTY(EditDefaultsOnly,Category="Slide") float MinSlideSpeed=400.f;
 	UPROPERTY(EditDefaultsOnly,Category="Slide") float MaxSlideSpeed=400.f;

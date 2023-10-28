@@ -576,8 +576,8 @@ FVector UShooterMovementComponent::GetMantleStartLocation(const FHitResult& Fron
 {
 	float CosWallAngle = FrontHit.Normal | FVector::UpVector;
 	float DownDistance = 0;
-	if (MantleType == EMantleType::TMANTLE_Short) DownDistance = MaxStepHeight - 1;
-	else if (MantleType == EMantleType::TMANTLE_Tall) DownDistance = GetCapsuleHalfHeight() * 2.f;
+	if (MantleType == EMantleType::TMANTLE_Short) DownDistance = (MaxStepHeight - 1) - ShortMantleTransitionZOffset;
+	else if (MantleType == EMantleType::TMANTLE_Tall) DownDistance = (GetCapsuleHalfHeight() * 2.f) - TallMantleTransitionZOffset;
 
 	FVector EdgeTangent = FVector::CrossProduct(SurfaceHit.Normal,FrontHit.Normal);
 	GEngine->AddOnScreenDebugMessage(-1,2,FColor::Green,FString::Printf(TEXT("Edge Tangent: %s"),*EdgeTangent.ToString()));
