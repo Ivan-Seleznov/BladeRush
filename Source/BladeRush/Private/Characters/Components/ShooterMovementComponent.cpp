@@ -314,7 +314,7 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 				TransitionQueuedMontageSpeed = 0.f;
 				TransitionQueuedMontage = nullptr;
 
-				if (CurrentProxyMontage)
+				if (CurrentProxyMontage && ShooterCharacterOwner->HasAuthority())
 				{
 					Multicast_PlayMantleProxyAnim(ShooterCharacterOwner,CurrentProxyMontage);
 					CurrentProxyMontage = nullptr;
@@ -565,7 +565,10 @@ bool UShooterMovementComponent::TryMantle()
 	if (TransitionMontage && CurrentProxyMontage)
 	{
 		ShooterCharacterOwner->PlayAnimMontage(TransitionMontage);
-		Multicast_PlayMantleProxyAnim(ShooterCharacterOwner,CurrentProxyMontage);
+		if (ShooterCharacterOwner->HasAuthority())
+		{
+			Multicast_PlayMantleProxyAnim(ShooterCharacterOwner,CurrentProxyMontage);
+		}
 		CurrentProxyMontage = nullptr;
 	}
 	
@@ -1172,7 +1175,7 @@ void UShooterMovementComponent::OnGrapplingHookProjectileDestroyed(AActor* Proje
 void UShooterMovementComponent::Multicast_PlayMantleProxyAnim_Implementation(ABaseCharacter* Character,UAnimMontage* ProxyMontage)
 {
 	if (!Character) return;
-	if (ShooterCharacterOwner->IsLocallyControlled()) return;
+	if (ShooterCharacterOwner->IsLocallyControlled() || ShooterCharacterOwner->HasAuthority()) return;
 
 	Character->PlayAnimMontage(ProxyMontage);
 }
