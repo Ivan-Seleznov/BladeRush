@@ -229,7 +229,7 @@ void UShooterMovementComponent::UpdateCharacterStateAfterMovement(float DeltaSec
 
 	if (!HasAnimRootMotion() && Safe_bHadAnimRootMotion && IsMovementMode(MOVE_Flying))
 	{
-		ShooterCharacterOwner->GetCapsuleComponent()->SetWorldRotation(GetDefaultCharacter()->GetCapsuleComponent()->GetComponentRotation());
+		//ShooterCharacterOwner->GetCapsuleComponent()->SetWorldRotation(GetDefaultCharacter()->GetCapsuleComponent()->GetComponentRotation());
 		SetMovementMode(MOVE_Walking);
 		ShooterCharacterOwner->bUseControllerRotationYaw = true;
 	}
@@ -313,6 +313,12 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 				CharacterOwner->PlayAnimMontage(TransitionQueuedMontage,TransitionQueuedMontageSpeed);
 				TransitionQueuedMontageSpeed = 0.f;
 				TransitionQueuedMontage = nullptr;
+
+				if (CurrentProxyMontage && ShooterCharacterOwner->HasAuthority())
+				{
+					Multicast_PlayMantleProxyAnim(ShooterCharacterOwner,CurrentProxyMontage);
+					CurrentProxyMontage = nullptr;
+				}
 			}
 			else
 			{
@@ -541,16 +547,29 @@ bool UShooterMovementComponent::TryMantle()
 	TransitionName = ETransitionName::TNAME_Mantle;
 	
 	//Animations
+	UAnimMontage* TransitionMontage = nullptr;
+	CurrentProxyMontage = nullptr;
 	if (MantleType == EMantleType::TMANTLE_Tall)
 	{
 		TransitionQueuedMontage = TallMantleAnimData.MantleMontage;
-		//CharacterOwner->PlayAnimMontage(TallMantleAnimData.TransitionMontage);
-
+		TransitionMontage = TallMantleAnimData.TransitionMontage;
+		CurrentProxyMontage = TallMantleAnimData.ProxyMontage;
 	}
 	else if (MantleType == EMantleType::TMANTLE_Short)
 	{
 		TransitionQueuedMontage = ShortMantleAnimData.MantleMontage;
-		//CharacterOwner->PlayAnimMontage(ShortMantleAnimData.TransitionMontage);
+		TransitionMontage = ShortMantleAnimData.TransitionMontage;
+		CurrentProxyMontage = ShortMantleAnimData.ProxyMontage;
+	}
+
+	if (TransitionMontage && CurrentProxyMontage)
+	{
+		ShooterCharacterOwner->PlayAnimMontage(TransitionMontage);
+		if (ShooterCharacterOwner->HasAuthority())
+		{
+			Multicast_PlayMantleProxyAnim(ShooterCharacterOwner,CurrentProxyMontage);
+		}
+		CurrentProxyMontage = nullptr;
 	}
 	
 	return true;
@@ -560,8 +579,8 @@ FVector UShooterMovementComponent::GetMantleStartLocation(const FHitResult& Fron
 {
 	float CosWallAngle = FrontHit.Normal | FVector::UpVector;
 	float DownDistance = 0;
-	if (MantleType == EMantleType::TMANTLE_Short) DownDistance = MaxStepHeight - 1;
-	else if (MantleType == EMantleType::TMANTLE_Tall) DownDistance = GetCapsuleHalfHeight() * 2.f;
+	if (MantleType == EMantleType::TMANTLE_Short) DownDistance = (MaxStepHeight - 1) - ShortMantleTransitionZOffset;
+	else if (MantleType == EMantleType::TMANTLE_Tall) DownDistance = (GetCapsuleHalfHeight() * 2.f) - TallMantleTransitionZOffset;
 
 	FVector EdgeTangent = FVector::CrossProduct(SurfaceHit.Normal,FrontHit.Normal);
 	GEngine->AddOnScreenDebugMessage(-1,2,FColor::Green,FString::Printf(TEXT("Edge Tangent: %s"),*EdgeTangent.ToString()));
@@ -1151,6 +1170,14 @@ void UShooterMovementComponent::OnGrapplingHookProjectileDestroyed(AActor* Proje
 			Multicast_ExitGrapple(Character);
 		}
 	}
+}
+
+void UShooterMovementComponent::Multicast_PlayMantleProxyAnim_Implementation(ABaseCharacter* Character,UAnimMontage* ProxyMontage)
+{
+	if (!Character) return;
+	if (ShooterCharacterOwner->IsLocallyControlled() || ShooterCharacterOwner->HasAuthority()) return;
+
+	Character->PlayAnimMontage(ProxyMontage);
 }
 
 void UShooterMovementComponent::Multicast_ExitGrapple_Implementation(ABaseCharacter* Character)

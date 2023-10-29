@@ -154,6 +154,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	bool IsGrappling() const {return IsCustomMovementMode(CMOVE_Grappling);} 
+
+	UFUNCTION(BlueprintPure)
+	bool IsSliding() const {return IsCustomMovementMode(CMOVE_Slide);} 
 	
 	UFUNCTION(BlueprintPure)
 	bool IsWallRunningRight() const {return Safe_bWallRunIsRight;}
@@ -193,6 +196,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly,Category="Mantle") FMantleAnimData ShortMantleAnimData;
 	UPROPERTY(EditDefaultsOnly,Category="Mantle") FMantleAnimData TallMantleAnimData;
+
+	UPROPERTY(EditDefaultsOnly,Category="Mantle") float ShortMantleTransitionZOffset = 0.0f;
+	UPROPERTY(EditDefaultsOnly,Category="Mantle") float TallMantleTransitionZOffset = 0.0f;
 
 	/*Slide*/
 	UPROPERTY(EditDefaultsOnly,Category="Slide") float MinSlideSpeed=400.f;
@@ -302,6 +308,12 @@ private:
 
 	UFUNCTION(NetMulticast,Unreliable)
 	void Multicast_ExitGrapple(ABaseCharacter* Character);
+
+	UFUNCTION(NetMulticast,Unreliable)
+	void Multicast_PlayMantleProxyAnim(ABaseCharacter* Character,UAnimMontage* ProxyMontage);
+
+	UPROPERTY()
+	UAnimMontage* CurrentProxyMontage;
 	
 	//UPROPERTY(EditDefaultsOnly, Category = "Grappling|Cable")
 	//TSubclassOf<ACableActor> GrapplingCableClass;
