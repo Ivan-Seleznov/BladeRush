@@ -43,7 +43,7 @@ void UTryGrappleHookAbility::ActivateAbility(const FGameplayAbilitySpecHandle Ha
 	}
 	
 	Character->MovementModeChangedDelegate.AddDynamic(this,&ThisClass::OnMovementModeChanged);
-	MovementComponent->OnGrappleExit.AddUObject(this,&ThisClass::OnExitGrapple);
+	MovementComponent->OnGrappleFailed.AddUObject(this,&ThisClass::OnGrappleFailed);
 }
 
 void UTryGrappleHookAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
@@ -61,7 +61,7 @@ void UTryGrappleHookAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	MovementComponent->StopGrappling();
 	
 	Character->MovementModeChangedDelegate.RemoveAll(this);
-	MovementComponent->OnGrappleExit.RemoveAll(this);
+	MovementComponent->OnGrappleFailed.RemoveAll(this);
 }
 
 void UTryGrappleHookAbility::OnMovementModeChanged(ACharacter* Character, EMovementMode PrevMovementMode,
@@ -73,7 +73,7 @@ void UTryGrappleHookAbility::OnMovementModeChanged(ACharacter* Character, EMovem
 	}
 }
 
-void UTryGrappleHookAbility::OnExitGrapple(ABaseCharacter* ProjectileOwner)
+void UTryGrappleHookAbility::OnGrappleFailed(AActor* ProjectileOwner)
 {
 	if (ProjectileOwner->HasAuthority())
 	{

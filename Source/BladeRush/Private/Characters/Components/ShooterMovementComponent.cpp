@@ -229,7 +229,7 @@ void UShooterMovementComponent::UpdateCharacterStateAfterMovement(float DeltaSec
 
 	if (!HasAnimRootMotion() && Safe_bHadAnimRootMotion && IsMovementMode(MOVE_Flying))
 	{
-		ShooterCharacterOwner->GetCapsuleComponent()->SetWorldRotation(GetDefaultCharacter()->GetCapsuleComponent()->GetComponentRotation());
+		//ShooterCharacterOwner->GetCapsuleComponent()->SetWorldRotation(GetDefaultCharacter()->GetCapsuleComponent()->GetComponentRotation());
 		SetMovementMode(MOVE_Walking);
 		ShooterCharacterOwner->bUseControllerRotationYaw = true;
 	}
@@ -252,17 +252,14 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 		TryWallRun();
 	}
 
-	if (ShooterCharacterOwner->GetLocalRole() != ROLE_SimulatedProxy)
+	if (!IsGrappling() && Safe_bWantsToGrapple)
 	{
-		if (!IsGrappling() && Safe_bWantsToGrapple)
-		{
-			SetMovementMode(MOVE_Custom,CMOVE_Grappling);
-		}
+		SetMovementMode(MOVE_Custom,CMOVE_Grappling);
+	}
 
-		if (IsGrappling() && !Safe_bWantsToGrapple)
-		{
-			SetMovementMode(MOVE_Falling);
-		}	
+	if (IsGrappling() && !Safe_bWantsToGrapple)
+	{
+		SetMovementMode(MOVE_Falling);
 	}
 	
 	if (CanSlide() && IsMovementMode(MOVE_Walking) && bWantsToCrouch && Safe_bWantsToSlide)
@@ -316,6 +313,12 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 				CharacterOwner->PlayAnimMontage(TransitionQueuedMontage,TransitionQueuedMontageSpeed);
 				TransitionQueuedMontageSpeed = 0.f;
 				TransitionQueuedMontage = nullptr;
+
+				if (CurrentProxyMontage && ShooterCharacterOwner->HasAuthority())
+				{
+					Multicast_PlayMantleProxyAnim(ShooterCharacterOwner,CurrentProxyMontage);
+					CurrentProxyMontage = nullptr;
+				}
 			}
 			else
 			{
@@ -544,16 +547,29 @@ bool UShooterMovementComponent::TryMantle()
 	TransitionName = ETransitionName::TNAME_Mantle;
 	
 	//Animations
+	UAnimMontage* TransitionMontage = nullptr;
+	CurrentProxyMontage = nullptr;
 	if (MantleType == EMantleType::TMANTLE_Tall)
 	{
 		TransitionQueuedMontage = TallMantleAnimData.MantleMontage;
-		//CharacterOwner->PlayAnimMontage(TallMantleAnimData.TransitionMontage);
-
+		TransitionMontage = TallMantleAnimData.TransitionMontage;
+		CurrentProxyMontage = TallMantleAnimData.ProxyMontage;
 	}
 	else if (MantleType == EMantleType::TMANTLE_Short)
 	{
 		TransitionQueuedMontage = ShortMantleAnimData.MantleMontage;
-		//CharacterOwner->PlayAnimMontage(ShortMantleAnimData.TransitionMontage);
+		TransitionMontage = ShortMantleAnimData.TransitionMontage;
+		CurrentProxyMontage = ShortMantleAnimData.ProxyMontage;
+	}
+
+	if (TransitionMontage && CurrentProxyMontage)
+	{
+		ShooterCharacterOwner->PlayAnimMontage(TransitionMontage);
+		if (ShooterCharacterOwner->HasAuthority())
+		{
+			Multicast_PlayMantleProxyAnim(ShooterCharacterOwner,CurrentProxyMontage);
+		}
+		CurrentProxyMontage = nullptr;
 	}
 	
 	return true;
@@ -563,8 +579,8 @@ FVector UShooterMovementComponent::GetMantleStartLocation(const FHitResult& Fron
 {
 	float CosWallAngle = FrontHit.Normal | FVector::UpVector;
 	float DownDistance = 0;
-	if (MantleType == EMantleType::TMANTLE_Short) DownDistance = MaxStepHeight - 1;
-	else if (MantleType == EMantleType::TMANTLE_Tall) DownDistance = GetCapsuleHalfHeight() * 2.f;
+	if (MantleType == EMantleType::TMANTLE_Short) DownDistance = (MaxStepHeight - 1) - ShortMantleTransitionZOffset;
+	else if (MantleType == EMantleType::TMANTLE_Tall) DownDistance = (GetCapsuleHalfHeight() * 2.f) - TallMantleTransitionZOffset;
 
 	FVector EdgeTangent = FVector::CrossProduct(SurfaceHit.Normal,FrontHit.Normal);
 	GEngine->AddOnScreenDebugMessage(-1,2,FColor::Green,FString::Printf(TEXT("Edge Tangent: %s"),*EdgeTangent.ToString()));
@@ -1004,12 +1020,16 @@ void UShooterMovementComponent::PhysWallRun(float DeltaTime, int32 Iterations)
 }
 
 
+
 void UShooterMovementComponent::ExitGrapple()
 {
 	Safe_bWantsToGrapple = false;
-	EnableGrapplingHookCableComponent(false);
+	ShooterCharacterOwner->GetCableComponent()->SetVisibility(false);
 
-	OnGrappleExit.Broadcast(ShooterCharacterOwner);
+	if (GrapplingHookProjectile && ShooterCharacterOwner->HasAuthority())
+	{
+		GrapplingHookProjectile->Destroy();
+	}
 }
 
 #pragma endregion
@@ -1017,16 +1037,10 @@ void UShooterMovementComponent::ExitGrapple()
 #pragma region GrappingHook
 bool UShooterMovementComponent::TryGrapple()
 {
-	if (!ShooterCharacterOwner->IsLocallyControlled()) return false;
-	
+	//SLOG(FString::Printf(TEXT("StartGrapplingHookLocation CLIENT: %s | Projectile Direction: %s"), *ShooterCharacterOwner->GetStartGrapplingHookLocation().ToString(), *ShooterCharacterOwner->GetGrapplingHookForwardVector().ToString()),FColor::Green);
 	ShooterCharacterOwner->GetCableComponent()->SetVisibility(true);
 
-	const FVector ProjectileDirection = ShooterCharacterOwner->GetGrapplingHookForwardVector();
-	SpawnGrapplingHookProjectile(ShooterCharacterOwner->GetStartGrapplingHookLocation(),ShooterCharacterOwner->GetStartGrapplingHookLocation() + ProjectileDirection * GrapplingHookDistance);
-	EnableGrapplingHookCableComponent(true);
-
-	Server_TryGrapple(ProjectileDirection);
-	
+	Server_TryGrapple(ShooterCharacterOwner->GetGrapplingHookForwardVector());
 	return true;
 }
 
@@ -1035,56 +1049,37 @@ void UShooterMovementComponent::StartGrappling(const FGrapplingHookAttachData& A
 	GrapplingHookAttachData = AttachData;
 	
 	//Start grappling
-	Server_SetGrapplingHookAttachPoint(AttachData);
 	Safe_bWantsToGrapple = true;
 }
 
-AGrapplingHookProjectile* UShooterMovementComponent::SpawnGrapplingHookProjectile(const FVector& Location,
-	const FVector& Direction)
+void UShooterMovementComponent::Multicast_TryGrapple_Implementation(AGrapplingHookProjectile* Projectile,UCableComponent* CableComponent)
 {
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = ShooterCharacterOwner;
-	SpawnParams.Instigator = ShooterCharacterOwner;
-	
-	FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(Location, Direction);
-	
-	GrapplingHookProjectile = GetWorld()->SpawnActor<AGrapplingHookProjectile>(ProjectileClass,Location,Rotation,SpawnParams);
-	return GrapplingHookProjectile;
-}
-
-void UShooterMovementComponent::EnableGrapplingHookCableComponent(bool bEnabled)
-{
-	if (bEnabled)
+	if (Projectile && CableComponent)
 	{
-		ShooterCharacterOwner->GetCableComponent()->SetVisibility(true);
-		ShooterCharacterOwner->GetCableComponent()->SetAttachEndTo(GrapplingHookProjectile,FName("None"));
-		ShooterCharacterOwner->GetCableComponent()->EndLocation = FVector(0,0,0);
+		CableComponent->SetVisibility(true);
+		CableComponent->SetAttachEndTo(Projectile,FName("None"));
+		CableComponent->EndLocation = FVector(0,0,0);
 	}
-	else
-	{
-		ShooterCharacterOwner->GetCableComponent()->SetVisibility(false);
-	}
-
-}
-
-
-void UShooterMovementComponent::Server_SetGrapplingHookAttachPoint_Implementation(
-	const FGrapplingHookAttachData& AttachData)
-{
-	GrapplingHookAttachData = AttachData;
-}
-void UShooterMovementComponent::Multicast_TryGrapple_Implementation(const FVector& ProjectileDirection,UCableComponent* CableComponent)
-{
-	if (ShooterCharacterOwner->IsLocallyControlled()) return;
-
-	SpawnGrapplingHookProjectile(ShooterCharacterOwner->GetStartGrapplingHookLocation(),ShooterCharacterOwner->GetStartGrapplingHookLocation() + ProjectileDirection * GrapplingHookDistance);
-	
-	EnableGrapplingHookCableComponent(true);
 }
 
 void UShooterMovementComponent::Server_TryGrapple_Implementation(const FVector& ProjectileDirection)
 {
-	Multicast_TryGrapple(ProjectileDirection,ShooterCharacterOwner->GetCableComponent());
+	SLOG(FString::Printf(TEXT("StartGrapplingHookLocation SERVER: %s | Projectile Direction: %s"), *ShooterCharacterOwner->GetStartGrapplingHookLocation().ToString(), *ProjectileDirection.ToString()),FColor::Red);
+	
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = ShooterCharacterOwner;
+	SpawnParams.Instigator = ShooterCharacterOwner;
+
+	FVector Start = UpdatedComponent->GetComponentLocation();
+	FVector End = ShooterCharacterOwner->GetStartGrapplingHookLocation() + ProjectileDirection * GrapplingHookDistance;
+	FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(Start, End);
+	
+	GrapplingHookProjectile = GetWorld()->SpawnActor<AGrapplingHookProjectile>(ProjectileClass,Start,Rotation,SpawnParams);
+	GrapplingHookProjectile->OnProjectileDestroyed.AddUObject(this,&ThisClass::OnGrapplingHookProjectileDestroyed);
+	
+	//DrawDebugLine(GetWorld(),ShooterCharacterOwner->GetStartGrapplingHookLocation(), ShooterCharacterOwner->GetStartGrapplingHookLocation() + ProjectileDirection * GrapplingHookDistance, FColor::White,false,2,0,2);
+	
+	Multicast_TryGrapple(GrapplingHookProjectile,ShooterCharacterOwner->GetCableComponent());
 }
 
 void UShooterMovementComponent::StopGrappling()
@@ -1163,4 +1158,31 @@ void UShooterMovementComponent::PhysGrappling(float DeltaTime, int32 Iterations)
 	}
 	
 }
+
+void UShooterMovementComponent::OnGrapplingHookProjectileDestroyed(AActor* ProjectileOwner)
+{
+	if (ShooterCharacterOwner->HasAuthority())
+	{
+		OnGrappleFailed.Broadcast(ProjectileOwner);
+		if (ABaseCharacter* Character = Cast<ABaseCharacter>(ProjectileOwner))
+		{
+			Character->GetShooterMovementComponent()->StopGrappling();
+			Multicast_ExitGrapple(Character);
+		}
+	}
+}
+
+void UShooterMovementComponent::Multicast_PlayMantleProxyAnim_Implementation(ABaseCharacter* Character,UAnimMontage* ProxyMontage)
+{
+	if (!Character) return;
+	if (ShooterCharacterOwner->IsLocallyControlled() || ShooterCharacterOwner->HasAuthority()) return;
+
+	Character->PlayAnimMontage(ProxyMontage);
+}
+
+void UShooterMovementComponent::Multicast_ExitGrapple_Implementation(ABaseCharacter* Character)
+{
+	Character->GetCableComponent()->SetVisibility(false);
+}
+
 #pragma endregion

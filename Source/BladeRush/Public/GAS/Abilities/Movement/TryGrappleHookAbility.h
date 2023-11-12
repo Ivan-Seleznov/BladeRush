@@ -25,5 +25,5 @@ protected:
 	void OnMovementModeChanged(ACharacter* Character,EMovementMode PrevMovementMode, uint8 PreviousCustomMode);
 
 	UFUNCTION()
-	void OnExitGrapple(ABaseCharacter* ProjectileOwner);
+	void OnGrappleFailed(AActor* ProjectileOwner);
 };
