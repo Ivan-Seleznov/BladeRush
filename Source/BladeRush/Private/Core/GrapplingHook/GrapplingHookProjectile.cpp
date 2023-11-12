@@ -22,7 +22,7 @@ AGrapplingHookProjectile::AGrapplingHookProjectile()
 	ProjectileMovementComponent->SetUpdatedComponent(SphereCollisionComponent);
 	ProjectileMovementComponent->InitialSpeed = 1000;
 	ProjectileMovementComponent->MaxSpeed = 3000.0f;
-	ProjectileMovementComponent->ProjectileGravityScale = 0.0f;
+	ProjectileMovementComponent->ProjectileGravityScale = 0.7f;
 	
 	SphereCollisionComponent->OnComponentHit.AddDynamic(this,&ThisClass::OnProjectileHit);
 	
@@ -33,47 +33,50 @@ void AGrapplingHookProjectile::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (HasAuthority())
+	const ABaseCharacter* Character = Cast<ABaseCharacter>(GetOwner());
+	if (Character && FVector::Distance(Character->GetActorLocation(),GetActorLocation()) >= MovementAttributeSet->GetGrapplingProjectileMaxDistance())
 	{
-		const ABaseCharacter* Character = Cast<ABaseCharacter>(GetOwner());
-		if (Character && FVector::Distance(Character->GetActorLocation(),GetActorLocation()) >= MovementAttributeSet->GetGrapplingProjectileMaxDistance())
-		{
-			Destroy();
-		}
+		Destroy();
 	}
 }
-void AGrapplingHookProjectile::OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
-                                               UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
-{
-	ABaseCharacter* Character = Cast<ABaseCharacter>(GetInstigator());
-	if (!Character) return;
-		
-	UShooterMovementComponent* ShooterMovementComponent = Character->GetShooterMovementComponent();
-	if (!ShooterMovementComponent) return;
-
-	if (HasAuthority() || Character->IsLocallyControlled())
-	{
-		GEngine->AddOnScreenDebugMessage(-1,5,FColor::White,FString::Printf(TEXT("Point: %s , Normal: %s"),*Hit.ImpactPoint.ToString(),*Hit.ImpactNormal.ToString()));
-		ShooterMovementComponent->StartGrappling(FGrapplingHookAttachData(Hit.ImpactPoint,Hit.ImpactNormal));
-	}
-}
-
 
 
 void AGrapplingHookProjectile::BeginPlay()
 {
 	Super::BeginPlay();
+	
 	ProjectileStartLocation = GetActorLocation();
 	const ABaseCharacter* Character = Cast<ABaseCharacter>(GetOwner());
-	if (Character)
-	{
-		MovementAttributeSet = UMovementAttributeSet::Find(Character->GetAbilitySystemComponent());
-	}
+	if (!Character) return;
+	
 
+	MovementAttributeSet = UMovementAttributeSet::Find(Character->GetAbilitySystemComponent());
+	
+	Character->GetShooterMovementComponent()->OnGrappleExit.AddUObject(this,&AGrapplingHookProjectile::OnExitGrapple);
 }
 
 void AGrapplingHookProjectile::Destroyed()
 {
 	Super::Destroyed();
 	OnProjectileDestroyed.Broadcast(GetOwner());
+}
+
+void AGrapplingHookProjectile::OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+                                               UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+{
+	ABaseCharacter* Character = Cast<ABaseCharacter>(GetInstigator());
+	if (!Character) return;
+	
+	if (Character->IsLocallyControlled())
+	{
+		UShooterMovementComponent* ShooterMovementComponent = Character->GetShooterMovementComponent();
+		if (!ShooterMovementComponent) return;
+	
+		ShooterMovementComponent->StartGrappling(FGrapplingHookAttachData(Hit.ImpactPoint,Hit.Normal));	
+	}
+}
+
+void AGrapplingHookProjectile::OnExitGrapple(ABaseCharacter* Character)
+{
+	Destroy();
 }

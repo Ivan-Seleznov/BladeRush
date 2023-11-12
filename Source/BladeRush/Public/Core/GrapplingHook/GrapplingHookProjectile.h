@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "GrapplingHookProjectile.generated.h"
 
+class ABaseCharacter;
 class UCableComponent;
 class USphereComponent;
 class UProjectileMovementComponent;
@@ -24,9 +25,6 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	
 	USphereComponent* GetProjectileCollisionComponent() const {return SphereCollisionComponent;}
-
-	//FORCEINLINE float GetMaxDistance() const {return MaxDistance;}
-	//FORCEINLINE void SetMaxDistance(float NewRange) {MaxDistance = NewRange;}
 	
 	FProjectileDestroyed OnProjectileDestroyed;
 protected:
@@ -38,17 +36,18 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly,Category="Components")
 	UStaticMeshComponent* StaticMeshComponent;
-
-	//UPROPERTY(EditDefaultsOnly)
-	//float MaxDistance = 1500.0f;
-
+	
 	virtual void BeginPlay() override;
 	virtual void Destroyed() override;
+	
 	UFUNCTION()
 	void OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 
 private:
 	FVector ProjectileStartLocation;
 
-	UPROPERTY() const UMovementAttributeSet* MovementAttributeSet;
+	UPROPERTY()
+	const UMovementAttributeSet* MovementAttributeSet;
+
+	void OnExitGrapple(ABaseCharacter* Character);
 };

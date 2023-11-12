@@ -9,12 +9,11 @@
 #define ERROR_VALUE -1.f;
 
 class UMovementAttributeSet;
-DECLARE_MULTICAST_DELEGATE_OneParam(FGrappleFailed, AActor* /*Owner*/)
-
 class UCableComponent;
 class ABaseCharacter;
 class AGrapplingHookProjectile;
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnGrappleExit, ABaseCharacter* /*Character*/)
 
 UENUM(BlueprintType)
 enum ECustomMovementMode
@@ -147,16 +146,13 @@ public:
 	void StartGrappling(const FGrapplingHookAttachData& AttachData);
 	void StopGrappling();
 
-	FGrappleFailed OnGrappleFailed;
+	FOnGrappleExit OnGrappleExit;
 	
 	UFUNCTION(BlueprintPure)
 	bool IsWallRunning() const {return IsCustomMovementMode(CMOVE_WallRun);} 
 
 	UFUNCTION(BlueprintPure)
 	bool IsGrappling() const {return IsCustomMovementMode(CMOVE_Grappling);} 
-
-	UFUNCTION(BlueprintPure)
-	bool IsSliding() const {return IsCustomMovementMode(CMOVE_Slide);} 
 	
 	UFUNCTION(BlueprintPure)
 	bool IsWallRunningRight() const {return Safe_bWallRunIsRight;}
@@ -196,9 +192,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly,Category="Mantle") FMantleAnimData ShortMantleAnimData;
 	UPROPERTY(EditDefaultsOnly,Category="Mantle") FMantleAnimData TallMantleAnimData;
-
-	UPROPERTY(EditDefaultsOnly,Category="Mantle") float ShortMantleTransitionZOffset = 0.0f;
-	UPROPERTY(EditDefaultsOnly,Category="Mantle") float TallMantleTransitionZOffset = 0.0f;
 
 	/*Slide*/
 	UPROPERTY(EditDefaultsOnly,Category="Slide") float MinSlideSpeed=400.f;
@@ -269,12 +262,18 @@ private:
 
 	bool TryWallRun();
 	void PhysWallRun(float DeltaTime, int32 Iterations);
+
+	AGrapplingHookProjectile* SpawnGrapplingHookProjectile(const FVector& Location, const FVector& Direction);
+	void EnableGrapplingHookCableComponent(bool bEnabled);
 	
 	UFUNCTION(NetMulticast,Unreliable)
-	void Multicast_TryGrapple(AGrapplingHookProjectile* Projectile,UCableComponent* CableComponent);
+	void Multicast_TryGrapple(const FVector& ProjectileDirection,UCableComponent* CableComponent);
 	
 	UFUNCTION(Server,Reliable)
 	void Server_TryGrapple(const FVector& ProjectileDirection);
+
+	UFUNCTION(Server,Reliable)
+	void Server_SetGrapplingHookAttachPoint(const FGrapplingHookAttachData& AttachData);
 	
 	void ExitGrapple();
 	
@@ -301,20 +300,6 @@ private:
 	UPROPERTY()
 	AGrapplingHookProjectile* GrapplingHookProjectile;
 
-	UPROPERTY() const UMovementAttributeSet* MovementAttributeSet;
-	
-	UFUNCTION()
-	void OnGrapplingHookProjectileDestroyed(AActor* ProjectileOwner);
-
-	UFUNCTION(NetMulticast,Unreliable)
-	void Multicast_ExitGrapple(ABaseCharacter* Character);
-
-	UFUNCTION(NetMulticast,Unreliable)
-	void Multicast_PlayMantleProxyAnim(ABaseCharacter* Character,UAnimMontage* ProxyMontage);
-
 	UPROPERTY()
-	UAnimMontage* CurrentProxyMontage;
-	
-	//UPROPERTY(EditDefaultsOnly, Category = "Grappling|Cable")
-	//TSubclassOf<ACableActor> GrapplingCableClass;
+	const UMovementAttributeSet* MovementAttributeSet;
 };
