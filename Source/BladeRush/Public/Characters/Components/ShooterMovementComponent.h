@@ -311,9 +311,12 @@ private:
 	UFUNCTION(NetMulticast,Unreliable)
 	void Multicast_PlayMantleProxyAnim(ABaseCharacter* Character,UAnimMontage* ProxyMontage);
 
-	UPROPERTY()
-	UAnimMontage* CurrentProxyMontage;
+	UFUNCTION(Unreliable,Server)
+	void Server_ExitGrapple();
+	
+	UFUNCTION(Unreliable,NetMulticast)
+	void Multicast_ExitGrapple();
 	
 	UPROPERTY()
-	const UMovementAttributeSet* MovementAttributeSet;
+	UAnimMontage* CurrentProxyMontage;
 };

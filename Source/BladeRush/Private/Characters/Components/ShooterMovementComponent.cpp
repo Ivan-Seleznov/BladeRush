@@ -1108,11 +1108,15 @@ void UShooterMovementComponent::Server_TryGrapple_Implementation(const FVector& 
 
 void UShooterMovementComponent::StopGrappling()
 {
-	if (!IsGrappling())
+	if (ShooterCharacterOwner->IsLocallyControlled())
 	{
-		ExitGrapple();
+		if (!IsGrappling())
+		{
+			ExitGrapple();
+			Server_ExitGrapple();
+		}
+		Safe_bWantsToGrapple = false;
 	}
-	Safe_bWantsToGrapple = false;
 }
 
 void UShooterMovementComponent::PhysGrappling(float DeltaTime, int32 Iterations)
@@ -1181,6 +1185,21 @@ void UShooterMovementComponent::PhysGrappling(float DeltaTime, int32 Iterations)
 		return;
 	}
 	
+}
+
+void UShooterMovementComponent::Server_ExitGrapple_Implementation()
+{
+	if (ShooterCharacterOwner->HasAuthority())
+	{
+		Multicast_ExitGrapple();
+	}
+}
+
+void UShooterMovementComponent::Multicast_ExitGrapple_Implementation()
+{
+	if (ShooterCharacterOwner->IsLocallyControlled()) return;
+	
+	ExitGrapple();
 }
 
 void UShooterMovementComponent::Multicast_PlayMantleProxyAnim_Implementation(ABaseCharacter* Character,UAnimMontage* ProxyMontage)

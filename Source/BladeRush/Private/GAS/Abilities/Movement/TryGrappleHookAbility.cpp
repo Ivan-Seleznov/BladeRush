@@ -58,7 +58,10 @@ void UTryGrappleHookAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
 	if (!MovementComponent) return;
 
-	MovementComponent->StopGrappling();
+	if (IsLocallyControlled())
+	{
+		MovementComponent->StopGrappling();
+	}
 	
 	Character->MovementModeChangedDelegate.RemoveAll(this);
 	MovementComponent->OnGrappleExit.RemoveAll(this);

@@ -22,7 +22,7 @@ ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer)
 	PlayerHealthComponent = CreateDefaultSubobject<UPlayerHealthComponent>("HealthComponent");
 
 	CableComponent = CreateDefaultSubobject<UCableComponent>("Cable");
-	CableComponent->SetupAttachment(GetMesh(),FName("RightHand"));
+	CableComponent->SetupAttachment(GetMesh(),FName("hand_r"));
 	
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCharacterMovement()->NavAgentProps.bCanJump = true;
