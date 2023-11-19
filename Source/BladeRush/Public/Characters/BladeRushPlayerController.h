@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "BladeRushPlayerController.generated.h"
 
+class ABaseCharacter;
 /**
  * 
  */
@@ -38,4 +39,6 @@ private:
 	void OnRespawnTimerEnd();
 	
 	FTimerHandle RespawnTimerHandle;
+
+	ABaseCharacter* DeadCharacter;
 };

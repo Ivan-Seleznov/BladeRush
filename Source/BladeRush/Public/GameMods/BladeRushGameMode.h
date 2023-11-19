@@ -24,10 +24,10 @@ public:
  	FORCEINLINE float GetRespawnTimerTime() const { return RespawnTimerTime; }
 	
 private:
-	FTimerHandle RespawnTimerHandle;
-
+	
 	FVector PlayerStartLocation;
 
 	UPROPERTY(EditDefaultsOnly,Category="Gameplay",meta=(AllowPrivateAccess="true"))
 	float RespawnTimerTime = 5.f;
+	
 };

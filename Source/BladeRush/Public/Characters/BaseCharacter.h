@@ -44,6 +44,8 @@ public:
 	virtual void Jump() override;
 	virtual void StopJumping() override;
 
+	void OnDeathStarted();
+	void OnDeathFinished();
 	
 	void StartSprinting();
 	void StopSprinting();
@@ -86,4 +88,8 @@ protected:
 	
 	virtual void BeginPlay() override;
 
+	UFUNCTION(NetMulticast,Reliable)
+	virtual void Multicast_StartDeath();
+	UFUNCTION(NetMulticast,Reliable)
+	virtual void Multicast_FinishDeath();
 };

@@ -45,6 +45,8 @@ bool ABladeRushPlayerController::TrySetPlayerPlay()
 void ABladeRushPlayerController::SetPlayerSpectate()
 {
 	if (!HasAuthority()) return;
+
+	DeadCharacter = Cast<ABaseCharacter>(GetCharacter());
 	
 	PlayerState->SetIsSpectator(true);
 	ChangeState(NAME_Spectating);
@@ -59,6 +61,8 @@ void ABladeRushPlayerController::SetPlayerSpectate()
 	GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle, this, &ThisClass::OnRespawnTimerEnd,RespawnTimerTime,false);
 
 	HUDStateChanged_Client(EHUDState::OnlySpectating);
+
+	
 }
 
 void ABladeRushPlayerController::AcknowledgePossession(APawn* P)
@@ -90,6 +94,11 @@ void ABladeRushPlayerController::OnRespawnTimerEnd()
 	HUDStateChanged_Client(EHUDState::CanRespawnSpectating);
 	
 	GetWorld()->GetTimerManager().ClearTimer(RespawnTimerHandle);
+
+	if (DeadCharacter)
+	{
+		DeadCharacter->OnDeathFinished();
+	}
 }
 
 void ABladeRushPlayerController::HUDStateChanged_Client_Implementation(EHUDState NewState)

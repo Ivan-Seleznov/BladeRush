@@ -28,7 +28,7 @@ void ABladeRushGameMode::CharacterDied(ABaseCharacter* Character)
 	ABladeRushPlayerController* PlayerController = Cast<ABladeRushPlayerController>(Character->GetController());
 	if (PlayerController)
 	{
-		Character->Destroy(true,true);
+		Character->OnDeathStarted();
 		PlayerController->SetPlayerSpectate();
 	}
 

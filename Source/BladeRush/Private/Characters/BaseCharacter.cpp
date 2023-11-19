@@ -5,6 +5,7 @@
 #include "CableComponent.h"
 #include "Characters/Components/PlayerHealthComponent.h"
 #include "Characters/Components/ShooterMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
 #include "GAS/Attributes/AttributeHealth.h"
@@ -91,6 +92,23 @@ void ABaseCharacter::StopJumping()
 
 	bPlayerPressedJump = false;
 }
+
+void ABaseCharacter::OnDeathStarted()
+{
+	if (HasAuthority())
+	{
+		Multicast_StartDeath();
+	}
+}
+
+void ABaseCharacter::OnDeathFinished()
+{
+	if (HasAuthority())
+	{
+		Multicast_FinishDeath();
+	}
+}
+
 
 void ABaseCharacter::StartSprinting()
 {
@@ -180,4 +198,17 @@ void ABaseCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	CableComponent->SetVisibility(false);
+}
+
+void ABaseCharacter::Multicast_StartDeath_Implementation()
+{
+	ShooterMovementComponent->DisableMovement();
+	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetMesh()->SetSimulatePhysics(true);
+}
+
+void ABaseCharacter::Multicast_FinishDeath_Implementation()
+{
+	Destroy();
 }
