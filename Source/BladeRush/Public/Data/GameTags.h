@@ -41,6 +41,8 @@ public:
 	TMap<uint8, FGameplayTag> CustomMovementModeTagMap;
 
 	FGameplayTag Disable_Ability_Sprint;
+
+	FGameplayTag Ability_Sprint;
 	
 private:
 	static FGameTags GameTags;

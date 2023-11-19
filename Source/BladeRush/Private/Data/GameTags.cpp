@@ -50,6 +50,9 @@ void FGameTags::AddTags()
 	AddTag(Data_Cooldown,"Data.Cooldown","Ability cooldown");
 	
 	AddTag(Data_Cooldown_TryGrapple,"Data.Cooldown.TryGrapple","Data Cooldown TryGrapple");
+
+	AddTag(Ability_Sprint,"Ability.Sprint","Sprint ability");
+
 }
 
 void FGameTags::AddTag(FGameplayTag& OutTag, const ANSICHAR* TagName, const ANSICHAR* TagComment)
