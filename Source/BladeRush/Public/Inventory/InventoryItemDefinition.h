@@ -3,15 +3,35 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
-#include "InventoryItemDefenition.generated.h"
+#include "InventoryItemInstance.h"
+#include "InventoryItemDefinition.generated.h"
+
+UCLASS()
+class UInventoryItemFragment : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	virtual void OnInstanceCreated(UInventoryItemInstance* Instance) const {}
+};
 
 /**
- * 
+ * Inventory Item definition class
  */
 UCLASS()
-class BLADERUSH_API UInventoryItemDefenition : public UObject
+class BLADERUSH_API UInventoryItemDefinition : public UObject
 {
 	GENERATED_BODY()
 	
+public:
+	UInventoryItemDefinition(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category="Name")
+	FText DisplayName;
+
+	//TODO: TSet ?
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category="Fragments")
+	TArray<UInventoryItemFragment*> Fragments;
+
+	const UInventoryItemFragment* FindFragmentByClass(TSubclassOf<UInventoryItemFragment> FragmentClass) const;
 };

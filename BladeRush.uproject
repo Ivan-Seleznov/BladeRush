@@ -14,7 +14,8 @@
 				"UMG",
 				"EnhancedInput",
 				"ModularGameplay",
-				"CableComponent"
+				"CableComponent",
+				"CoreUObject"
 			]
 		}
 	],
