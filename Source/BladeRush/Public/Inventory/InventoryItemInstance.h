@@ -8,8 +8,14 @@
 
 class UInventoryItemDefinition;
 
+UENUM()
+enum ESlotType
+{
+	None,
+	Weapon
+};
 /**
- * 
+ * InventoryItemInstance class
  */
 UCLASS()
 class BLADERUSH_API UInventoryItemInstance : public UObject
@@ -26,7 +32,13 @@ public:
 	const UInventoryItemFragment* FindFragmentByClass(TSubclassOf<UInventoryItemFragment> FragmentClass) const;
 	
 	void SetItemDefClass(TSubclassOf<UInventoryItemDefinition> InDef);
+
+	UFUNCTION(BlueprintCallable)
+	ESlotType GetSlotType() {return SlotType;}
 private:
+	UPROPERTY(Replicated)
+	TEnumAsByte<ESlotType> SlotType = ESlotType::None;
+	
 	UPROPERTY(Replicated)
 	TSubclassOf<UInventoryItemDefinition> InventoryItemDefinitionClass;
 };

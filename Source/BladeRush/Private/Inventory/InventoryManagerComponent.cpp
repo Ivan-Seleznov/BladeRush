@@ -92,6 +92,21 @@ void FInventoryList::RemoveEntry(UInventoryItemInstance* Instance)
 		}
 	}
 }
+
+TArray<UInventoryItemInstance*> FInventoryList::GetAllItemsInSlot(const ESlotType& SlotType) const
+{
+	TArray<UInventoryItemInstance*> Result;
+	for (const FInventoryEntry& Entry : Entries)
+	{
+		if (Entry.Instance->GetSlotType() == SlotType)
+		{
+			Result.Add(Entry.Instance);
+		}
+	}
+
+	return Result;
+}
+
 ///////////////////////////
 //InventoryManagerComponent
 
@@ -129,6 +144,11 @@ void UInventoryManagerComponent::RemoveItemInstance(UInventoryItemInstance* Item
 TArray<UInventoryItemInstance*> UInventoryManagerComponent::GetAllItemInstances()
 {
 	return InventoryList.GetAllItemInstances();
+}
+
+TArray<UInventoryItemInstance*> UInventoryManagerComponent::GetAllItemsInSlot(const ESlotType& SlotType) const
+{
+	return InventoryList.GetAllItemsInSlot(SlotType);
 }
 
 //~UObject interface

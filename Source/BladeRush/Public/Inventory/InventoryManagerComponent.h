@@ -7,6 +7,7 @@
 #include "Net/Serialization/FastArraySerializer.h"
 #include "InventoryManagerComponent.generated.h"
 
+enum ESlotType : int;
 class UInventoryItemDefinition;
 class UInventoryItemInstance;
 class UInventoryManagerComponent;
@@ -55,8 +56,6 @@ struct FInventoryList : public FFastArraySerializer
 	void PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize);
 	void PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize);
 	void PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize);
-
-	
 	//~End of FFastArraySerializer contract
 
 	UInventoryItemInstance* AddEntry(TSubclassOf<UInventoryItemDefinition> ItemDefinitionClass,int32 StackCount);
@@ -64,6 +63,9 @@ struct FInventoryList : public FFastArraySerializer
 	TArray<UInventoryItemInstance*> GetAllItemInstances() const;
 	
 	void RemoveEntry(UInventoryItemInstance* Instance);
+
+	TArray<UInventoryItemInstance*> GetAllItemsInSlot(const ESlotType& SlotType) const;
+	
 private:
 	friend UInventoryManagerComponent;
 	
@@ -89,7 +91,12 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category=Inventory)
 	void RemoveItemInstance(UInventoryItemInstance* ItemInstance);
 
+	UFUNCTION(BlueprintCallable, Category=Inventory)
 	TArray<UInventoryItemInstance*> GetAllItemInstances(); 
+
+	UFUNCTION(BlueprintCallable, Category=Inventory)
+	TArray<UInventoryItemInstance*> GetAllItemsInSlot(const ESlotType& SlotType) const;
+
 	
 	//~UObject interface
 	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
