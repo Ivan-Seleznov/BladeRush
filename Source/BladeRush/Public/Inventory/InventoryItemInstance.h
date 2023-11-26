@@ -17,7 +17,7 @@ enum ESlotType
 /**
  * InventoryItemInstance class
  */
-UCLASS()
+UCLASS(BlueprintType,Blueprintable,Abstract)
 class BLADERUSH_API UInventoryItemInstance : public UObject
 {
 	GENERATED_BODY()

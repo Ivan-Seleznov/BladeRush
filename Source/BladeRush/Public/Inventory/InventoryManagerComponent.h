@@ -77,7 +77,7 @@ private:
 };
 
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(BlueprintType)
 class BLADERUSH_API UInventoryManagerComponent : public UActorComponent
 {
 	GENERATED_BODY()

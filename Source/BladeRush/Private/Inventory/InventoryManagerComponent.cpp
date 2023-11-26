@@ -47,7 +47,7 @@ UInventoryItemInstance* FInventoryList::AddEntry(TSubclassOf<UInventoryItemDefin
 	if (!OwnerComponent || !ItemDefinitionClass) return nullptr;
 
 	AActor* OwningActor = OwnerComponent->GetOwner();
-	if (OwningActor->HasAuthority()) return nullptr;
+	if (!OwningActor->HasAuthority()) return nullptr;
 	
 	FInventoryEntry& NewEntry = Entries.AddDefaulted_GetRef();
 	NewEntry.Instance = NewObject<UInventoryItemInstance>(OwningActor); //TODO: Actor in UObject ctor?
@@ -112,6 +112,8 @@ TArray<UInventoryItemInstance*> FInventoryList::GetAllItemsInSlot(const ESlotTyp
 
 UInventoryManagerComponent::UInventoryManagerComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+	SetIsReplicatedByDefault(true);
+	InventoryList.OwnerComponent = this;
 }
 
 UInventoryItemInstance* UInventoryManagerComponent::AddItemDefinition(TSubclassOf<UInventoryItemDefinition> ItemDef,

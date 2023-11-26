@@ -126,6 +126,7 @@ UPlayerAbilitySystemComponent* FEquipmentList::GetAbilitySystemComponent() const
 UEquipmentManagerComponent::UEquipmentManagerComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	SetIsReplicatedByDefault(true);
+	EquipmentList.OwnerComponent = this;
 	bWantsInitializeComponent = true;
 }
 

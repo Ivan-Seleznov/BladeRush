@@ -8,6 +8,7 @@
 #include "GAS/ShooterAbilitySet.h"
 #include "BaseCharacter.generated.h"
 
+class UEquipmentManagerComponent;
 class UPlayerHealthComponent;
 class UShooterMovementComponent;
 class UShooterAbilitySet;
@@ -40,6 +41,7 @@ public:
 	FORCEINLINE UShooterMovementComponent* GetShooterMovementComponent() const {return ShooterMovementComponent;}
 	FORCEINLINE UPlayerHealthComponent* GetPlayerHealthComponent() const {return PlayerHealthComponent;}
 	FORCEINLINE UCableComponent* GetCableComponent() const {return CableComponent;}
+	FORCEINLINE UEquipmentManagerComponent* GetEquipmentManagerComponent() const {return EquipmentManagerComponent;}
 	
 	virtual void Jump() override;
 	virtual void StopJumping() override;
@@ -72,6 +74,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Components")
 	UPlayerHealthComponent* PlayerHealthComponent;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Components")
+	UEquipmentManagerComponent* EquipmentManagerComponent;
 	
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="GAS")
 	TObjectPtr<UPlayerAbilitySystemComponent> AbilitySystemComponent;

@@ -6,6 +6,7 @@
 #include "Characters/Components/PlayerHealthComponent.h"
 #include "Characters/Components/ShooterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Equipment/EquipmentManagerComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
 #include "GAS/Attributes/AttributeHealth.h"
@@ -21,7 +22,8 @@ ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer)
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
 	PlayerHealthComponent = CreateDefaultSubobject<UPlayerHealthComponent>("HealthComponent");
-
+	EquipmentManagerComponent = CreateDefaultSubobject<UEquipmentManagerComponent>(FName("EquipmentManagerComponent"));
+	
 	CableComponent = CreateDefaultSubobject<UCableComponent>("Cable");
 	CableComponent->SetupAttachment(GetMesh(),FName("hand_r"));
 	

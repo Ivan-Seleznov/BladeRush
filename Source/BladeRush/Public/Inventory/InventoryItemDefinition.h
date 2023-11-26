@@ -6,7 +6,7 @@
 #include "InventoryItemInstance.h"
 #include "InventoryItemDefinition.generated.h"
 
-UCLASS()
+UCLASS(DefaultToInstanced, EditInlineNew, Abstract,BlueprintType,Blueprintable)
 class UInventoryItemFragment : public UObject
 {
 	GENERATED_BODY()
@@ -18,7 +18,7 @@ public:
 /**
  * Inventory Item definition class
  */
-UCLASS()
+UCLASS(BlueprintType,Blueprintable,Const,Abstract)
 class BLADERUSH_API UInventoryItemDefinition : public UObject
 {
 	GENERATED_BODY()
@@ -30,8 +30,8 @@ public:
 	FText DisplayName;
 
 	//TODO: TSet ?
-	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category="Fragments")
-	TArray<UInventoryItemFragment*> Fragments;
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category=Fragments,Instanced)
+	TArray<TObjectPtr<UInventoryItemFragment>> Fragments;
 
 	const UInventoryItemFragment* FindFragmentByClass(TSubclassOf<UInventoryItemFragment> FragmentClass) const;
 };

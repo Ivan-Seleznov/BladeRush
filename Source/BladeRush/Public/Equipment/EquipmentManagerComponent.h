@@ -70,7 +70,7 @@ private:
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class BLADERUSH_API UEquipmentManagerComponent : public UPawnComponent
 {
 	GENERATED_BODY()

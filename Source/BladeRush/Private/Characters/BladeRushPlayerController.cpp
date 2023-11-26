@@ -9,6 +9,7 @@
 #include "GameFramework/PlayerState.h"
 #include "GameMods/BladeRushGameMode.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
+#include "Inventory/InventoryManagerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/PlayerHUD.h"
 
@@ -16,6 +17,11 @@
 void ABladeRushPlayerController::TrySetPlayerPlay_Server_Implementation()
 {
 	TrySetPlayerPlay();
+}
+
+ABladeRushPlayerController::ABladeRushPlayerController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+	InventoryManagerComponent = CreateDefaultSubobject<UInventoryManagerComponent>(FName("InventoryManagerComponent"));
 }
 
 bool ABladeRushPlayerController::TrySetPlayerPlay()

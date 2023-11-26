@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "BladeRushPlayerController.generated.h"
 
+class UInventoryManagerComponent;
 class ABaseCharacter;
 /**
  * 
@@ -16,6 +17,10 @@ class BLADERUSH_API ABladeRushPlayerController : public APlayerController
 	GENERATED_BODY()
 	
 public:
+	ABladeRushPlayerController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	
+	FORCEINLINE UInventoryManagerComponent* GetInventoryManagerComponent() const {return InventoryManagerComponent;}
+	
 	UFUNCTION(Server,Reliable)
 	void TrySetPlayerPlay_Server();
 	
@@ -37,8 +42,13 @@ private:
 	void HUDStateChanged_Client(EHUDState NewState);
 
 	void OnRespawnTimerEnd();
+
+	UPROPERTY()
+	UInventoryManagerComponent* InventoryManagerComponent;
 	
 	FTimerHandle RespawnTimerHandle;
 
+	UPROPERTY()
 	ABaseCharacter* DeadCharacter;
+	
 };

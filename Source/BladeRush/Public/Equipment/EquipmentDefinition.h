@@ -9,7 +9,7 @@
 class UShooterAbilitySet;
 class UEquipmentInstance;
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FEquipmentActorToSpawn
 {
 	GENERATED_BODY()
@@ -29,7 +29,7 @@ struct FEquipmentActorToSpawn
 /**
  * EquipmentDefinition class
  */
-UCLASS()
+UCLASS(BlueprintType,Blueprintable,Abstract)
 class BLADERUSH_API UEquipmentDefinition : public UObject
 {
 	GENERATED_BODY()
