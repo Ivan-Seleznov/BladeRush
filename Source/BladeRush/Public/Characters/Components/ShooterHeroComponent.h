@@ -37,7 +37,16 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 
+	void Input_QuickBarSlot1(const FInputActionValue& Value);
+	void Input_QuickBarSlot2(const FInputActionValue& Value);
+	void Input_QuickBarSlot3(const FInputActionValue& Value);
+
+	void Input_QuickBarSlot0(const FInputActionValue& Value);
+
+	void InventorySlotChanged(const float& SlotValue);
+	//float CurrentSlotIndex = -1;
 private:
+	
 	template<class UserClass, typename PressedFuncType, typename ReleasedFuncType>
 	void BindAbilityActions(UEnhancedInputComponent* PlayerInputComponent,UserClass* Object, PressedFuncType PressedFunc, ReleasedFuncType ReleasedFunc, TArray<uint32>& BindHandles);
 

@@ -32,7 +32,13 @@ void FGameTags::AddTags()
 	/*InputTags*/
 	/*NativeInputTags*/
 	AddTag(InputTag_Move, "InputTag.Move", "On activate Move");
-	AddTag(InputTag_Look, "InputTag.Look", "On activat Look");
+	AddTag(InputTag_Look, "InputTag.Look", "On activate Look");
+	
+	AddTag(InputTag_QuickBar_Slot1, "InputTag.QuickBar.Slot1", "QuickSlot 1");
+	AddTag(InputTag_QuickBar_Slot2, "InputTag.QuickBar.Slot2", "QuickSlot 2");
+	AddTag(InputTag_QuickBar_Slot3, "InputTag.QuickBar.Slot3", "QuickSlot 3");
+
+	AddTag(InputTag_QuickBar_Slot0, "InputTag.QuickBar.Slot0", "QuickSlot 0");
 
 	
 	/*AbilityInputTags*/

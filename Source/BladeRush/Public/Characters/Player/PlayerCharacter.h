@@ -10,6 +10,7 @@
  * 
  */
 
+class UQuickBarComponent;
 class UCameraComponent;
 class UWidgetAnimation;
 class UAttributeStamina;
@@ -38,4 +39,7 @@ protected:
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> CameraComponent;
+
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
+	//TObjectPtr<UQuickBarComponent> QuickBarComponent;
 };
