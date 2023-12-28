@@ -37,16 +37,15 @@ void FGameTags::AddTags()
 	AddTag(InputTag_QuickBar_Slot1, "InputTag.QuickBar.Slot1", "QuickSlot 1");
 	AddTag(InputTag_QuickBar_Slot2, "InputTag.QuickBar.Slot2", "QuickSlot 2");
 	AddTag(InputTag_QuickBar_Slot3, "InputTag.QuickBar.Slot3", "QuickSlot 3");
-
 	AddTag(InputTag_QuickBar_Slot0, "InputTag.QuickBar.Slot0", "QuickSlot 0");
-
 	
 	/*AbilityInputTags*/
 	AddTag(InputTag_Abilities_Sprint, "InputTag.Abilities.Sprint", "On activation ability sprint.");
 	AddTag(InputTag_Abilities_Crouch, "InputTag.Abilities.Crouch", "On activation ability crouch.");
 	AddTag(InputTag_Abilities_Jump, "InputTag.Abilities.Jump", "On activation ability jump.");
 	AddTag(InputTag_Abilities_TryGrappleHook,"InputTag.Abilities.TryGrappleHook","On activation ability TryGrappleHook.");
-
+	AddTag(InputTag_Abilities_Weapon_Fire,"InputTag.Abilities.Weapon.Fire","On activation weapon fire");
+	
 	AddTag(Disable_Ability_Sprint,"Disable.Ability.Sprint","Disabled sprint ability");
 
 

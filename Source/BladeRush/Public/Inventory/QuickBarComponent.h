@@ -27,7 +27,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
 	bool TryAddItemToSlot(UInventoryItemInstance* InventoryItemInstance,int32 SlotIndex,bool bMakeThisSlotActive = true);
-
+	
 	UFUNCTION(BlueprintCallable)
 	void SetActiveSlotIndex(int32 NewIndex);
 

@@ -29,6 +29,11 @@ APawn* UEquipmentInstance::GetPawn() const
 	return Cast<APawn>(GetOuter());
 }
 
+void UEquipmentInstance::SetInstigator(UObject* InInstigator)
+{
+	Instigator = InInstigator;
+}
+
 void UEquipmentInstance::SpawnEquipmentActors(const TArray<FEquipmentActorToSpawn>& ActorsToSpawn)
 {
 	ACharacter* Character = Cast<ACharacter>(GetPawn());

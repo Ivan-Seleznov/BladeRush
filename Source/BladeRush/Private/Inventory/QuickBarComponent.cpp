@@ -4,6 +4,7 @@
 #include "Inventory/QuickBarComponent.h"
 
 #include "Equipment/EquipmentDefinition.h"
+#include "Equipment/EquipmentInstance.h"
 #include "Equipment/EquipmentManagerComponent.h"
 #include "Inventory/InventoryItemInstance.h"
 #include "Inventory/Fragments/EquippableItemFragment.h"
@@ -47,6 +48,8 @@ bool UQuickBarComponent::TryAddItemToSlot(UInventoryItemInstance* InventoryItemI
 
 	return true;
 }
+
+
 
 void UQuickBarComponent::SetActiveSlotIndex(int32 NewIndex)
 {
@@ -132,7 +135,10 @@ void UQuickBarComponent::EquipItemInActiveSlot(int32 NewActiveSlotIndex)
 	if (!EquipmentManagerComponent) return;
 
 	EquippedItem = EquipmentManagerComponent->EquipItem(EquipDefClass);
-
+	if (EquippedItem)
+	{
+		EquippedItem->SetInstigator(SlotItemInstance);
+	}
 	ActiveSlotIndex = NewActiveSlotIndex;
 	OnRep_ActiveSlotIndex();
 }

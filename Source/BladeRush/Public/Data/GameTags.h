@@ -27,9 +27,11 @@ public:
 	FGameplayTag InputTag_Abilities_Crouch;
 	FGameplayTag InputTag_Abilities_Jump;
 	FGameplayTag InputTag_Abilities_TryGrappleHook;
-	
+	FGameplayTag InputTag_Abilities_Weapon_Fire;
+
 	FGameplayTag InputTag_Move;
 	FGameplayTag InputTag_Look;
+
 	
 	FGameplayTag InputTag_QuickBar_Slot1;
 	FGameplayTag InputTag_QuickBar_Slot2;

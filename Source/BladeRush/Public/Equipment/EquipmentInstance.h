@@ -28,15 +28,25 @@ public:
 	
 	UFUNCTION(BlueprintPure, Category=Equipment)
 	TArray<AActor*> GetSpawnedActors() const { return SpawnedActors; }
+
+	UFUNCTION(BlueprintCallable, Category=Equipment)
+	void SetInstigator(UObject* InInstigator);
+
+	UFUNCTION(BlueprintPure, Category=Equipment)
+	UObject* GetInstigator() const {return Instigator;}
+
+	
 	virtual void SpawnEquipmentActors(const TArray<FEquipmentActorToSpawn>& ActorsToSpawn);
 	virtual void DestroyEquipmentActors();
 	
 	virtual void OnEquipped();
 	virtual void OnUnequipped();
+	
+protected:
+	UPROPERTY(Replicated)
+	TArray<TObjectPtr<AActor>> SpawnedActors;
 private:
 	UPROPERTY(Replicated)
 	TObjectPtr<UObject> Instigator;
-
-	UPROPERTY(Replicated)
-	TArray<TObjectPtr<AActor>> SpawnedActors;
+	
 };
