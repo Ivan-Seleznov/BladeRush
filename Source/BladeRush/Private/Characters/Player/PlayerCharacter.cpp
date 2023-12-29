@@ -7,17 +7,19 @@
 #include "Characters/Components/ShooterHeroComponent.h"
 #include "Characters/Components/ShooterMovementComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Inventory/QuickBarComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	HeroComponent = CreateDefaultSubobject<UShooterHeroComponent>(TEXT("HeroComponent"));
-	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
+	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SprintArmComponent"));
 	//QuickBarComponent = CreateDefaultSubobject<UQuickBarComponent>(FName("QuickBarComponent"));
 	
-	CameraComponent->SetupAttachment(GetMesh(), "head");
-
+	SpringArmComponent->SetupAttachment(GetMesh(), "head");
+	SpringArmComponent->SetupAttachment(GetMesh(), "head");
+	CameraComponent->SetupAttachment(SpringArmComponent);
+	
 	CameraComponent->bUsePawnControlRotation = true;
 	ShooterMovementComponent->bOrientRotationToMovement = false;
 }

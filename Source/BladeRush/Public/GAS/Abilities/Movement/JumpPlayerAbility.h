@@ -19,7 +19,4 @@ public:
 protected:
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 	virtual bool CanActivateMovementAbility(ABaseCharacter* Character, UShooterMovementComponent* ShooterMovementComponent) const override;
-
-	UPROPERTY(EditAnywhere, meta = (ClampMin = 0.f,ClampMax = 1.f,UIMin = 0.f,UIMax = 1.f))
-	float BlockJumpMultiplier = 0.3f;
 };

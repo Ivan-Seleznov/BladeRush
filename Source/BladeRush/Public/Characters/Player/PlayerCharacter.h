@@ -10,6 +10,7 @@
  * 
  */
 
+class USpringArmComponent;
 class UQuickBarComponent;
 class UCameraComponent;
 class UWidgetAnimation;
@@ -40,6 +41,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> CameraComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USpringArmComponent> SpringArmComponent;
+	
 	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
 	//TObjectPtr<UQuickBarComponent> QuickBarComponent;
 };

@@ -3,6 +3,7 @@
 
 #include "Characters/Components/ShooterMovementComponent.h"
 
+#include "BladeRushLogs.h"
 #include "CableComponent.h"
 #include "Characters/BaseCharacter.h"
 #include "Components/CapsuleComponent.h"
@@ -11,19 +12,6 @@
 #include "GAS/Attributes/MovementAttributeSet.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
-
-#if	1
-float HM_MACRO_DURATION = 3.f;
-#define SLOG(x,c)			GEngine->AddOnScreenDebugMessage(-1,HM_MACRO_DURATION,c,x);
-#define DEBUG_POINT(x,c)	DrawDebugPoint(GetWorld(),x,10,c, false,HM_MACRO_DURATION);
-#define DEBUG_LINE(x1,x2,c) DrawDebugLine(GetWorld(),x1,x2,c,false,HM_MACRO_DURATION);
-#define DEBUG_CAPSULE(x,c)	DrawDebugCapsule(GetWorld(),x,GetCapsuleHalfHeight(),GetCapsuleRadius(),FQuat::Identity,c,false,HM_MACRO_DURATION);
-#else
-#define SLOG(x,c)
-#define DEBUG_POINT(x,c)
-#define DEBUG_LINE(x1,x2,c)
-#define DEBUG_CAPSULE(x,c)
-#endif
 
 UShooterMovementComponent::UShooterMovementComponent()
 {
@@ -44,6 +32,7 @@ void UShooterMovementComponent::GetLifetimeReplicatedProps(TArray<FLifetimePrope
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ThisClass, MoveVector);
+	DOREPLIFETIME(ThisClass,bInMantle);
 }
 
 
@@ -73,14 +62,9 @@ void UShooterMovementComponent::Client_SetMoveVector_Implementation(const FVecto
 	MoveVector.Y = NewValue.Y;
 
 	// Call the server function to update the variable on the server
-	Server_SetMoveVector(NewValue);
+	//Server_SetMoveVector(NewValue);
 }
 
-void UShooterMovementComponent::Server_SetMoveVector_Implementation(const FVector2D& NewValue)
-{
-	MoveVector.X = NewValue.X;
-	MoveVector.Y = NewValue.Y;
-}
 #pragma endregion
 
 #pragma region CMC
@@ -229,9 +213,22 @@ void UShooterMovementComponent::UpdateCharacterStateAfterMovement(float DeltaSec
 
 	if (!HasAnimRootMotion() && Safe_bHadAnimRootMotion && IsMovementMode(MOVE_Flying))
 	{
-		//ShooterCharacterOwner->GetCapsuleComponent()->SetWorldRotation(GetDefaultCharacter()->GetCapsuleComponent()->GetComponentRotation());
 		SetMovementMode(MOVE_Walking);
-		ShooterCharacterOwner->bUseControllerRotationYaw = true;
+		if (bInMantle)
+		{
+			bInMantle = false;
+			ShooterCharacterOwner->bUseControllerRotationYaw = true;
+
+			if (CharacterOwner->HasAuthority())
+			{
+				DEBUG_SLOG("SERVER MantleFinished",FColor::Orange)
+			}
+			else
+			{
+				DEBUG_SLOG("CLIENT MantleFinished",FColor::Yellow)
+			}
+		}
+
 	}
 	if (GetRootMotionSourceByID(TransitionRMS_ID) && GetRootMotionSourceByID(TransitionRMS_ID)->Status.HasFlag(ERootMotionSourceStatusFlags::Finished))
 	{
@@ -246,6 +243,12 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 {
 	Super::UpdateCharacterStateBeforeMovement(DeltaSeconds);
 
+	if (!bInMantle)
+	{
+		ShooterCharacterOwner->bUseControllerRotationYaw = true;	
+	}
+
+	
 	//WallRun
 	if (IsFalling())
 	{
@@ -284,10 +287,11 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 	//Mantle
 	if (ShooterCharacterOwner->bPlayerPressedJump)
 	{
-		if (TryMantle())
+		if (!bInMantle && TryMantle())
 		{
 			ShooterCharacterOwner->StopJumping();
 			ShooterCharacterOwner->bUseControllerRotationYaw = false;
+			bInMantle = true;
 		}
 		else
 		{
@@ -307,7 +311,15 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 	
 	if (Safe_bTransitionFinished)
 	{
-		SLOG(TEXT("Transition Finished"),FColor::Blue);
+		if (ShooterCharacterOwner->HasAuthority())
+		{
+			DEBUG_SLOG(TEXT("SERVER Transition Finished"),FColor::Blue);
+
+		}
+		else
+		{
+			DEBUG_SLOG(TEXT("CLIENT Transition Finished"),FColor::Blue);
+		}
 		if (TransitionName == ETransitionName::TNAME_Mantle)
 		{
 			if (IsValid(TransitionQueuedMontage) && TransitionQueuedMontage->HasRootMotion())
@@ -316,10 +328,10 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 				CharacterOwner->PlayAnimMontage(TransitionQueuedMontage,TransitionQueuedMontageSpeed);
 				TransitionQueuedMontageSpeed = 0.f;
 				TransitionQueuedMontage = nullptr;
-
+				
 				if (CurrentProxyMontage && ShooterCharacterOwner->HasAuthority())
 				{
-					Multicast_PlayMantleProxyAnim(ShooterCharacterOwner,CurrentProxyMontage);
+					Multicast_PlayMantleProxyAnim(CurrentProxyMontage);
 					CurrentProxyMontage = nullptr;
 				}
 			}
@@ -327,6 +339,7 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 			{
 				SetMovementMode(MOVE_Walking);
 				ShooterCharacterOwner->bUseControllerRotationYaw = true;
+				bInMantle = false;
 			}
 			Safe_bTransitionFinished = false;
 		}
@@ -570,8 +583,9 @@ bool UShooterMovementComponent::TryMantle()
 		ShooterCharacterOwner->PlayAnimMontage(TransitionMontage);
 		if (ShooterCharacterOwner->HasAuthority())
 		{
-			Multicast_PlayMantleProxyAnim(ShooterCharacterOwner,CurrentProxyMontage);
+			Multicast_PlayMantleProxyAnim(CurrentProxyMontage);
 		}
+		CurrentProxyMontage = nullptr;
 		CurrentProxyMontage = nullptr;
 	}
 	
@@ -924,7 +938,7 @@ bool UShooterMovementComponent::TryWallRun()
 	Velocity = ProjectedVelocity;
 	Velocity.Z = FMath::Clamp(Velocity.Z,0.f,MaxVerticalWallRunSpeed);
 	SetMovementMode(MOVE_Custom,CMOVE_WallRun);
-	SLOG("Start WallRun", FColor::Blue);
+	DEBUG_SLOG("Start WallRun", FColor::Blue);
 	
 	return true;
 }
@@ -1119,6 +1133,19 @@ void UShooterMovementComponent::StopGrappling()
 	}
 }
 
+void UShooterMovementComponent::OnRep_bInMantle(bool OldbInMantle)
+{
+	ShooterCharacterOwner->bUseControllerRotationYaw = OldbInMantle;
+	if (ShooterCharacterOwner->bUseControllerRotationYaw)
+	{
+		DEBUG_SLOG("bUserControllerRotationYaw = true",FColor::Green);
+	}
+	else
+	{
+		DEBUG_SLOG("bUserControllerRotationYaw = false",FColor::Red);
+	}
+}
+
 void UShooterMovementComponent::PhysGrappling(float DeltaTime, int32 Iterations)
 {
 	if (DeltaTime < MIN_TICK_TIME)
@@ -1202,12 +1229,12 @@ void UShooterMovementComponent::Multicast_ExitGrapple_Implementation()
 	ExitGrapple();
 }
 
-void UShooterMovementComponent::Multicast_PlayMantleProxyAnim_Implementation(ABaseCharacter* Character,UAnimMontage* ProxyMontage)
+void UShooterMovementComponent::Multicast_PlayMantleProxyAnim_Implementation(UAnimMontage* ProxyMontage)
 {
-	if (!Character) return;
-	if (ShooterCharacterOwner->IsLocallyControlled() || ShooterCharacterOwner->HasAuthority()) return;
-
-	Character->PlayAnimMontage(ProxyMontage);
+	if (ShooterCharacterOwner->GetLocalRole() == ROLE_SimulatedProxy)
+	{
+		ShooterCharacterOwner->PlayAnimMontage(ProxyMontage);
+	}
 }
 
 #pragma endregion

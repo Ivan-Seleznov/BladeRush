@@ -54,10 +54,12 @@ void UJumpPlayerAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, con
 bool UJumpPlayerAbility::CanActivateMovementAbility(ABaseCharacter* Character,
                                                     UShooterMovementComponent* ShooterMovementComponent) const
 {
-	const UAttributeStamina* AttributeStamina = UAttributeStamina::Find(Character->GetAbilitySystemComponent());
+	/*const UAttributeStamina* AttributeStamina = UAttributeStamina::Find(Character->GetAbilitySystemComponent());
 
 	const float StaminaPoints = AttributeStamina->GetStaminaPoints();
 	const float MaxStaminaPoints = AttributeStamina->GetMaxStaminaPoints();
+	StaminaPoints > MaxStaminaPoints * BlockJumpMultiplier
+	old..*/
 	
-	return StaminaPoints > MaxStaminaPoints * BlockJumpMultiplier /*&& Character->CanJump()*/;
+	return true;
 }
