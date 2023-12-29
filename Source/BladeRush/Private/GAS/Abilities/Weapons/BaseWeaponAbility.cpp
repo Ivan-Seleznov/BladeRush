@@ -1,4 +1,4 @@
-11// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "GAS/Abilities/Weapons/BaseWeaponAbility.h"
@@ -59,7 +59,7 @@ void UBaseWeaponAbility::SingleBulletTrace(const FWeaponTraceData& TraceData)
 void UBaseWeaponAbility::WeaponTrace(const FWeaponTraceData& TraceData,UWeaponItemInstance* WeaponItemInstance)
 {
 	//TODO Use single bullet trace
-	
+	const float Distance = 4000.f;
 	FVector CameraTraceEndLoc = TraceData.StartCamTraceLoc + TraceData.CameraDirection * Distance;
 	
 	FHitResult CameraTraceHit;
