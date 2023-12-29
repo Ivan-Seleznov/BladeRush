@@ -182,56 +182,89 @@ public:
 	virtual bool CanCrouchInCurrentState() const override;
 protected:
 	/*Mantle*/
-	UPROPERTY(EditDefaultsOnly,Category="Mantle") float MantleMaxWallHeight = 300.f;
-	UPROPERTY(EditDefaultsOnly,Category="Mantle") float MantleMaxDistance = 200.f;
+	UPROPERTY(EditDefaultsOnly,Category="Mantle")
+	float MantleMaxWallHeight = 300.f;
+	UPROPERTY(EditDefaultsOnly,Category="Mantle")
+	float MantleMaxDistance = 200.f;
 
-	UPROPERTY(EditDefaultsOnly,Category="Mantle") float MantleMaxSurfaceAngle = 45.f;
+	UPROPERTY(EditDefaultsOnly,Category="Mantle")
+	float MantleMaxSurfaceAngle = 45.f;
 
-	UPROPERTY(EditDefaultsOnly,Category="Mantle") float MantleMaxWallSteepnessAngle = 120.f;
-	UPROPERTY(EditDefaultsOnly,Category="Mantle") float MantleMinWallSteepnessAngle = 75.f;
-	UPROPERTY(EditDefaultsOnly,Category="Mantle") float MantleMaxAlignmentAngle = 45.f;
+	UPROPERTY(EditDefaultsOnly,Category="Mantle")
+	float MantleMaxWallSteepnessAngle = 120.f;
+	UPROPERTY(EditDefaultsOnly,Category="Mantle")
+	float MantleMinWallSteepnessAngle = 75.f;
+	UPROPERTY(EditDefaultsOnly,Category="Mantle")
+	float MantleMaxAlignmentAngle = 45.f;
 
-	UPROPERTY(EditDefaultsOnly,Category="Mantle") int MantleRayCount = 6;
+	UPROPERTY(EditDefaultsOnly,Category="Mantle")
+	int32 MantleRayCount = 6;
 
-	UPROPERTY(EditDefaultsOnly,Category="Mantle") FMantleAnimData ShortMantleAnimData;
-	UPROPERTY(EditDefaultsOnly,Category="Mantle") FMantleAnimData TallMantleAnimData;
+	UPROPERTY(EditDefaultsOnly,Category="Mantle")
+	FMantleAnimData ShortMantleAnimData;
+	UPROPERTY(EditDefaultsOnly,Category="Mantle") 
+	FMantleAnimData TallMantleAnimData;
 
-	UPROPERTY(EditDefaultsOnly,Category="Mantle") float ShortMantleTransitionZOffset = 0.0f;
-	UPROPERTY(EditDefaultsOnly,Category="Mantle") float TallMantleTransitionZOffset = 0.0f;
+	UPROPERTY(EditDefaultsOnly,Category="Mantle")
+	float ShortMantleTransitionZOffset = 0.0f;
+	UPROPERTY(EditDefaultsOnly,Category="Mantle")
+	float TallMantleTransitionZOffset = 0.0f;
 
 	/*Slide*/
-	UPROPERTY(EditDefaultsOnly,Category="Slide") float MinSlideSpeed=400.f;
-	UPROPERTY(EditDefaultsOnly,Category="Slide") float MaxSlideSpeed=400.f;
-	UPROPERTY(EditDefaultsOnly,Category="Slide") float SlideEnterImpulse=400.f;
-	UPROPERTY(EditDefaultsOnly,Category="Slide") float SlideGravityForce=4000.f;
-	UPROPERTY(EditDefaultsOnly,Category="Slide") float SlideFrictionFactor=.06f;
-	UPROPERTY(EditDefaultsOnly,Category="Slide") float BrakingDecelerationSliding=1000.f;
+	UPROPERTY(EditDefaultsOnly,Category="Slide")
+	float MinSlideSpeed=400.f;
+	UPROPERTY(EditDefaultsOnly,Category="Slide")
+	float MaxSlideSpeed=400.f;
+	UPROPERTY(EditDefaultsOnly,Category="Slide")
+	float SlideEnterImpulse=400.f;
+	UPROPERTY(EditDefaultsOnly,Category="Slide")
+	float SlideGravityForce=4000.f;
+	UPROPERTY(EditDefaultsOnly,Category="Slide")
+	float SlideFrictionFactor=.06f;
+	UPROPERTY(EditDefaultsOnly,Category="Slide")
+	float BrakingDecelerationSliding=1000.f;
 
 	/*WallRun*/
-	UPROPERTY(EditDefaultsOnly,Category="WallRun") float MinWallRunSpeed = 300.f;
-	UPROPERTY(EditDefaultsOnly,Category="WallRun") float MaxWallRunSpeed = 800.f;
-	UPROPERTY(EditDefaultsOnly,Category="WallRun") float MaxVerticalWallRunSpeed = 180.f; //?
-	UPROPERTY(EditDefaultsOnly,Category="WallRun") float MinWallRunHeight = 75.f;
+	UPROPERTY(EditDefaultsOnly,Category="WallRun")
+	float MinWallRunSpeed = 300.f;
+	UPROPERTY(EditDefaultsOnly,Category="WallRun")
+	float MaxWallRunSpeed = 800.f;
+	UPROPERTY(EditDefaultsOnly,Category="WallRun")
+	float MaxVerticalWallRunSpeed = 180.f; //?
+	UPROPERTY(EditDefaultsOnly,Category="WallRun")
+	float MinWallRunHeight = 75.f;
 	
-	UPROPERTY(EditDefaultsOnly,Category="WallRun") float WallJumpOfForce = 400.f; //Force with which a player jumps away from a wall
+	UPROPERTY(EditDefaultsOnly,Category="WallRun")
+	float WallJumpOfForce = 400.f; //Force with which a player jumps away from a wall
 
-	UPROPERTY(EditDefaultsOnly,Category="WallRun") float WallRunPullAwayAngle = 75.f;
-	UPROPERTY(EditDefaultsOnly,Category="WallRun") float WallAttractionForce = 200.f;
+	UPROPERTY(EditDefaultsOnly,Category="WallRun")
+	float WallRunPullAwayAngle = 75.f;
+	UPROPERTY(EditDefaultsOnly,Category="WallRun")
+	float WallAttractionForce = 200.f;
 
-	UPROPERTY(EditDefaultsOnly,Category="WallRun") UCurveFloat* WallRunGravityScaleCurve;
+	UPROPERTY(EditDefaultsOnly,Category="WallRun")
+	UCurveFloat* WallRunGravityScaleCurve;
 
 	
 	/*Grappling hook*/
-	UPROPERTY(EditDefaultsOnly,Category="Grappling") float GrapplingHookDistance = 2000.f;
-	UPROPERTY(EditDefaultsOnly,Category="Grappling") float MaxGrapplingSpeed = 1090.f;
-	UPROPERTY(EditDefaultsOnly,Category="Grappling") float GrapplingBrakingDeceleration = 2000.f;
-	UPROPERTY(EditDefaultsOnly,Category="Grappling") float GrapplingGravityScale = 0.1f;
-	UPROPERTY(EditDefaultsOnly,Category="Grappling") float GrapplingReleasedDistance = 150.f;
+	UPROPERTY(EditDefaultsOnly,Category="Grappling")
+	float GrapplingHookDistance = 2000.f;
+	UPROPERTY(EditDefaultsOnly,Category="Grappling")
+	float MaxGrapplingSpeed = 1090.f;
+	UPROPERTY(EditDefaultsOnly,Category="Grappling")
+	float GrapplingBrakingDeceleration = 2000.f;
+	UPROPERTY(EditDefaultsOnly,Category="Grappling")
+	float GrapplingGravityScale = 0.1f;
+	UPROPERTY(EditDefaultsOnly,Category="Grappling")
+	float GrapplingReleasedDistance = 150.f;
 	
-	UPROPERTY(EditDefaultsOnly,Category="Grappling") float GrapplingVerticalJumpBoost = 295.f;
-	UPROPERTY(EditDefaultsOnly,Category="Grappling") float GrapplingHorizontalJumpBoost = 1.f;
+	UPROPERTY(EditDefaultsOnly,Category="Grappling")
+	float GrapplingVerticalJumpBoost = 295.f;
+	UPROPERTY(EditDefaultsOnly,Category="Grappling")
+	float GrapplingHorizontalJumpBoost = 1.f;
 	
-	UPROPERTY(Transient) ABaseCharacter* ShooterCharacterOwner;
+	UPROPERTY(Transient)
+	ABaseCharacter* ShooterCharacterOwner;
 
 	UPROPERTY(Replicated)
 	FVector_NetQuantize MoveVector;
@@ -240,9 +273,6 @@ protected:
 	ACharacter* GetDefaultCharacter() const;
 
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
-	
-	UFUNCTION(Server, Unreliable)
-	void Server_SetMoveVector(const FVector2D& NewValue);
 
 	virtual void UpdateCharacterStateAfterMovement(float DeltaSeconds) override;
 	virtual void UpdateCharacterStateBeforeMovement(float DeltaSeconds) override;
@@ -287,13 +317,20 @@ private:
 	
 	bool Safe_bHadAnimRootMotion;
 	TSharedPtr<FRootMotionSource_MoveToForce> TransitionRMS;
-	UPROPERTY(Transient) UAnimMontage* TransitionQueuedMontage;
+	UPROPERTY(Transient)
+	UAnimMontage* TransitionQueuedMontage;
 	float TransitionQueuedMontageSpeed;
 	int TransitionRMS_ID;
 	ETransitionName TransitionName;
 
 	bool Safe_bWallRunIsRight;
 
+	UPROPERTY(Replicated,ReplicatedUsing=OnRep_bInMantle)
+	bool bInMantle;
+
+	UFUNCTION()
+	void OnRep_bInMantle(bool OldbInMantle);
+	
 	void PhysGrappling(float DeltaTime,int32 Iterations);
 	
 	//FHitResult AttachPointHit;
@@ -306,10 +343,11 @@ private:
 	UPROPERTY()
 	AGrapplingHookProjectile* GrapplingHookProjectile;
 
-	UPROPERTY() const UMovementAttributeSet* MovementAttributeSet;
+	UPROPERTY()
+	const UMovementAttributeSet* MovementAttributeSet;
 
 	UFUNCTION(NetMulticast,Unreliable)
-	void Multicast_PlayMantleProxyAnim(ABaseCharacter* Character,UAnimMontage* ProxyMontage);
+	void Multicast_PlayMantleProxyAnim(UAnimMontage* ProxyMontage);
 
 	UFUNCTION(Unreliable,Server)
 	void Server_ExitGrapple();
