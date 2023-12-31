@@ -6,12 +6,13 @@
 #include "UObject/NoExportTypes.h"
 #include "EquipmentInstance.generated.h"
 
+class ABaseCharacter;
 struct FEquipmentActorToSpawn;
 
 /**
  * EquipmentInstance class
  */
-UCLASS(BlueprintType,Blueprintable)
+UCLASS(BlueprintType, Blueprintable)
 class BLADERUSH_API UEquipmentInstance : public UObject
 {
 	GENERATED_BODY()
@@ -41,7 +42,8 @@ public:
 	
 	virtual void OnEquipped();
 	virtual void OnUnequipped();
-	
+
+	ABaseCharacter* GetBaseCharacter() const;
 protected:
 	UPROPERTY(Replicated)
 	TArray<TObjectPtr<AActor>> SpawnedActors;

@@ -58,6 +58,11 @@ struct FInventoryList : public FFastArraySerializer
 	void PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize);
 	//~End of FFastArraySerializer contract
 
+	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
+	{
+		return FFastArraySerializer::FastArrayDeltaSerialize<FInventoryEntry, FInventoryList>(Entries, DeltaParms, *this);
+	}
+	
 	UInventoryItemInstance* AddEntry(TSubclassOf<UInventoryItemDefinition> ItemDefinitionClass,int32 StackCount);
 	
 	TArray<UInventoryItemInstance*> GetAllItemInstances() const;
@@ -76,6 +81,11 @@ private:
 	TObjectPtr<UActorComponent> OwnerComponent;
 };
 
+template<>
+struct TStructOpsTypeTraits<FInventoryList> : public TStructOpsTypeTraitsBase2<FInventoryList>
+{
+	enum { WithNetDeltaSerializer = true };
+};
 
 UCLASS(BlueprintType)
 class BLADERUSH_API UInventoryManagerComponent : public UActorComponent

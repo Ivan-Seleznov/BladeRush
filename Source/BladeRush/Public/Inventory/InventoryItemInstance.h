@@ -3,10 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
 #include "InventoryItemInstance.generated.h"
 
 class UInventoryItemDefinition;
+class UInventoryItemFragment;
 
 UENUM()
 enum ESlotType
@@ -17,7 +17,7 @@ enum ESlotType
 /**
  * InventoryItemInstance class
  */
-UCLASS(BlueprintType,Blueprintable,Abstract)
+UCLASS(BlueprintType)
 class BLADERUSH_API UInventoryItemInstance : public UObject
 {
 	GENERATED_BODY()

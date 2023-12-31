@@ -61,7 +61,9 @@ public:
 	virtual FVector GetGrapplingHookForwardVector() const;
 
 	FCollisionQueryParams GetIgnoreCharacterParams() const;
-	
+
+	const FTransform& GetHandSocketTransform() {return HandSocketTransform;}
+	void SetHandSocketTransform(const FTransform& SocketTransform) {HandSocketTransform = SocketTransform;}
 	
 	bool bPlayerPressedJump;
 protected:
@@ -87,6 +89,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|AbiliySet")
 	TObjectPtr<const UShooterAbilitySet> DefaultAbilitySet;
 
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
+	FTransform HandSocketTransform;
+	
 	// Authority-only list of granted handles
 	UPROPERTY(VisibleAnywhere)
 	FAbilitySet_GrantedHandles GrantedHandles;

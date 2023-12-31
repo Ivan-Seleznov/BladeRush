@@ -43,7 +43,14 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USpringArmComponent> SpringArmComponent;
-	
+
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapons|Preview", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USkeletalMeshComponent> WeaponPreviewMesh;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapons|Preview", meta = (AllowPrivateAccess = "true"))
+	bool bDestroyPreviewMeshOnSpawn = true;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapons|Preview", meta = (AllowPrivateAccess = "true"))
+	FName AttachSocketName = "weapon_socket";
 	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
 	//TObjectPtr<UQuickBarComponent> QuickBarComponent;
 };

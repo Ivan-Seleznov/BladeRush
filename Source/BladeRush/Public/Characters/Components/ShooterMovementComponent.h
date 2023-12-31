@@ -134,6 +134,9 @@ public:
 	UFUNCTION(BlueprintPure)
 	bool IsCustomMovementMode(ECustomMovementMode InCustomMovementMode) const;
 
+	UFUNCTION(BlueprintPure)
+	bool IsInMantle() const {return bInMantle;}
+	
 	virtual float GetMaxSpeed() const override;
 	virtual float GetMaxBrakingDeceleration() const override;
 	

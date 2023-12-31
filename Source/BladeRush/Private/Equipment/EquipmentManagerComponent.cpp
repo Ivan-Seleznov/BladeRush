@@ -40,12 +40,12 @@ void FEquipmentList::PostReplicatedChange(const TArrayView<int32> ChangedIndices
 
 UEquipmentInstance* FEquipmentList::AddEntry(TSubclassOf<UEquipmentDefinition> EquipmentDefinition)
 {
-	if (!OwnerComponent || !OwnerComponent->GetOwner()->HasAuthority() || !EquipmentDefinition)
-	{
-		return nullptr;
-	}
-	
 	UEquipmentInstance* Result = nullptr;
+
+	check(EquipmentDefinition != nullptr);
+	check(OwnerComponent);
+	check(OwnerComponent->GetOwner()->HasAuthority());
+	
 	const UEquipmentDefinition* EquipmentCDO = GetDefault<UEquipmentDefinition>(EquipmentDefinition);
 
 	TSubclassOf<UEquipmentInstance> InstanceType = EquipmentCDO->InstanceType;
@@ -56,22 +56,23 @@ UEquipmentInstance* FEquipmentList::AddEntry(TSubclassOf<UEquipmentDefinition> E
 	
 	FAppliedEquipmentEntry& NewEntry = Entries.AddDefaulted_GetRef();
 	NewEntry.EquipmentDefinition = EquipmentDefinition;
-	NewEntry.Instance = NewObject<UEquipmentInstance>(OwnerComponent->GetOwner(), InstanceType);
+	NewEntry.Instance = NewObject<UEquipmentInstance>(OwnerComponent->GetOwner(), InstanceType);  //@TODO: Using the actor instead of component as the outer due to UE-127172
 	Result = NewEntry.Instance;
 
 	if (UPlayerAbilitySystemComponent* ASC = GetAbilitySystemComponent())
 	{
 		for (TObjectPtr<const UShooterAbilitySet> AbilitySet : EquipmentCDO->AbilitySetsToGrant)
 		{
-			AbilitySet->GiveToAbilitySystem(ASC, &NewEntry.GrantedHandles, Result);
+			AbilitySet->GiveToAbilitySystem(ASC, /*inout*/ &NewEntry.GrantedHandles, Result);
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp,Warning,TEXT(""));
+		//@TODO: Warning logging?
 	}
 
 	Result->SpawnEquipmentActors(EquipmentCDO->ActorsToSpawn);
+
 
 	MarkItemDirty(NewEntry);
 
@@ -89,9 +90,10 @@ void FEquipmentList::RemoveEntry(UEquipmentInstance* Instance)
 			{
 				Entry.GrantedHandles.TakeFromAbilitySystem(ASC);
 			}
-			
+
 			Instance->DestroyEquipmentActors();
 			
+
 			EntryIt.RemoveCurrent();
 			MarkArrayDirty();
 		}
@@ -184,12 +186,13 @@ bool UEquipmentManagerComponent::ReplicateSubobjects(UActorChannel* Channel, FOu
 		}
 	}
 
-	return WroteSomething;}
+	return WroteSomething;
+}
 
 void UEquipmentManagerComponent::UninitializeComponent()
 {
 	TArray<UEquipmentInstance*> AllEquipmentInstances;
-
+	
 	for (const FAppliedEquipmentEntry& Entry : EquipmentList.Entries)
 	{
 		AllEquipmentInstances.Add(Entry.Instance);
@@ -207,6 +210,7 @@ void UEquipmentManagerComponent::UninitializeComponent()
 void UEquipmentManagerComponent::ReadyForReplication()
 {
 	Super::ReadyForReplication();
+
 	if (IsUsingRegisteredSubObjectList())
 	{
 		for (const FAppliedEquipmentEntry& Entry : EquipmentList.Entries)

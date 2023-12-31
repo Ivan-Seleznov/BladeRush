@@ -14,6 +14,8 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 	HeroComponent = CreateDefaultSubobject<UShooterHeroComponent>(TEXT("HeroComponent"));
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SprintArmComponent"));
+	WeaponPreviewMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponPreviewMesh"));
+	WeaponPreviewMesh->SetupAttachment(GetMesh(),AttachSocketName);
 	//QuickBarComponent = CreateDefaultSubobject<UQuickBarComponent>(FName("QuickBarComponent"));
 	
 	SpringArmComponent->SetupAttachment(GetMesh(), "head");
@@ -27,7 +29,11 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	if (WeaponPreviewMesh)
+	{
+		WeaponPreviewMesh->DestroyComponent();
+	}
 }
 
 

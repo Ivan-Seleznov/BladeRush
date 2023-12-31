@@ -28,7 +28,7 @@ void FInventoryList::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int
 }
 
 void FInventoryList::PostReplicatedChange(const TArrayView<int32> ChangedIndices, int32 FinalSize)
-{
+{	
 	for (int32 Index : ChangedIndices)
 	{
 		FInventoryEntry& Stack = Entries[Index];
