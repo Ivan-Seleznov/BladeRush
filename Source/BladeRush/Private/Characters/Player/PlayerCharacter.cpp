@@ -18,8 +18,7 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 	WeaponPreviewMesh->SetupAttachment(GetMesh(),AttachSocketName);
 	//QuickBarComponent = CreateDefaultSubobject<UQuickBarComponent>(FName("QuickBarComponent"));
 	
-	SpringArmComponent->SetupAttachment(GetMesh(), "head");
-	SpringArmComponent->SetupAttachment(GetMesh(), "head");
+	SpringArmComponent->SetupAttachment(GetMesh(), CameraAttachSocketName);
 	CameraComponent->SetupAttachment(SpringArmComponent);
 	
 	CameraComponent->bUsePawnControlRotation = true;

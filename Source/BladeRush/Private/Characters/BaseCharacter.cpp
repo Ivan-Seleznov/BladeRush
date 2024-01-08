@@ -10,6 +10,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
 #include "GAS/Attributes/AttributeHealth.h"
+#include "Weapons/WeaponItemInstance.h"
 
 ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UShooterMovementComponent>(CharacterMovementComponentName))
@@ -29,6 +30,9 @@ ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer)
 	
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCharacterMovement()->NavAgentProps.bCanJump = true;
+
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
 }
 
 void ABaseCharacter::PossessedBy(AController* NewController)
@@ -170,6 +174,18 @@ FCollisionQueryParams ABaseCharacter::GetIgnoreCharacterParams() const
 	Params.AddIgnoredActor(this);
 
 	return Params;
+}
+
+void ABaseCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	
+	//TODO: Sheet code. Find a solution and remove
+	UWeaponItemInstance* WeaponItemInstance = Cast<UWeaponItemInstance>(EquipmentManagerComponent->GetFirstInstanceOfType(UWeaponItemInstance::StaticClass()));
+	if (WeaponItemInstance)
+	{
+		WeaponItemInstance->Tick(DeltaSeconds);
+	}
 }
 
 void ABaseCharacter::TryApplyAbilitySet_Server_Implementation(const UShooterAbilitySet* AbilitySet,

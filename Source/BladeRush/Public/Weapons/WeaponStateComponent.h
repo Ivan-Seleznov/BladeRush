@@ -18,4 +18,5 @@ public:
 	UWeaponStateComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	//virtual void PlayerTick(float DeltaTime) override;
 };

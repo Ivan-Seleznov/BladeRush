@@ -49,8 +49,11 @@ private:
 	TObjectPtr<USkeletalMeshComponent> WeaponPreviewMesh;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapons|Preview", meta = (AllowPrivateAccess = "true"))
 	bool bDestroyPreviewMeshOnSpawn = true;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapons|Preview", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapons|Preview", meta = (AllowPrivateAccess = "true"))
 	FName AttachSocketName = "weapon_socket";
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapons|Preview", meta = (AllowPrivateAccess = "true"))
+	FName CameraAttachSocketName = "neck_01";
 	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
 	//TObjectPtr<UQuickBarComponent> QuickBarComponent;
 };

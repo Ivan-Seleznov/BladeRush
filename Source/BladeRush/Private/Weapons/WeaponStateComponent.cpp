@@ -3,6 +3,7 @@
 
 #include "Weapons/WeaponStateComponent.h"
 
+#include "BladeRushLogs.h"
 #include "Characters/BaseCharacter.h"
 #include "Equipment/EquipmentManagerComponent.h"
 #include "Weapons/WeaponItemInstance.h"
@@ -28,6 +29,6 @@ void UWeaponStateComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	UWeaponItemInstance* WeaponItemInstance = Cast<UWeaponItemInstance>(EquipmentManagerComponent->GetFirstInstanceOfType(UWeaponItemInstance::StaticClass()));
 	if (!WeaponItemInstance) return;
 	
-	WeaponItemInstance->Tick(DeltaTime);
+	//WeaponItemInstance->Tick(DeltaTime);
 }
 

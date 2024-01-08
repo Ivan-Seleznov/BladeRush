@@ -66,6 +66,8 @@ public:
 	void SetHandSocketTransform(const FTransform& SocketTransform) {HandSocketTransform = SocketTransform;}
 	
 	bool bPlayerPressedJump;
+	
+	virtual void Tick(float DeltaSeconds) override;
 protected:
 
 	UFUNCTION(Client, Unreliable)
