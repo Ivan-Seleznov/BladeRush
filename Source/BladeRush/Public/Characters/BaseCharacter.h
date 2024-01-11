@@ -91,7 +91,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|AbiliySet")
 	TObjectPtr<const UShooterAbilitySet> DefaultAbilitySet;
 
-	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
 	FTransform HandSocketTransform;
 	
 	// Authority-only list of granted handles

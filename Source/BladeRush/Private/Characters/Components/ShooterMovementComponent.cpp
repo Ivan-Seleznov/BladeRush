@@ -47,26 +47,6 @@ bool UShooterMovementComponent::CanGrapple() const
 }
 
 
-
-#pragma region MoveVector
-void UShooterMovementComponent::Client_SetMoveVector_Implementation(const FVector2D& NewValue)
-{
-	if (ShooterCharacterOwner->HasAuthority())
-	{
-		// This function should only be called by clients
-		return;
-	}
-
-	// Apply the new move vector received from the client
-	MoveVector.X = NewValue.X;
-	MoveVector.Y = NewValue.Y;
-
-	// Call the server function to update the variable on the server
-	//Server_SetMoveVector(NewValue);
-}
-
-#pragma endregion
-
 #pragma region CMC
 FGrapplingHookAttachData::FGrapplingHookAttachData()
 {

@@ -6,10 +6,6 @@
 #include "Characters/BaseCharacter.h"
 #include "PlayerCharacter.generated.h"
 
-/**
- * 
- */
-
 class USpringArmComponent;
 class UQuickBarComponent;
 class UCameraComponent;
@@ -18,6 +14,20 @@ class UAttributeStamina;
 class UInputMappingContext;
 class UInputAction;
 class UShooterHeroComponent;
+
+USTRUCT(BlueprintType)
+struct FHandSwayData
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(BlueprintReadOnly)
+	float SideMove;
+
+	UPROPERTY(BlueprintReadOnly)
+	float MouseX;
+	UPROPERTY(BlueprintReadOnly)
+	float MouseY;
+};
 
 UCLASS()
 class BLADERUSH_API APlayerCharacter : public ABaseCharacter
@@ -30,13 +40,19 @@ public:
 
 	virtual FVector GetStartGrapplingHookLocation() const override;
 	virtual FVector GetGrapplingHookForwardVector() const override;
+
+	void SetMouseAxisValue(const float& X, const float Y);
+	void SetMoveXValue(const float& X);
 	
+	const FHandSwayData& GetHandSwayData() const {return HandSwayData;}
 protected:
 	virtual void BeginPlay() override;
 	
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UShooterHeroComponent> HeroComponent;
-	
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
+	FHandSwayData HandSwayData;
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> CameraComponent;
@@ -53,7 +69,7 @@ private:
 	FName AttachSocketName = "weapon_socket";
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapons|Preview", meta = (AllowPrivateAccess = "true"))
-	FName CameraAttachSocketName = "neck_01";
+	FName CameraAttachSocketName = "spine_05";
 	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
 	//TObjectPtr<UQuickBarComponent> QuickBarComponent;
 };

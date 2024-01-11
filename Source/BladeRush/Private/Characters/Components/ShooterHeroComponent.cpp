@@ -90,18 +90,18 @@ void UShooterHeroComponent::Move(const FInputActionValue& Value)
 {
 	ABaseCharacter* Character = GetPawn<ABaseCharacter>();
 	if (!Character) return;
-
-	UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
-	if (!MovementComponent) return;
-
 	
 	const FVector2D MovementVector = Value.Get<FVector2D>();
-	MovementComponent->Client_SetMoveVector(MovementVector);
 	
 	if (Character->Controller != nullptr)
 	{
 		Character->AddMovementInput(Character->GetActorForwardVector(), MovementVector.Y);
 		Character->AddMovementInput(Character->GetActorRightVector(), MovementVector.X);
+
+		if (APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(Character))
+		{
+			PlayerCharacter->SetMoveXValue(MovementVector.X);
+		}
 	}
 }
 
@@ -115,6 +115,11 @@ void UShooterHeroComponent::Look(const FInputActionValue& Value)
 	{
 		Character->AddControllerYawInput(LookAxisVector.X);
 		Character->AddControllerPitchInput(LookAxisVector.Y);
+
+		if (APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(Character))
+		{
+			PlayerCharacter->SetMouseAxisValue(LookAxisVector.X,LookAxisVector.Y);
+		}
 	}
 }
 

@@ -172,12 +172,6 @@ public:
 
 	bool CanSlide() const;
 	
-	UFUNCTION()
-	FVector_NetQuantize GetMoveVector() const {return MoveVector;}
-	
-	UFUNCTION(Client, Unreliable)
-	void Client_SetMoveVector(const FVector2D& NewValue);
-	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 

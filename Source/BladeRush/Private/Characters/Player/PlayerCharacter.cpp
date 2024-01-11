@@ -58,3 +58,13 @@ FVector APlayerCharacter::GetGrapplingHookForwardVector() const
 	return CameraComponent->GetForwardVector();
 }
 
+void APlayerCharacter::SetMouseAxisValue(const float& X, const float Y)
+{
+	HandSwayData.MouseX = X;
+	HandSwayData.MouseY = Y;
+}
+
+void APlayerCharacter::SetMoveXValue(const float& X)
+{
+	HandSwayData.SideMove = X;
+}
