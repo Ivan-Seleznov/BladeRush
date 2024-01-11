@@ -31,10 +31,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
 	USkeletalMeshComponent* WeaponMesh;
 
-	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	UAnimMontage* CharacterFireMontage;
-	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	UAnimMontage* WeaponFireMontage;
+	
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	TSubclassOf<UCameraShakeBase> FireCameraShake;
 private:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,meta=(AllowPrivateAccess))
 	FName MuzzleSocketName = FName("muzzle_socket");
@@ -44,5 +47,7 @@ private:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,meta=(AllowPrivateAccess))
 	FName RightHandSocketName = FName("hand_r");
 
-	
+	void PlayCameraShake(TSubclassOf<UCameraShakeBase> CameraShakeClass);
+	void PlayWeaponAnimMontage(UAnimMontage* Montage) const;
+	void PlayCharacterAnimMontage(UAnimMontage* Montage) const;
 };

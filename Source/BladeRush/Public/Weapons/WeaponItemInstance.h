@@ -6,8 +6,27 @@
 #include "Equipment/EquipmentInstance.h"
 #include "WeaponItemInstance.generated.h"
 
+class UBladeRushAnimInstance;
 class UCharacterMovementComponent;
 class ABaseWeaponActor;
+
+USTRUCT(BlueprintType)
+struct FWeaponRecoilData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
+	float RecoilMultiplier;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
+	float SideRecoilMultiplier;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
+	float MoveXMultiplier;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
+	float MoveZMultiplier;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
+	float MoveYMultiplier;
+};
 
 USTRUCT(BlueprintType)
 struct FWeaponVisualData
@@ -56,6 +75,11 @@ public:
 	float GetMaxTraceDistance() const {return MaxTraceDistance;}
 	float GetBulletsPerCartridge() const {return BulletsPerCartridge;}
 
+	const FWeaponRecoilData& GetWeaponRecoilData() const {return WeaponRecoilData;}
+	const FWeaponVisualData& GetWeaponVisualData() const {return WeaponVisualData;}
+	
+	void AddRecoil();
+	
 	void Tick(const float& DeltaTime);
 protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
@@ -64,6 +88,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	FWeaponVisualData WeaponVisualData;
 
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	FWeaponRecoilData WeaponRecoilData;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|Trace")
 	float MaxTraceDistance = 4000.f;
 

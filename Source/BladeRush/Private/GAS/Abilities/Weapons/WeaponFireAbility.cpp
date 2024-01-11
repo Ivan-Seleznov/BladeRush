@@ -4,6 +4,7 @@
 #include "GAS/Abilities/Weapons/WeaponFireAbility.h"
 
 #include "BladeRushLogs.h"
+#include "Animation/BladeRushAnimInstance.h"
 #include "Characters/BaseCharacter.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Weapons/BaseWeaponActor.h"
@@ -80,6 +81,8 @@ void UWeaponFireAbility::WeaponFire(const FGameplayAbilityActorInfo* ActorInfo,
 		Hits.Add(SingleBulletFire(StartWeaponTraceData,WeaponInstance,Impacts));
 	}
 
+	WeaponInstance->AddRecoil();
+	
 	ABaseWeaponActor* WeaponActor = WeaponInstance->GetSpawnedWeaponActor();
 	if (WeaponActor)
 	{

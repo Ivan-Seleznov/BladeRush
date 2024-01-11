@@ -4,6 +4,7 @@
 #include "Weapons/WeaponItemInstance.h"
 
 #include "BladeRushLogs.h"
+#include "Animation/BladeRushAnimInstance.h"
 #include "Characters/BaseCharacter.h"
 #include "Characters/Components/ShooterMovementComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -119,6 +120,17 @@ void UWeaponItemInstance::UpdateFiringTime()
 	UWorld* World = GetWorld();
 	check(World);
 	TimeLastFired = World->GetTimeSeconds();
+}
+
+void UWeaponItemInstance::AddRecoil()
+{
+	const ABaseCharacter* BaseCharacter = GetBaseCharacter();
+	if (!BaseCharacter) return;
+
+	UBladeRushAnimInstance* BladeRushAnimInstance = Cast<UBladeRushAnimInstance>(BaseCharacter->GetMesh()->GetLinkedAnimLayerInstanceByClass(WeaponVisualData.EquipAnimInstanceClass));
+	if (!BladeRushAnimInstance) return;
+
+	BladeRushAnimInstance->AddRecoil(WeaponRecoilData);
 }
 
 void UWeaponItemInstance::Tick(const float& DeltaTime)

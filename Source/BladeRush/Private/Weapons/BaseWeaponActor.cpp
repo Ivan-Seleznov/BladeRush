@@ -5,6 +5,7 @@
 
 #include "Characters/BaseCharacter.h"
 #include "GameFramework/Character.h"
+#include "Weapons/WeaponItemInstance.h"
 
 ABaseWeaponActor::ABaseWeaponActor()
 {
@@ -44,13 +45,10 @@ FTransform ABaseWeaponActor::GetHandSocketTransform() const
 
 void ABaseWeaponActor::OnFire(UWeaponItemInstance* WeaponInstance)
 {
-	ABaseCharacter* Character = Cast<ABaseCharacter>(GetOwner());
-	if (!Character || !Character->GetMesh()) return;
-
-	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
-	if (!AnimInstance) return;
-
-	AnimInstance->Montage_Play(CharacterFireMontage);
+	PlayWeaponAnimMontage(WeaponFireMontage);
+	PlayCharacterAnimMontage(CharacterFireMontage);
+	PlayCameraShake(FireCameraShake);
+	
 	K2_OnFire(WeaponInstance);
 }
 
@@ -64,4 +62,38 @@ void ABaseWeaponActor::OnFinishReloading(UWeaponItemInstance* WeaponInstance)
 
 void ABaseWeaponActor::OnHit(UWeaponItemInstance* WeaponInstance, TArray<FHitResult> HitResults)
 {
+}
+
+void ABaseWeaponActor::PlayCameraShake(TSubclassOf<UCameraShakeBase> CameraShakeClass)
+{
+	const ABaseCharacter* Character = Cast<ABaseCharacter>(GetOwner());
+	if (!Character) return;
+
+	APlayerController* PlayerController = Cast<APlayerController>(Character->GetController());
+	if (!PlayerController) return;
+
+	PlayerController->ClientStartCameraShake(CameraShakeClass);
+}
+
+void ABaseWeaponActor::PlayWeaponAnimMontage(UAnimMontage* Montage) const
+{
+	if (!Montage || !WeaponMesh) return;
+	
+	UAnimInstance* AnimInstance = WeaponMesh->GetAnimInstance();
+	if (!AnimInstance) return;
+
+	AnimInstance->Montage_Play(Montage);
+}
+
+void ABaseWeaponActor::PlayCharacterAnimMontage(UAnimMontage* Montage) const
+{
+	if (!Montage) return;
+	
+	const ABaseCharacter* Character = Cast<ABaseCharacter>(GetOwner());
+	if (!Character || !Character->GetMesh()) return;
+
+	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
+	if (!AnimInstance) return;
+
+	AnimInstance->Montage_Play(Montage);
 }
