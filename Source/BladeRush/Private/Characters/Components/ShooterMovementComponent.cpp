@@ -267,19 +267,22 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 	//Mantle
 	if (ShooterCharacterOwner->bPlayerPressedJump)
 	{
-		if (!bInMantle && TryMantle())
+		if (!bInMantle)
 		{
-			ShooterCharacterOwner->StopJumping();
-			ShooterCharacterOwner->bUseControllerRotationYaw = false;
-			bInMantle = true;
-		}
-		else
-		{
-			GEngine->AddOnScreenDebugMessage(-1,15,FColor::Orange,"FAILED MANTLE.. JUMP");
-			ShooterCharacterOwner->bPlayerPressedJump = false;
-			CharacterOwner->bPressedJump = true;
-			/*Perform jump physics*/
-			CharacterOwner->CheckJumpInput(DeltaSeconds);
+			if (TryMantle())
+			{
+				ShooterCharacterOwner->StopJumping();
+				ShooterCharacterOwner->bUseControllerRotationYaw = false;
+				bInMantle = true;
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1,15,FColor::Orange,"FAILED MANTLE.. JUMP");
+				ShooterCharacterOwner->bPlayerPressedJump = false;
+				CharacterOwner->bPressedJump = true;
+				/*Perform jump physics*/
+				CharacterOwner->CheckJumpInput(DeltaSeconds);
+			}
 		}
 	}
 
