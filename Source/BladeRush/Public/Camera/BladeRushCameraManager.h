@@ -6,6 +6,7 @@
 #include "Camera/PlayerCameraManager.h"
 #include "BladeRushCameraManager.generated.h"
 
+class UCameraMode;
 /**
  * Blade rush camera manager class
  */
@@ -17,6 +18,22 @@ class BLADERUSH_API ABladeRushCameraManager : public APlayerCameraManager
 public:
 	virtual void UpdateCamera(float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable)
+	void SetCameraMode(TSubclassOf<UCameraMode> CameraModeClass,bool bShouldEnterCameraMode = true);
+	UFUNCTION(BlueprintCallable)
+	void SetCameraModeObject(UCameraMode* CameraMode, bool bShouldEnterCameraMode = true);
+	
+	UFUNCTION(BlueprintCallable)
+	void EnterCurrentCameraMode();
+
+	UFUNCTION(BlueprintCallable)
+	void ExitCurrentCameraMode();
+
+	UFUNCTION(BlueprintCallable)
+	UCameraMode* GetCurrentCameraMode() const {return CurrentCameraMode;}
+
+	UFUNCTION(BlueprintCallable)
+	void ClearCameraMode();
 protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	float ViewPitch = 50.f;
@@ -24,6 +41,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	float ViewYaw = 50.f;
 
+	UPROPERTY(VisibleAnywhere, Category = "CameraMode")
+	UCameraMode* CurrentCameraMode;
+	
 	bool ShouldSetCustomViewData() const;
 
 	const ABladeRushCameraManager* GetDefault() const;

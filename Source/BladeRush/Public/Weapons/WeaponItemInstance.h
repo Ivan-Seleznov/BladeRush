@@ -69,7 +69,7 @@ public:
 	float GetTimeSinceLastFired() const;
 	
 	FVector CalculateBulletSpread(const float& Distance);
-	bool IsInScope() const {return bIsInScope;}
+	bool IsInADS() const {return bIsInADS;}
 	void UpdateFiringTime();
 
 	float GetMaxTraceDistance() const {return MaxTraceDistance;}
@@ -81,6 +81,11 @@ public:
 	void AddRecoil();
 	
 	void Tick(const float& DeltaTime);
+	void OnEnterADS();
+	void OnExitADS();
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_Test_AddRecoil(ABaseCharacter* Character);
 protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	int32 SpawnedWeaponActorIndex = 0;
@@ -90,15 +95,25 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	FWeaponRecoilData WeaponRecoilData;
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	FWeaponRecoilData ADSWeaponRecoilData;
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	float ADSRecoilMultiplier = 0.5f;
+	
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly, Category="Weapon|Recoil")
+	UCurveFloat* RecoilControlCurve;
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly, Category="Weapon|Recoil")
+	float RecoilControlDuration = 0.15f;
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly, Category="Weapon|Recoil")
+	float RecoilControlMultiplier = 1.f;
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly, Category="Weapon|Recoil")
+	float RecoilControlLerpMultiplier = 0.15f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|Trace")
 	float MaxTraceDistance = 4000.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|Spread")
 	float BaseBulletSpreadAngle;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|Recoil")
-	float BaseRecoil = 2.f;
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Weapon|Fire")
 	float FireRate = 2.0f;
@@ -128,8 +143,11 @@ private:
 	double TimeLastEquipped = 0.0;
 	double TimeLastFired = 0.0;
 	
-	bool bIsInScope = false;
+	bool bIsInADS = false;
 
+	float RecoilControlTimeElapsed = 0.f;
+	bool bShouldApplyRecoilControl = false;
+	
 	bool IsMoving() const;
 	FVector RandPointInCircle(float Radius) const;
 

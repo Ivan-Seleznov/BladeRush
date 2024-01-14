@@ -63,6 +63,10 @@
 		{
 			"Name": "HairStrands",
 			"Enabled": true
+		},
+		{
+			"Name": "AssetSearch",
+			"Enabled": true
 		}
 	]
 }

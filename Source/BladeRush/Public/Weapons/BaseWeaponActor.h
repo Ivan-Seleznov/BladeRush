@@ -20,14 +20,29 @@ public:
 	USkeletalMeshComponent* GetWeaponMesh() const {return WeaponMesh;}
 	FTransform GetHandSocketTransform() const;
 
+	UFUNCTION(BlueprintPure)
+	FTransform GetAimOffset() const;
+
 	void OnFire(UWeaponItemInstance* WeaponInstance);
 	void OnStartReloading(UWeaponItemInstance* WeaponInstance);
 	void OnFinishReloading(UWeaponItemInstance* WeaponInstance);
 	void OnHit(UWeaponItemInstance* WeaponInstance,TArray<FHitResult> HitResults);
 
+	void OnEnterADS(UWeaponItemInstance* WeaponInstance);
+	void OnExitADS(UWeaponItemInstance* WeaponInstance);
+	
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_OnFire(UWeaponItemInstance* WeaponInstance);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_OnEnterADS(UWeaponItemInstance* WeaponInstance);
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_OnExitADS(UWeaponItemInstance* WeaponInstance);
+
 protected:
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	USceneComponent* AimOffsetSceneComponent;
+	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
 	USkeletalMeshComponent* WeaponMesh;
 
@@ -38,6 +53,8 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	TSubclassOf<UCameraShakeBase> FireCameraShake;
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	TSubclassOf<UCameraShakeBase> ADSFireCameraShake;
 private:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,meta=(AllowPrivateAccess))
 	FName MuzzleSocketName = FName("muzzle_socket");
@@ -46,7 +63,7 @@ private:
 	FName LeftHandIKSocketName = FName("LHIK");
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,meta=(AllowPrivateAccess))
 	FName RightHandSocketName = FName("hand_r");
-
+	
 	void PlayCameraShake(TSubclassOf<UCameraShakeBase> CameraShakeClass);
 	void PlayWeaponAnimMontage(UAnimMontage* Montage) const;
 	void PlayCharacterAnimMontage(UAnimMontage* Montage) const;

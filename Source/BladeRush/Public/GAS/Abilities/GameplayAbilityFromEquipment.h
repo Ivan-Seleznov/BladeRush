@@ -20,4 +20,6 @@ public:
 
 	UEquipmentInstance* GetAssociatedEquipmentInstance() const;
 	UInventoryItemInstance* GetAssociatedInventoryItemInstance() const;
+
+	
 };

@@ -16,7 +16,9 @@ class BLADERUSH_API UPlayerAbilitySystemComponent : public UAbilitySystemCompone
 public:
 	UPlayerAbilitySystemComponent();
 
-	
+	UFUNCTION(BlueprintPure, meta = (BlueprintThreadSafe = true))
+	static bool ValidMatchingGameplayTag(const UAbilitySystemComponent* AbilitySystemComponent, FGameplayTag TagToCheck);
+    
 	void AbilityInputTagPressed(const FGameplayTag& InputTag);
 	void AbilityInputTagReleased(const FGameplayTag& InputTag);
 

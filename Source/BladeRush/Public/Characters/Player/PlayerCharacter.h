@@ -45,6 +45,8 @@ public:
 	void SetMoveXValue(const float& X);
 	
 	const FHandSwayData& GetHandSwayData() const {return HandSwayData;}
+
+	USpringArmComponent* GetSpringArm() const {return SpringArmComponent;}
 protected:
 	virtual void BeginPlay() override;
 	
@@ -59,7 +61,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USpringArmComponent> SpringArmComponent;
-
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapons|Preview", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USkeletalMeshComponent> WeaponPreviewMesh;

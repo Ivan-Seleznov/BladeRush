@@ -11,8 +11,10 @@ ABaseWeaponActor::ABaseWeaponActor()
 {
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>("Weapon Mesh");
 	WeaponMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
-	
 	RootComponent = WeaponMesh;
+	
+	AimOffsetSceneComponent = CreateDefaultSubobject<USceneComponent>("Aim offset");
+	AimOffsetSceneComponent->SetupAttachment(RootComponent);
 }
 
 FVector ABaseWeaponActor::GetMuzzleLocation() const
@@ -43,11 +45,25 @@ FTransform ABaseWeaponActor::GetHandSocketTransform() const
 	return Result;
 }
 
+FTransform ABaseWeaponActor::GetAimOffset() const
+{
+	return AimOffsetSceneComponent->GetRelativeTransform();
+}
+
+
 void ABaseWeaponActor::OnFire(UWeaponItemInstance* WeaponInstance)
 {
 	PlayWeaponAnimMontage(WeaponFireMontage);
 	PlayCharacterAnimMontage(CharacterFireMontage);
-	PlayCameraShake(FireCameraShake);
+	
+	if (WeaponInstance->IsInADS())
+	{
+		PlayCameraShake(ADSFireCameraShake);
+	}
+	else
+	{
+		PlayCameraShake(FireCameraShake);
+	}
 	
 	K2_OnFire(WeaponInstance);
 }
@@ -62,6 +78,16 @@ void ABaseWeaponActor::OnFinishReloading(UWeaponItemInstance* WeaponInstance)
 
 void ABaseWeaponActor::OnHit(UWeaponItemInstance* WeaponInstance, TArray<FHitResult> HitResults)
 {
+}
+
+void ABaseWeaponActor::OnEnterADS(UWeaponItemInstance* WeaponInstance)
+{
+	K2_OnEnterADS(WeaponInstance);
+}
+
+void ABaseWeaponActor::OnExitADS(UWeaponItemInstance* WeaponInstance)
+{
+	K2_OnExitADS(WeaponInstance);
 }
 
 void ABaseWeaponActor::PlayCameraShake(TSubclassOf<UCameraShakeBase> CameraShakeClass)

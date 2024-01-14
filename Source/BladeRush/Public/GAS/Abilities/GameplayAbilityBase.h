@@ -40,6 +40,10 @@ class BLADERUSH_API UGameplayAbilityBase : public UGameplayAbility
 	GENERATED_BODY()
 public:
 	EAbilityActivationPolicy GetActivationPolicy() const { return ActivationPolicy; }
+	
+	FActiveGameplayEffectHandle ApplyGameplayEffect(const FShooterGameplayEffect& GameplayEffect);
+	void RemoveGameplayEffectFromActiveHandle(FActiveGameplayEffectHandle& ActiveGameplayEffectHandle);
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability Activation")
 	EAbilityActivationPolicy ActivationPolicy;
@@ -56,5 +60,7 @@ protected:
 
 	virtual const FGameplayTagContainer* GetCooldownTags() const override;
 	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const override;
+
 	ABaseCharacter* GetCharacterFromActorInfo() const;
+	AController* GetControllerFromActorInfo() const;
 };

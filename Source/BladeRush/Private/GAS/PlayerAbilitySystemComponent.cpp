@@ -12,6 +12,23 @@ UPlayerAbilitySystemComponent::UPlayerAbilitySystemComponent()
 	InputHeldSpecHandles.Reset();
 }
 
+bool UPlayerAbilitySystemComponent::ValidMatchingGameplayTag(const UAbilitySystemComponent* AbilitySystemComponent,
+	FGameplayTag TagToCheck)
+{
+	bool Result = false;
+
+	if (!AbilitySystemComponent)
+	{
+		return Result;
+	}
+
+	Result = AbilitySystemComponent->HasMatchingGameplayTag(TagToCheck);
+	
+	return Result;
+}
+
+
+
 void UPlayerAbilitySystemComponent::AbilityInputTagPressed(const FGameplayTag& InputTag)
 {
 	if (InputTag.IsValid())

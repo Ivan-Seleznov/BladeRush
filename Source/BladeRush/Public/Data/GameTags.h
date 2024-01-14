@@ -28,6 +28,7 @@ public:
 	FGameplayTag InputTag_Abilities_Jump;
 	FGameplayTag InputTag_Abilities_TryGrappleHook;
 	FGameplayTag InputTag_Abilities_Weapon_Fire;
+	FGameplayTag InputTag_Abilities_ADS;
 
 	FGameplayTag InputTag_Move;
 	FGameplayTag InputTag_Look;
@@ -51,7 +52,8 @@ public:
 	FGameplayTag Disable_Ability_Sprint;
 
 	FGameplayTag Ability_Sprint;
-	
+	FGameplayTag Ability_Weapon_ADS;
+
 private:
 	static FGameTags GameTags;
 };

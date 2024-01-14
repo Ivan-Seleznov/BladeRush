@@ -3,7 +3,30 @@
 
 #include "GAS/Abilities/GameplayAbilityBase.h"
 
+#include "AbilitySystemComponent.h"
 #include "Characters/BaseCharacter.h"
+
+FActiveGameplayEffectHandle UGameplayAbilityBase::ApplyGameplayEffect(const FShooterGameplayEffect& GameplayEffect)
+{
+	const FGameplayAbilityActorInfo* ActorInfo = GetCurrentActorInfo();
+	if (!ActorInfo) return FActiveGameplayEffectHandle();
+
+	if (!GameplayEffect.GameplayEffect) return FActiveGameplayEffectHandle();
+	
+	const FGameplayEffectContextHandle EffectContextHandle;
+	return ActorInfo->AbilitySystemComponent->ApplyGameplayEffectToSelf(GameplayEffect.GameplayEffect.GetDefaultObject(),GameplayEffect.Level,EffectContextHandle);
+}
+
+void UGameplayAbilityBase::RemoveGameplayEffectFromActiveHandle(FActiveGameplayEffectHandle& ActiveGameplayEffectHandle)
+{
+	const FGameplayAbilityActorInfo* ActorInfo = GetCurrentActorInfo();
+	if (!ActorInfo) return;
+
+	if (ActiveGameplayEffectHandle.IsValid())
+	{
+		ActorInfo->AbilitySystemComponent->RemoveActiveGameplayEffect(ActiveGameplayEffectHandle);
+	}
+}
 
 const FGameplayTagContainer* UGameplayAbilityBase::GetCooldownTags() const
 {
@@ -35,4 +58,10 @@ void UGameplayAbilityBase::ApplyCooldown(const FGameplayAbilitySpecHandle Handle
 ABaseCharacter* UGameplayAbilityBase::GetCharacterFromActorInfo() const
 {
 	return (CurrentActorInfo ? Cast<ABaseCharacter>(CurrentActorInfo->AvatarActor.Get()) : nullptr);
+}
+
+AController* UGameplayAbilityBase::GetControllerFromActorInfo() const
+{
+	const ACharacter* Character = GetCharacterFromActorInfo();
+	return Character ? Character->GetController() : nullptr;
 }

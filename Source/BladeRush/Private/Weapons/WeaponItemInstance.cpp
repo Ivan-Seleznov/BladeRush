@@ -56,7 +56,7 @@ bool UWeaponItemInstance::CanFire() const
 	UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
 	if (!MovementComponent) return false;
 
-	return IsFireRateValid() && !MovementComponent->IsFalling() && !MovementComponent->IsInMantle();
+	return IsFireRateValid() && !MovementComponent->IsInMantle();
 }
 
 bool UWeaponItemInstance::IsFireRateValid() const
@@ -88,13 +88,13 @@ FVector UWeaponItemInstance::CalculateBulletSpread(const float& Distance)
 	
 	FVector BulletSpreadValue = FVector::ZeroVector;
 
-	if (/*IsInScope() &&*/ !IsMoving() && GetCurrentFireRate() < AppliedSpreadFireRate)
+	if (/*IsInADS() &&*/ !IsMoving() && GetCurrentFireRate() < AppliedSpreadFireRate)
 	{
 		return BulletSpreadValue;
 	}
 	
 	float BulletSpreadAngle = BaseBulletSpreadAngle;
-	if (!IsInScope())
+	if (!IsInADS())
 	{
 		BulletSpreadAngle *= HipFireSpreadModifier;
 	}
@@ -124,24 +124,74 @@ void UWeaponItemInstance::UpdateFiringTime()
 
 void UWeaponItemInstance::AddRecoil()
 {
-	const ABaseCharacter* BaseCharacter = GetBaseCharacter();
+	ABaseCharacter* BaseCharacter = GetBaseCharacter();
 	if (!BaseCharacter) return;
 
 	UBladeRushAnimInstance* BladeRushAnimInstance = Cast<UBladeRushAnimInstance>(BaseCharacter->GetMesh()->GetLinkedAnimLayerInstanceByClass(WeaponVisualData.EquipAnimInstanceClass));
 	if (!BladeRushAnimInstance) return;
 
-	BladeRushAnimInstance->AddRecoil(WeaponRecoilData);
+	if (IsInADS())
+	{
+		BladeRushAnimInstance->AddRecoil(ADSWeaponRecoilData);
+	}
+	else
+	{
+		BladeRushAnimInstance->AddRecoil(WeaponRecoilData);
+	}
+	bShouldApplyRecoilControl = true;
+
+	//for debug. delete later
+	K2_Test_AddRecoil(BaseCharacter);
 }
 
 void UWeaponItemInstance::Tick(const float& DeltaTime)
 {
 	ABaseCharacter* BaseCharacter = GetBaseCharacter();
-	if (BaseCharacter)
+	if (!BaseCharacter) return;
+
+
+	if (ABaseWeaponActor* WeaponActor = GetSpawnedWeaponActor())
 	{
-		if (ABaseWeaponActor* WeaponActor = GetSpawnedWeaponActor())
+		BaseCharacter->SetHandSocketTransform(WeaponActor->GetHandSocketTransform());
+	}
+
+	if (BaseCharacter->IsLocallyControlled())
+	{
+		if (RecoilControlCurve && RecoilControlTimeElapsed < RecoilControlDuration && bShouldApplyRecoilControl)
 		{
-			BaseCharacter->SetHandSocketTransform(WeaponActor->GetHandSocketTransform());
+			const float Value = FMath::Lerp(0.f,RecoilControlLerpMultiplier,RecoilControlCurve->GetFloatValue(RecoilControlTimeElapsed)) * RecoilControlMultiplier;
+			DEBUG_LOG("TIME: %f , VAL: %f",DeltaTime,-Value);
+			
+			BaseCharacter->AddControllerPitchInput(-Value);
+			
+			RecoilControlTimeElapsed += DeltaTime;
+
+			if (RecoilControlTimeElapsed >= RecoilControlDuration)
+			{
+				bShouldApplyRecoilControl = false;
+				RecoilControlTimeElapsed = 0;
+			}
 		}
+	}
+}
+
+void UWeaponItemInstance::OnEnterADS()
+{
+	bIsInADS = true;
+	ABaseWeaponActor* WeaponActor = GetSpawnedWeaponActor();
+	if (WeaponActor)
+	{
+		WeaponActor->OnEnterADS(this);
+	}
+}
+
+void UWeaponItemInstance::OnExitADS()
+{
+	bIsInADS = false;
+	ABaseWeaponActor* WeaponActor = GetSpawnedWeaponActor();
+	if (WeaponActor)
+	{
+		WeaponActor->OnExitADS(this);
 	}
 }
 
