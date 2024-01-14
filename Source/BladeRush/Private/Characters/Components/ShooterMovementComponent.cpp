@@ -606,12 +606,12 @@ bool UShooterMovementComponent::CanSlide() const
 	bool bValidSurface = GetWorld()->LineTraceTestByProfile(Start, End, ProfileName, ShooterCharacterOwner->GetIgnoreCharacterParams());
 	bool bEnoughSpeed = Velocity.SizeSquared() > pow(MinSlideSpeed, 2);
 	
-	return bValidSurface && bEnoughSpeed && !IsMovementMode(MOVE_Falling);
+	return bValidSurface && bEnoughSpeed /*IsFalling()*/;
 }
 
 void UShooterMovementComponent::EnterSlide()
 {
-	CharacterOwner->bUseControllerRotationYaw = false;
+	//CharacterOwner->bUseControllerRotationYaw = false;
 	bWantsToCrouch = true;
 
 	Velocity += Velocity.GetSafeNormal2D() * SlideEnterImpulse;
@@ -623,7 +623,7 @@ void UShooterMovementComponent::EnterSlide()
 
 void UShooterMovementComponent::ExitSlide()
 {
-	CharacterOwner->bUseControllerRotationYaw = true;
+	//CharacterOwner->bUseControllerRotationYaw = true;
 	bWantsToCrouch = false;
 	
 	UE_LOG(LogTemp,Display,TEXT("ExitSlide"));
@@ -671,8 +671,10 @@ void UShooterMovementComponent::PhysSlide(float deltaTime, int32 Iterations)
 		SlopeForce.Z = 0.f;
 		Velocity += SlopeForce * SlideGravityForce * deltaTime;
 		
-		Acceleration = Acceleration.ProjectOnTo(UpdatedComponent->GetRightVector().GetSafeNormal2D());
-
+		//Acceleration = Acceleration.ProjectOnTo(UpdatedComponent->GetRightVector().GetSafeNormal2D());
+		//TODO: clamp acceleration
+		Acceleration *= 0;
+		
 		// Apply acceleration
 		CalcVelocity(timeTick,GroundFriction * SlideFrictionFactor, false, GetMaxBrakingDeceleration());
 		
