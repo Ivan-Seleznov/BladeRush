@@ -32,11 +32,13 @@ public:
 	virtual bool CanFire(const UWeaponItemInstance* WeaponInstance, const ABaseCharacter* Character,const APlayerController* PlayerController) const;
 	
 protected:
+	UPROPERTY(EditDefaultsOnly)
+	FShooterGameplayEffect FireEffect;
+	
 	void WeaponFire(const FGameplayAbilityActorInfo* ActorInfo,const FWeaponTraceData& StartWeaponTraceData, UWeaponItemInstance* WeaponInstance,OUT TArray<FHitResult> Impacts);
 	
 	FHitResult SingleBulletFire(const FWeaponTraceData& StartWeaponTraceData, UWeaponItemInstance* WeaponInstance,OUT TArray<FHitResult> Impacts);
 	FWeaponTraceData CalculateStartWeaponTraceData(ABaseCharacter* Character,APlayerController* PlayerController, UWeaponItemInstance* WeaponInstance) const;
-
 private:
 	UPROPERTY()
 	TObjectPtr<UInventoryItemInstance> InvItemInstance;

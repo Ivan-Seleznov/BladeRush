@@ -59,6 +59,7 @@ void FGameTags::AddTags()
 
 	AddTag(Ability_Sprint,"Ability.Sprint","Sprint ability");
 	AddTag(Ability_Weapon_ADS,"Ability.Weapon.ADS","ADS weapon ability");
+	AddTag(Ability_Weapon_Fire,"Ability.Weapon.Fire","Weapon fire ability");
 
 }
 

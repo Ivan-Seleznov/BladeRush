@@ -96,7 +96,9 @@ void UWeaponFireAbility::WeaponFire(const FGameplayAbilityActorInfo* ActorInfo,
 			//TODO: reg hits
 			//ApplyWeaponFire(Hit,WeaponInstance->GetWeaponVisualData().GameplayCueTag);
 		}
-	}	
+	}
+
+	ApplyGameplayEffect(FireEffect);
 }
 
 FHitResult UWeaponFireAbility::SingleBulletFire(const FWeaponTraceData& StartWeaponTraceData, UWeaponItemInstance* WeaponInstance,OUT TArray<FHitResult> Impacts)

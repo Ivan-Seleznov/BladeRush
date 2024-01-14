@@ -53,6 +53,7 @@ public:
 
 	FGameplayTag Ability_Sprint;
 	FGameplayTag Ability_Weapon_ADS;
+	FGameplayTag Ability_Weapon_Fire;
 
 private:
 	static FGameTags GameTags;

@@ -56,7 +56,7 @@ bool UWeaponItemInstance::CanFire() const
 	UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
 	if (!MovementComponent) return false;
 
-	return IsFireRateValid() && !MovementComponent->IsInMantle();
+	return IsFireRateValid() && !MovementComponent->IsInMantle() && !MovementComponent->Safe_bWantsToSprint;
 }
 
 bool UWeaponItemInstance::IsFireRateValid() const
