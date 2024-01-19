@@ -41,7 +41,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	float ViewYaw = 50.f;
 
-	UPROPERTY(VisibleAnywhere, Category = "CameraMode")
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category = "CameraMode")
 	UCameraMode* CurrentCameraMode;
 	
 	bool ShouldSetCustomViewData() const;

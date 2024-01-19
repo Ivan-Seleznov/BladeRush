@@ -38,6 +38,7 @@ void ABladeRushCameraManager::SetCameraMode(TSubclassOf<UCameraMode> CameraModeC
 	CameraMode->SetCameraManager(this);
 	
 	CurrentCameraMode = CameraModeClass.GetDefaultObject();
+
 	if (bShouldEnterCameraMode)
 	{
 		EnterCurrentCameraMode();

@@ -4,7 +4,9 @@
 #include "Weapons/BaseWeaponActor.h"
 
 #include "Characters/BaseCharacter.h"
+#include "Data/DecalDataAsset.h"
 #include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
 #include "Weapons/WeaponItemInstance.h"
 
 ABaseWeaponActor::ABaseWeaponActor()
@@ -51,7 +53,15 @@ FTransform ABaseWeaponActor::GetAimOffset() const
 }
 
 
-void ABaseWeaponActor::OnFire(UWeaponItemInstance* WeaponInstance)
+void ABaseWeaponActor::OnStartReloading(UWeaponItemInstance* WeaponInstance)
+{
+}
+
+void ABaseWeaponActor::OnFinishReloading(UWeaponItemInstance* WeaponInstance)
+{
+}
+
+void ABaseWeaponActor::OnClientHit(UWeaponItemInstance* WeaponInstance, TArray<FHitResult> HitResults)
 {
 	PlayWeaponAnimMontage(WeaponFireMontage);
 	PlayCharacterAnimMontage(CharacterFireMontage);
@@ -65,19 +75,17 @@ void ABaseWeaponActor::OnFire(UWeaponItemInstance* WeaponInstance)
 		PlayCameraShake(FireCameraShake);
 	}
 	
-	K2_OnFire(WeaponInstance);
+	HandleHits(WeaponInstance,HitResults);
+	
+	K2_ClientHit(WeaponInstance);
 }
 
-void ABaseWeaponActor::OnStartReloading(UWeaponItemInstance* WeaponInstance)
+void ABaseWeaponActor::OnServerHit(UWeaponItemInstance* WeaponInstance,const TArray<FHitResult>& HitResults)
 {
-}
-
-void ABaseWeaponActor::OnFinishReloading(UWeaponItemInstance* WeaponInstance)
-{
-}
-
-void ABaseWeaponActor::OnHit(UWeaponItemInstance* WeaponInstance, TArray<FHitResult> HitResults)
-{
+	if (HasAuthority())
+	{
+		OnHit_Multicast(WeaponInstance,HitResults);
+	}
 }
 
 void ABaseWeaponActor::OnEnterADS(UWeaponItemInstance* WeaponInstance)
@@ -89,6 +97,90 @@ void ABaseWeaponActor::OnExitADS(UWeaponItemInstance* WeaponInstance)
 {
 	K2_OnExitADS(WeaponInstance);
 }
+
+
+void ABaseWeaponActor::OnHit_Multicast_Implementation(UWeaponItemInstance* WeaponInstance,
+                                                      const TArray<FHitResult>& HitResults)
+{
+	if (!WeaponInstance) return;
+
+	const ABaseCharacter* Character = Cast<ABaseCharacter>(GetOwner());
+	if (!Character) return;
+	
+	if (Character->IsLocallyControlled())
+	{
+		return;
+	}
+
+	PlayWeaponAnimMontage(WeaponFireMontage);
+	PlayCharacterAnimMontage(CharacterFireMontage);
+	
+	WeaponInstance->AddRecoil();
+	
+	HandleHits(WeaponInstance,HitResults);
+}
+
+void ABaseWeaponActor::HandleHits(UWeaponItemInstance* WeaponInstance, const TArray<FHitResult>& HitResults)
+{
+	for (const FHitResult& Hit : HitResults)
+	{
+		HandleHit(WeaponInstance,Hit);
+	}
+
+	if (ShootSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(),ShootSound,GetActorLocation());
+	}
+	if (MuzzleFlashParticles)
+	{
+		UGameplayStatics::SpawnEmitterAttached(MuzzleFlashParticles,GetWeaponMesh(),MuzzleSocketName);
+	}
+	
+}
+
+
+void ABaseWeaponActor::HandleHit(UWeaponItemInstance* WeaponInstance, const FHitResult& Hit)
+{
+	if (bDrawDebugHits && HasAuthority())
+	{
+		DrawDebugPoint(GetWorld(),Hit.bBlockingHit ? Hit.Location : Hit.TraceEnd,5.f,FColor::Green,false,3.f);
+	}
+
+	SpawnDecal(Hit);
+	if (Hit.bBlockingHit)
+	{
+		if (HitParticles)
+		{
+			FTransform SpawnTransform;
+			SpawnTransform.SetLocation(Hit.Location);
+			SpawnTransform.SetScale3D(FVector(1,1,1));
+			SpawnTransform.SetRotation(Hit.Location.Rotation().Quaternion());
+		
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),HitParticles,SpawnTransform);
+		}
+	}
+}
+
+void ABaseWeaponActor::SpawnDecal(const FHitResult& Hit)
+{
+	if (!DecalData || !Hit.bBlockingHit) return;
+	
+	UMaterialInstance* DecalMaterial = nullptr;
+	if (Hit.PhysMaterial.IsValid())
+	{
+		DecalMaterial = DecalData->GetMaterialFromPhysicalSurface(Hit.PhysMaterial->SurfaceType);
+	}
+	else
+	{
+		DecalMaterial = DecalData->GetDefaultDecalMaterial();
+	}
+
+	if (DecalMaterial)
+	{
+		UGameplayStatics::SpawnDecalAtLocation(GetWorld(),DecalMaterial,DecalSize,Hit.Location,Hit.Location.Rotation(),DecalLifeTime);
+	}
+}
+
 
 void ABaseWeaponActor::PlayCameraShake(TSubclassOf<UCameraShakeBase> CameraShakeClass)
 {

@@ -7,6 +7,7 @@
 #include "BaseWeaponActor.generated.h"
 
 class UWeaponItemInstance;
+class UDecalDataAsset;
 
 UCLASS()
 class BLADERUSH_API ABaseWeaponActor : public AActor
@@ -23,16 +24,17 @@ public:
 	UFUNCTION(BlueprintPure)
 	FTransform GetAimOffset() const;
 
-	void OnFire(UWeaponItemInstance* WeaponInstance);
 	void OnStartReloading(UWeaponItemInstance* WeaponInstance);
 	void OnFinishReloading(UWeaponItemInstance* WeaponInstance);
-	void OnHit(UWeaponItemInstance* WeaponInstance,TArray<FHitResult> HitResults);
-
+	
+	void OnClientHit(UWeaponItemInstance* WeaponInstance,TArray<FHitResult> HitResults);
+	void OnServerHit(UWeaponItemInstance* WeaponInstance,const TArray<FHitResult>& HitResults);
+	
 	void OnEnterADS(UWeaponItemInstance* WeaponInstance);
 	void OnExitADS(UWeaponItemInstance* WeaponInstance);
 	
 	UFUNCTION(BlueprintImplementableEvent)
-	void K2_OnFire(UWeaponItemInstance* WeaponInstance);
+	void K2_ClientHit(UWeaponItemInstance* WeaponInstance);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_OnEnterADS(UWeaponItemInstance* WeaponInstance);
@@ -40,6 +42,14 @@ public:
 	void K2_OnExitADS(UWeaponItemInstance* WeaponInstance);
 
 protected:
+	UFUNCTION(NetMulticast,Unreliable)
+	void OnHit_Multicast(UWeaponItemInstance* WeaponInstance,const TArray<FHitResult>& HitResults);
+
+	void HandleHits(UWeaponItemInstance* WeaponInstance,const TArray<FHitResult>& HitResults);
+
+	void HandleHit(UWeaponItemInstance* WeaponInstance, const FHitResult& Hit);
+	void SpawnDecal(const FHitResult& Hit);
+	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	USceneComponent* AimOffsetSceneComponent;
 	
@@ -55,6 +65,24 @@ protected:
 	TSubclassOf<UCameraShakeBase> FireCameraShake;
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	TSubclassOf<UCameraShakeBase> ADSFireCameraShake;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Decals")
+	UDecalDataAsset* DecalData;
+	UPROPERTY(EditDefaultsOnly, Category = "Decals")
+	FVector DecalSize = {10.f,10.f,10.f};
+	UPROPERTY(EditDefaultsOnly, Category = "Decals")
+	float DecalLifeTime = 4.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Particles")
+	UParticleSystem* HitParticles;
+	UPROPERTY(EditDefaultsOnly, Category = "Particles")
+	UParticleSystem* MuzzleFlashParticles;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sounds", meta=(AllowPrivateAccess=true))
+	USoundBase* ShootSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sounds", meta=(AllowPrivateAccess=true))
+	USoundBase* HitSurfaceSound;
 private:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,meta=(AllowPrivateAccess))
 	FName MuzzleSocketName = FName("muzzle_socket");
@@ -67,4 +95,8 @@ private:
 	void PlayCameraShake(TSubclassOf<UCameraShakeBase> CameraShakeClass);
 	void PlayWeaponAnimMontage(UAnimMontage* Montage) const;
 	void PlayCharacterAnimMontage(UAnimMontage* Montage) const;
+	
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Debug", meta=(AllowPrivateAccess=true))
+	bool bDrawDebugHits = true;
 };

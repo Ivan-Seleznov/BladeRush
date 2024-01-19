@@ -15,7 +15,8 @@
 				"EnhancedInput",
 				"ModularGameplay",
 				"CableComponent",
-				"CoreUObject"
+				"CoreUObject",
+				"NetCore"
 			]
 		}
 	],
@@ -66,6 +67,10 @@
 		},
 		{
 			"Name": "AssetSearch",
+			"Enabled": true
+		},
+		{
+			"Name": "AbilitySystemGameFeatureActions",
 			"Enabled": true
 		}
 	]

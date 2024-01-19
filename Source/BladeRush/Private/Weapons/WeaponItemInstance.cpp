@@ -79,14 +79,14 @@ float UWeaponItemInstance::GetTimeSinceLastFired() const
 	return TimeSinceLastFired;
 }
 
-FVector UWeaponItemInstance::CalculateBulletSpread(const float& Distance)
+FVector2D UWeaponItemInstance::CalculateBulletSpread(const float& Distance)
 {
 	if (BaseBulletSpreadAngle == 0)
 	{
-		return FVector::ZeroVector;
+		return FVector2d::ZeroVector;
 	}
 	
-	FVector BulletSpreadValue = FVector::ZeroVector;
+	FVector2D BulletSpreadValue = FVector2d::ZeroVector;
 
 	if (/*IsInADS() &&*/ !IsMoving() && GetCurrentFireRate() < AppliedSpreadFireRate)
 	{
@@ -107,7 +107,7 @@ FVector UWeaponItemInstance::CalculateBulletSpread(const float& Distance)
 	const float Radius = FMath::Tan(FMath::DegreesToRadians(BulletSpreadAngle)) * MaxTraceDistance;
 	BulletSpreadValue = RandPointInCircle(Radius);
 	BulletSpreadValue.X += GetCurrentFireRate() * FireRateSpreadModifier;
-	BulletSpreadValue.Z += GetCurrentFireRate() * FireRateSpreadModifier;
+	BulletSpreadValue.Y += GetCurrentFireRate() * FireRateSpreadModifier;
 
 	FString LogString = FString::Printf(TEXT("HipfireMod: %f | MovingMod: %f | BulletSpreadAngle: %f | Radius: %f | SpreadVector: %s"),HipFireSpreadModifier,MovingSpreadModifier,BulletSpreadAngle,Radius,*BulletSpreadValue.ToString());
 	DEBUG_LOG("%s",*LogString);
@@ -216,15 +216,15 @@ bool UWeaponItemInstance::IsMoving() const
 	return GetCharacterVelocity().Length() > 5.f;
 }
 
-FVector UWeaponItemInstance::RandPointInCircle(float Radius) const
+FVector2D UWeaponItemInstance::RandPointInCircle(float Radius) const
 {
-	FVector Result = FVector::ZeroVector;
+	FVector2D Result = FVector2D::ZeroVector;
 	const float RandomAngle = FMath::RandRange(0.f,360.f);
 	const float DistanceFromCircle = FMath::RandRange(0.f,Radius);
 
 	const float AngleRadians = FMath::DegreesToRadians(RandomAngle);
 	Result.X = DistanceFromCircle * FMath::Cos(AngleRadians);
-	Result.Z = DistanceFromCircle * FMath::Sin(AngleRadians);
+	Result.Y = DistanceFromCircle * FMath::Sin(AngleRadians);
 	return Result;
 }
 

@@ -11,15 +11,15 @@ public class BladeRush : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore","EnhancedInput","DataRegistry"});
 
 		PrivateDependencyModuleNames.AddRange(new string[] 
-		{
-		"GameplayAbilities",
+		{ 
+		 "GameplayAbilities",
 		 "GameplayTags",	
 		 "GameplayTasks",
 		 "Slate", "SlateCore",
-		 /*"OnlineSubsystem",*/
 		 "CableComponent",
 		 "ModularGameplay",
-		 "NetCore"
+		 "NetCore",
+		 "PhysicsCore"
 		});
 	}
 }

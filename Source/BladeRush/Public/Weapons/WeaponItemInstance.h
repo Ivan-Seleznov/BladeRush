@@ -68,7 +68,7 @@ public:
 	float GetCurrentFireRate() const;
 	float GetTimeSinceLastFired() const;
 	
-	FVector CalculateBulletSpread(const float& Distance);
+	FVector2D CalculateBulletSpread(const float& Distance);
 	bool IsInADS() const {return bIsInADS;}
 	void UpdateFiringTime();
 
@@ -149,7 +149,7 @@ private:
 	bool bShouldApplyRecoilControl = false;
 	
 	bool IsMoving() const;
-	FVector RandPointInCircle(float Radius) const;
+	FVector2D RandPointInCircle(float Radius) const;
 
 	UCharacterMovementComponent* GetCharacterMovementComponent() const;
 	const FVector& GetCharacterVelocity() const;
