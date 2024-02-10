@@ -7,8 +7,10 @@
 #include "Animation/BladeRushAnimInstance.h"
 #include "Characters/BaseCharacter.h"
 #include "Characters/Components/ShooterMovementComponent.h"
+#include "Equipment/EquipmentManagerComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Weapons/BaseWeaponActor.h"
+#include "Weapons/MagazineItemInstance.h"
 
 UWeaponItemInstance::UWeaponItemInstance(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -23,6 +25,14 @@ void UWeaponItemInstance::OnEquipped()
 		return;
 	}
 	BaseCharacter->GetMesh()->LinkAnimClassLayers(WeaponVisualData.EquipAnimInstanceClass);
+
+	if (BaseCharacter->HasAuthority() || BaseCharacter->IsLocallyControlled())
+	{
+		if (!CurrentMagazine)
+		{
+			FindNewMagazineInstance();
+		}
+	}
 }
 
 void UWeaponItemInstance::OnUnequipped()
@@ -36,6 +46,7 @@ void UWeaponItemInstance::OnUnequipped()
 	}
 
 	BaseCharacter->GetMesh()->UnlinkAnimClassLayers(WeaponVisualData.EquipAnimInstanceClass);
+	CurrentMagazine = nullptr;
 }
 
 ABaseWeaponActor* UWeaponItemInstance::GetSpawnedWeaponActor() const
@@ -56,7 +67,9 @@ bool UWeaponItemInstance::CanFire() const
 	UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
 	if (!MovementComponent) return false;
 
-	return IsFireRateValid() && !MovementComponent->IsInMantle() && !MovementComponent->Safe_bWantsToSprint;
+	if (!CurrentMagazine) return false;
+	
+	return IsFireRateValid() && !CurrentMagazine->IsOutOfAmmo() && !MovementComponent->IsInMantle() && !MovementComponent->Safe_bWantsToSprint;
 }
 
 bool UWeaponItemInstance::IsFireRateValid() const
@@ -122,6 +135,23 @@ void UWeaponItemInstance::UpdateFiringTime()
 	TimeLastFired = World->GetTimeSeconds();
 }
 
+UMagazineItemInstance* UWeaponItemInstance::FindNewMagazineInstance() const
+{
+	ABaseCharacter* BaseCharacter = GetBaseCharacter();
+	if (!BaseCharacter || !MagazineType) return nullptr;
+
+	UEquipmentManagerComponent* EquipmentManager = BaseCharacter->GetEquipmentManagerComponent();
+	if (!EquipmentManager) return nullptr;
+	
+	UMagazineItemInstance* MagazineItemInstance = Cast<UMagazineItemInstance>(EquipmentManager->GetFirstInstanceOfType(MagazineType));
+	return MagazineItemInstance;
+}
+
+void UWeaponItemInstance::SetNewMagazineItemInstance(UMagazineItemInstance* MagazineItemInstance)
+{
+	CurrentMagazine = MagazineItemInstance;
+}
+
 void UWeaponItemInstance::AddRecoil()
 {
 	ABaseCharacter* BaseCharacter = GetBaseCharacter();
@@ -142,6 +172,14 @@ void UWeaponItemInstance::AddRecoil()
 
 	//for debug. delete later
 	K2_Test_AddRecoil(BaseCharacter);
+}
+
+void UWeaponItemInstance::RemoveCartridge()
+{
+	if (CurrentMagazine)
+	{
+		CurrentMagazine->RemoveCartridge();
+	}
 }
 
 void UWeaponItemInstance::Tick(const float& DeltaTime)

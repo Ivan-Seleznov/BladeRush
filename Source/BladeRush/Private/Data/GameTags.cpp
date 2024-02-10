@@ -44,8 +44,9 @@ void FGameTags::AddTags()
 	AddTag(InputTag_Abilities_Crouch, "InputTag.Abilities.Crouch", "On activation ability crouch.");
 	AddTag(InputTag_Abilities_Jump, "InputTag.Abilities.Jump", "On activation ability jump.");
 	AddTag(InputTag_Abilities_TryGrappleHook,"InputTag.Abilities.TryGrappleHook","On activation ability TryGrappleHook.");
-	AddTag(InputTag_Abilities_Weapon_Fire,"InputTag.Abilities.Weapon.Fire","On activation weapon fire");
+	AddTag(InputTag_Abilities_Weapon_Fire,"InputTag.Abilities.Weapon.Fire","On activation weapon fire ability");
 	AddTag(InputTag_Abilities_ADS,"InputTag.Abilities.ADS","On activation ads ability");
+	AddTag(InputTag_Abilities_Weapon_Reload,"InputTag.Abilities.Weapon.Reload","On activation weapon reload ability");
 
 	AddTag(Disable_Ability_Sprint,"Disable.Ability.Sprint","Disabled sprint ability");
 

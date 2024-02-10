@@ -6,6 +6,7 @@
 #include "Equipment/EquipmentInstance.h"
 #include "WeaponItemInstance.generated.h"
 
+class UMagazineItemInstance;
 class UBladeRushAnimInstance;
 class UCharacterMovementComponent;
 class ABaseWeaponActor;
@@ -78,7 +79,14 @@ public:
 	const FWeaponRecoilData& GetWeaponRecoilData() const {return WeaponRecoilData;}
 	const FWeaponVisualData& GetWeaponVisualData() const {return WeaponVisualData;}
 	
+	UMagazineItemInstance* GetCurrentMagazine() const {return CurrentMagazine;}
+	TSubclassOf<UMagazineItemInstance> GetMagazineType() const {return MagazineType;}
+
+	UMagazineItemInstance* FindNewMagazineInstance() const;
+	void SetNewMagazineItemInstance(UMagazineItemInstance* MagazineItemInstance);
+	
 	void AddRecoil();
+	void RemoveCartridge();
 	
 	void Tick(const float& DeltaTime);
 	void OnEnterADS();
@@ -93,6 +101,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	FWeaponVisualData WeaponVisualData;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon|Magazine", meta=(AllowPrivateAccess=true))
+	TSubclassOf<UMagazineItemInstance> MagazineType;
+	UPROPERTY(BlueprintReadOnly)
+	UMagazineItemInstance* CurrentMagazine;
+	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	FWeaponRecoilData WeaponRecoilData;
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
@@ -138,7 +151,7 @@ protected:
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Weapon|Spread")
 	float MovingSpreadModifier = 1.3f;
-
+	
 private:
 	double TimeLastEquipped = 0.0;
 	double TimeLastFired = 0.0;

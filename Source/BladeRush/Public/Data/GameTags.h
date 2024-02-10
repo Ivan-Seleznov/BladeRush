@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -29,10 +30,10 @@ public:
 	FGameplayTag InputTag_Abilities_TryGrappleHook;
 	FGameplayTag InputTag_Abilities_Weapon_Fire;
 	FGameplayTag InputTag_Abilities_ADS;
+	FGameplayTag InputTag_Abilities_Weapon_Reload;
 
 	FGameplayTag InputTag_Move;
 	FGameplayTag InputTag_Look;
-
 	
 	FGameplayTag InputTag_QuickBar_Slot1;
 	FGameplayTag InputTag_QuickBar_Slot2;
@@ -55,6 +56,9 @@ public:
 	FGameplayTag Ability_Weapon_ADS;
 	FGameplayTag Ability_Weapon_Fire;
 
+	//Ammo
+	FGameplayTag Ammo_Type_1;
+	FGameplayTag Ammo_Type_2;
 private:
 	static FGameTags GameTags;
 };

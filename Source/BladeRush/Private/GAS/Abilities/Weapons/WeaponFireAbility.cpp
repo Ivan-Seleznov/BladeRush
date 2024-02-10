@@ -79,8 +79,8 @@ void UWeaponFireAbility::ActivateAbilityWithTargetData(const FGameplayAbilityTar
 	const FGameplayAbilityActorInfo* ActorInfo = GetCurrentActorInfo();
 	check(ActorInfo);
 
-	UWeaponItemInstance* WeaponItemInstance = GetWeaponInstance();
-	check(WeaponItemInstance);
+	UWeaponItemInstance* WeaponInstance = GetWeaponInstance();
+	check(WeaponInstance);
 	
 	if (!ActorInfo->IsNetAuthority())
 	{
@@ -95,6 +95,7 @@ void UWeaponFireAbility::ActivateAbilityWithTargetData(const FGameplayAbilityTar
 			if (TargetDataHandle.Get(i))
 			{
 				Hits.Add(*TargetDataHandle.Get(i)->GetHitResult());
+				WeaponInstance->RemoveCartridge();
 			}
 		}
 		
@@ -103,7 +104,7 @@ void UWeaponFireAbility::ActivateAbilityWithTargetData(const FGameplayAbilityTar
 			ApplyGameplayEffect(FireEffect);
 		}
 
-		if (ABaseWeaponActor* WeaponActor = WeaponItemInstance->GetSpawnedWeaponActor())
+		if (ABaseWeaponActor* WeaponActor = WeaponInstance->GetSpawnedWeaponActor())
 		{
 			WeaponActor->OnServerHit(GetWeaponInstance(),Hits);
 		}
@@ -130,6 +131,7 @@ void UWeaponFireAbility::WeaponFire(const FGameplayAbilityActorInfo* ActorInfo,
 	{
 		Hits.Add(SingleBulletFire(StartWeaponTraceData,WeaponInstance,Impacts));
 		WeaponInstance->UpdateFiringTime();
+		WeaponInstance->RemoveCartridge();
 	}
 
 	ABaseWeaponActor* WeaponActor = WeaponInstance->GetSpawnedWeaponActor();

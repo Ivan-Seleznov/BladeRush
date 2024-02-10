@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InventoryItemInstance.h" // TODO: remove enum from inventory item instance
 #include "Components/ActorComponent.h"
 #include "Net/Serialization/FastArraySerializer.h"
 #include "InventoryManagerComponent.generated.h"
 
-enum ESlotType : int;
 class UInventoryItemDefinition;
 class UInventoryItemInstance;
 class UInventoryManagerComponent;

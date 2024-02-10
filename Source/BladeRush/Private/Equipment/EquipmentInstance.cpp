@@ -74,14 +74,14 @@ ABaseCharacter* UEquipmentInstance::GetBaseCharacter() const
 	APawn* Pawn = GetPawn();
 	if (!Pawn)
 	{
-		UE_LOG(LogTemp,Error,TEXT("Weapon instance does not have pawn owner"));
+		UE_LOG(LogTemp,Error,TEXT("Equipment instance does not have pawn owner"));
 		return nullptr;
 	}
 
 	ABaseCharacter* BaseCharacter = Cast<ABaseCharacter>(Pawn);
 	if (!BaseCharacter)
 	{
-		UE_LOG(LogTemp,Error,TEXT("Weapon intacnce does not have BaseCharacter owner"));
+		UE_LOG(LogTemp,Error,TEXT("Equipment intacnce does not have BaseCharacter owner"));
 		return nullptr;
 	}
 
