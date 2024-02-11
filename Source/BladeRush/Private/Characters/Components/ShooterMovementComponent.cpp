@@ -670,22 +670,25 @@ void UShooterMovementComponent::PhysSlide(float deltaTime, int32 Iterations)
 		FVector SlopeForce = CurrentFloor.HitResult.Normal;
 		SlopeForce.Z = 0.f;
 		Velocity += SlopeForce * SlideGravityForce * deltaTime;
-
-		if (FMath::Abs(FVector::DotProduct(Acceleration.GetSafeNormal(),UpdatedComponent->GetRightVector())) > 0.5f)
-		{
-			Acceleration = Acceleration.ProjectOnTo(UpdatedComponent->GetRightVector()) * 0.6f;
-		}
-		else
-		{
-			Acceleration = FVector::ZeroVector;
-		}
-		//DEBUG_LOG("Slide acceleration: %s",*Acceleration.ToString());
 		
+		float MoveDirection = FVector::DotProduct(Velocity.GetSafeNormal(),GetCurrentAcceleration().GetSafeNormal());
+		
+		if (MoveDirection < -0.6f)
+		{
+			UnCrouch();
+			SetMovementMode(MOVE_Walking);
+			StartNewPhysics(deltaTime, Iterations);
+			return;
+		}
+
+		Acceleration *= SlideAccelerationFactor;
+		
+		Velocity += Acceleration * deltaTime;
 		ApplyVelocityBraking(deltaTime,GroundFriction * SlideFrictionFactor,GetMaxBrakingDeceleration());
 		
-		//TODO: Fix & apply acceleration
+		DEBUG_LOG("Slide acceleration: %s | Move direction dot product: %f | Vel: %s" ,*Acceleration.ToString(),MoveDirection, *Velocity.ToString());
 		//CalcVelocity(timeTick,GroundFriction * SlideFrictionFactor, false, GetMaxBrakingDeceleration());
-
+		
 		// Compute move parameters
 		const FVector MoveVelocity = Velocity;
 		const FVector Delta = timeTick * MoveVelocity;

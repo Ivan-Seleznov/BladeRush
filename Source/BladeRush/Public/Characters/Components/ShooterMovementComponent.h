@@ -217,10 +217,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly,Category="Slide")
 	float SlideGravityForce=4000.f;
 	UPROPERTY(EditDefaultsOnly,Category="Slide")
-	float SlideFrictionFactor=.06f;
+	float SlideFrictionFactor = 0.06f;
 	UPROPERTY(EditDefaultsOnly,Category="Slide")
 	float BrakingDecelerationSliding=1000.f;
-
+	UPROPERTY(EditDefaultsOnly,Category="Slide")
+	float SlideAccelerationFactor = 0.45f;
+	
 	/*WallRun*/
 	UPROPERTY(EditDefaultsOnly,Category="WallRun")
 	float MinWallRunSpeed = 300.f;
