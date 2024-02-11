@@ -27,20 +27,17 @@ void UShooterHeroComponent::InitializePlayerInput(UEnhancedInputComponent* Playe
 			Subsystem->AddMappingContext(MappingContext, 0);
 
 			const FGameTags GameTags = FGameTags::Get();
-			for (const FShooterInputAction& Action : InputConfig->AbilityInputActions)
-			{
-				TArray<uint32> BindHandles;
-				BindAbilityActions(PlayerInputComponent,this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
+			TArray<uint32> BindHandles;
+			
+			BindAbilityActions(PlayerInputComponent,this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
 				
-				BindNativeAction(PlayerInputComponent,GameTags.InputTag_Look, ETriggerEvent::Triggered, this, &UShooterHeroComponent::Look, /*bLogIfNotFound=*/ false);
-				BindNativeAction(PlayerInputComponent,GameTags.InputTag_Move, ETriggerEvent::Triggered, this, &UShooterHeroComponent::Move, /*bLogIfNotFound=*/ false);
+			BindNativeAction(PlayerInputComponent,GameTags.InputTag_Look, ETriggerEvent::Triggered, this, &UShooterHeroComponent::Look, /*bLogIfNotFound=*/ false);
+			BindNativeAction(PlayerInputComponent,GameTags.InputTag_Move, ETriggerEvent::Triggered, this, &UShooterHeroComponent::Move, /*bLogIfNotFound=*/ false);
 
-				BindNativeAction(PlayerInputComponent,GameTags.InputTag_QuickBar_Slot0, ETriggerEvent::Triggered, this, &UShooterHeroComponent::Input_QuickBarSlot0, /*bLogIfNotFound=*/ false);
-				BindNativeAction(PlayerInputComponent,GameTags.InputTag_QuickBar_Slot1, ETriggerEvent::Triggered, this, &UShooterHeroComponent::Input_QuickBarSlot1, /*bLogIfNotFound=*/ false);
-				BindNativeAction(PlayerInputComponent,GameTags.InputTag_QuickBar_Slot2, ETriggerEvent::Triggered, this, &UShooterHeroComponent::Input_QuickBarSlot2, /*bLogIfNotFound=*/ false);
-				BindNativeAction(PlayerInputComponent,GameTags.InputTag_QuickBar_Slot3, ETriggerEvent::Triggered, this, &UShooterHeroComponent::Input_QuickBarSlot3, /*bLogIfNotFound=*/ false);
-
-			}
+			BindNativeAction(PlayerInputComponent,GameTags.InputTag_QuickBar_Slot0, ETriggerEvent::Triggered, this, &UShooterHeroComponent::Input_QuickBarSlot0, /*bLogIfNotFound=*/ false);
+			BindNativeAction(PlayerInputComponent,GameTags.InputTag_QuickBar_Slot1, ETriggerEvent::Triggered, this, &UShooterHeroComponent::Input_QuickBarSlot1, /*bLogIfNotFound=*/ false);
+			BindNativeAction(PlayerInputComponent,GameTags.InputTag_QuickBar_Slot2, ETriggerEvent::Triggered, this, &UShooterHeroComponent::Input_QuickBarSlot2, /*bLogIfNotFound=*/ false);
+			BindNativeAction(PlayerInputComponent,GameTags.InputTag_QuickBar_Slot3, ETriggerEvent::Triggered, this, &UShooterHeroComponent::Input_QuickBarSlot3, /*bLogIfNotFound=*/ false);
 		}
 	}
 }
@@ -115,7 +112,7 @@ void UShooterHeroComponent::Look(const FInputActionValue& Value)
 	{
 		Character->AddControllerYawInput(LookAxisVector.X);
 		Character->AddControllerPitchInput(LookAxisVector.Y);
-
+		
 		if (APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(Character))
 		{
 			PlayerCharacter->SetMouseAxisValue(LookAxisVector.X,LookAxisVector.Y);

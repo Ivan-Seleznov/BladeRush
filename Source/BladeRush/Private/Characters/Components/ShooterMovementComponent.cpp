@@ -670,14 +670,22 @@ void UShooterMovementComponent::PhysSlide(float deltaTime, int32 Iterations)
 		FVector SlopeForce = CurrentFloor.HitResult.Normal;
 		SlopeForce.Z = 0.f;
 		Velocity += SlopeForce * SlideGravityForce * deltaTime;
+
+		if (FMath::Abs(FVector::DotProduct(Acceleration.GetSafeNormal(),UpdatedComponent->GetRightVector())) > 0.5f)
+		{
+			Acceleration = Acceleration.ProjectOnTo(UpdatedComponent->GetRightVector()) * 0.6f;
+		}
+		else
+		{
+			Acceleration = FVector::ZeroVector;
+		}
+		//DEBUG_LOG("Slide acceleration: %s",*Acceleration.ToString());
 		
-		//Acceleration = Acceleration.ProjectOnTo(UpdatedComponent->GetRightVector().GetSafeNormal2D());
-		//TODO: clamp acceleration
-		Acceleration *= 0;
+		ApplyVelocityBraking(deltaTime,GroundFriction * SlideFrictionFactor,GetMaxBrakingDeceleration());
 		
-		// Apply acceleration
-		CalcVelocity(timeTick,GroundFriction * SlideFrictionFactor, false, GetMaxBrakingDeceleration());
-		
+		//TODO: Fix & apply acceleration
+		//CalcVelocity(timeTick,GroundFriction * SlideFrictionFactor, false, GetMaxBrakingDeceleration());
+
 		// Compute move parameters
 		const FVector MoveVelocity = Velocity;
 		const FVector Delta = timeTick * MoveVelocity;
