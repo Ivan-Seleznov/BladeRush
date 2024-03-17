@@ -31,7 +31,6 @@ void UShooterMovementComponent::InitializeComponent()
 void UShooterMovementComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(ThisClass, MoveVector);
 	DOREPLIFETIME(ThisClass,bInMantle);
 }
 
@@ -174,16 +173,57 @@ FNetworkPredictionData_Client* UShooterMovementComponent::GetPredictionData_Clie
 void UShooterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
 {
 	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);
-
-	if (PreviousMovementMode == MOVE_Custom && PreviousCustomMode == CMOVE_Grappling) ExitGrapple();
 	
-	if (PreviousMovementMode == MOVE_Custom && PreviousCustomMode == CMOVE_Slide) ExitSlide();
-	if (IsCustomMovementMode(CMOVE_Slide)) EnterSlide();
-	
-	if (IsCustomMovementMode(CMOVE_WallRun) && GetOwnerRole() == ROLE_SimulatedProxy)
+	if (PreviousMovementMode == MOVE_Custom)
 	{
-		FHitResult WallHit;
-		Safe_bWallRunIsRight = IsWallOnSideTrace(WallHit,true);
+		ExitCustomMovementMode(PreviousMovementMode);
+	}
+	
+	if (MovementMode == MOVE_Custom)
+	{
+		EnterCustomMovementMode();
+	}
+}
+
+void UShooterMovementComponent::ExitCustomMovementMode(EMovementMode PreviousMovementMode)
+{
+	switch (PreviousMovementMode)
+	{
+	case CMOVE_Slide:
+		ExitSlide();
+		break;
+			
+	case CMOVE_Grappling:
+		ExitGrapple();
+		break;
+			
+	case CMOVE_WallRun:
+		ExitWallRun();
+		break;
+			
+	default:
+		break;
+	}
+}
+
+void UShooterMovementComponent::EnterCustomMovementMode()
+{
+	switch (CustomMovementMode)
+	{
+	case CMOVE_Slide:
+		EnterSlide();
+		break;
+			
+	case CMOVE_Grappling:
+		EnterGrapple();
+		break;
+			
+	case CMOVE_WallRun:
+		EnterWallRun();
+		break;
+			
+	default:
+		break;
 	}
 }
 
@@ -197,8 +237,8 @@ void UShooterMovementComponent::UpdateCharacterStateAfterMovement(float DeltaSec
 		if (bInMantle)
 		{
 			bInMantle = false;
-			ShooterCharacterOwner->bUseControllerRotationYaw = true;
-
+			EndCurrentMovementAction();
+			
 			if (CharacterOwner->HasAuthority())
 			{
 				DEBUG_SLOG("SERVER MantleFinished",FColor::Orange)
@@ -223,11 +263,17 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 {
 	Super::UpdateCharacterStateBeforeMovement(DeltaSeconds);
 
-	if (!bInMantle)
+	if (CanUpdateCharacterRotation())
 	{
-		ShooterCharacterOwner->bUseControllerRotationYaw = true;	
+		UpdateCharacterRotation(DeltaSeconds);
+		UE_LOG(LogTemp,Display,TEXT("PrevRot: %f | CurrentRot: %f , Left: %i, Right: %i "),PrevRotationYaw,UpdatedComponent->GetComponentRotation().Yaw,bCharacterRotatingLeft,bCharacterRotatingRight);
 	}
-
+	else
+	{
+		SetDefaultRotationData();
+	}
+	
+	PrevRotationYaw = UpdatedComponent->GetComponentRotation().Yaw;
 	
 	//WallRun
 	if (IsFalling())
@@ -272,7 +318,7 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 			if (TryMantle())
 			{
 				ShooterCharacterOwner->StopJumping();
-				ShooterCharacterOwner->bUseControllerRotationYaw = false;
+				//ShooterCharacterOwner->bUseControllerRotationYaw = false;
 				bInMantle = true;
 			}
 			else
@@ -303,7 +349,7 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 		{
 			DEBUG_SLOG(TEXT("CLIENT Transition Finished"),FColor::Blue);
 		}
-		if (TransitionName == ETransitionName::TNAME_Mantle)
+		if (TransitionName == ETransitionName::Mantle)
 		{
 			if (IsValid(TransitionQueuedMontage) && TransitionQueuedMontage->HasRootMotion())
 			{
@@ -321,8 +367,9 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 			else
 			{
 				SetMovementMode(MOVE_Walking);
-				ShooterCharacterOwner->bUseControllerRotationYaw = true;
+
 				bInMantle = false;
+				EndCurrentMovementAction();
 			}
 			Safe_bTransitionFinished = false;
 		}
@@ -352,6 +399,99 @@ void UShooterMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
 void UShooterMovementComponent::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void UShooterMovementComponent::UpdateCharacterRotation(float DeltaTime)
+{
+	if (!IsRotatingAroundYaw())
+	{
+		SetDefaultRotationData();
+		bEndRotating = true;
+		return;
+	}
+
+
+	if (bEndRotating)
+	{
+		StartRotationYaw = UpdatedComponent->GetComponentRotation().Yaw;
+		bEndRotating = false;
+	}
+
+	const float DeltaRotation = FMath::Abs(UpdatedComponent->GetComponentRotation().Yaw) - FMath::Abs(StartRotationYaw);
+	UE_LOG(LogTemp,Display,TEXT("Current[%f] - Start[%f] =  DeltaRot[%f]"),FMath::Abs(UpdatedComponent->GetComponentRotation().Yaw),FMath::Abs(StartRotationYaw), FMath::Abs(DeltaRotation))
+	if (FMath::Abs(DeltaRotation) >= RotationThreshold)
+	{
+		if (UpdatedComponent->GetComponentRotation().Yaw > PrevRotationYaw)
+		{
+			bCharacterRotatingLeft = false;
+			bCharacterRotatingRight = true;
+			GEngine->AddOnScreenDebugMessage(-1,0.f,FColor::Green,"RIGHT");
+		}
+		else
+		{
+			bCharacterRotatingRight = false;
+			bCharacterRotatingLeft = true;
+			GEngine->AddOnScreenDebugMessage(-1,0.f,FColor::Blue,"LEFT");
+		}
+	}
+	else
+	{
+		SetDefaultRotationData();
+	}
+
+	RotationTimeElapsed += DeltaTime;
+}
+
+void UShooterMovementComponent::StartNewMovementAction(EMovementAction NewMovementAction)
+{
+	const EMovementAction PrevMovementAction = CurrentMovementAction;
+	CurrentMovementAction = NewMovementAction;
+	
+	switch (CurrentMovementAction)
+	{
+	case EMovementAction::Mantle:
+		EnterMantle();
+		break;
+		
+	default:
+		break;
+	}
+	
+	MovementActionStartedDelegate.Broadcast(CurrentMovementAction,PrevMovementAction);
+}
+
+void UShooterMovementComponent::EndCurrentMovementAction()
+{
+	const EMovementAction EndedMovementAction = CurrentMovementAction;
+	CurrentMovementAction = EMovementAction::None;
+
+	MovementActionEndedDelegate.Broadcast(EndedMovementAction);
+
+	switch (EndedMovementAction)
+	{
+	case EMovementAction::Mantle:
+		ExitMantle();
+		break;
+		
+	default:
+		break;
+	}
+}
+
+
+bool UShooterMovementComponent::CanUpdateCharacterRotation() const
+{
+	return !CharacterOwner->HasAnyRootMotion() && !IsMoving();
+}
+
+bool UShooterMovementComponent::IsMoving() const
+{
+	return Velocity.Length() > 1.f && Acceleration.Length() > 0;
+}
+
+bool UShooterMovementComponent::IsRotatingAroundYaw() const
+{
+	return !FMath::IsNearlyEqual(PrevRotationYaw,UpdatedComponent->GetComponentRotation().Yaw,0.001f);
 }
 
 float UShooterMovementComponent::GetMaxSpeed() const
@@ -443,7 +583,6 @@ bool UShooterMovementComponent::CanCrouchInCurrentState() const
 #pragma region Mantle
 bool UShooterMovementComponent::TryMantle()
 {
-	//CharacterOwner->bUseControllerRotationYaw = false;
 	FCollisionQueryParams CollisionQueryParams = ShooterCharacterOwner->GetIgnoreCharacterParams();
 	const FVector BaseLoc = UpdatedComponent->GetComponentLocation() + FVector::DownVector * GetCapsuleHalfHeight(); 
 	const FVector Fwd = UpdatedComponent->GetForwardVector().GetSafeNormal2D();
@@ -482,7 +621,12 @@ bool UShooterMovementComponent::TryMantle()
 	GetWorld()->LineTraceMultiByProfile(TopWallHits,TopTraceStart,FrontHit.Location + Fwd,ProfileName,CollisionQueryParams);
 	for (const FHitResult& TopHit : TopWallHits)
 	{
-		if (TopHit.IsValidBlockingHit()) TopWallSurfaceHit = TopHit;
+		if (TopHit.IsValidBlockingHit())
+		{
+			TopWallSurfaceHit = TopHit;
+			break;
+		}
+			
 	}
 	if (!TopWallSurfaceHit.IsValidBlockingHit() && (TopWallSurfaceHit.Normal | FVector::UpVector) < CosMMSA) return false;
 
@@ -491,7 +635,7 @@ bool UShooterMovementComponent::TryMantle()
 
 	//Capsule check
 	float SurfaceCos = FVector::UpVector | TopWallSurfaceHit.Normal;
-	float SurfaceSin = FMath::Sqrt(1- SurfaceCos * SurfaceCos);
+	float SurfaceSin = FMath::Sqrt(1 - SurfaceCos * SurfaceCos);
 	
 	FVector CapsuleLoc = TopWallSurfaceHit.Location + Fwd * GetCapsuleRadius() + FVector::UpVector * (GetCapsuleHalfHeight() + 1 + GetCapsuleRadius() * 2 * SurfaceSin);
 
@@ -504,19 +648,19 @@ bool UShooterMovementComponent::TryMantle()
 	DEBUG_CAPSULE(CapsuleLoc,FColor::Green);
 
 	//Mantle Selection
-	EMantleType MantleType = EMantleType::TMANTLE_Short;
+	EMantleType MantleType = EMantleType::Short;
 
 	if (WallHeight > GetCapsuleHalfHeight() * 2)
 	{
 		if (IsMovementMode(MOVE_Walking))
 		{
-			MantleType = EMantleType::TMANTLE_Tall;	
+			MantleType = EMantleType::Tall;	
 		}
 		if (IsMovementMode(MOVE_Falling) && (Velocity | FVector::UpVector) < 0)
 		{
-			if (!GetWorld()->OverlapAnyTestByProfile(GetMantleStartLocation(FrontHit,TopWallSurfaceHit,EMantleType::TMANTLE_Tall),FQuat::Identity,ProfileName,CapShape,CollisionQueryParams))
+			if (!GetWorld()->OverlapAnyTestByProfile(GetMantleStartLocation(FrontHit,TopWallSurfaceHit,EMantleType::Tall),FQuat::Identity,ProfileName,CapShape,CollisionQueryParams))
 			{
-				MantleType = EMantleType::TMANTLE_Tall;
+				MantleType = EMantleType::Tall;
 			}
 		}
 	}
@@ -543,18 +687,18 @@ bool UShooterMovementComponent::TryMantle()
 	Velocity = FVector::ZeroVector;
 	SetMovementMode(MOVE_Flying);
 	TransitionRMS_ID = ApplyRootMotionSource(TransitionRMS);
-	TransitionName = ETransitionName::TNAME_Mantle;
+	TransitionName = ETransitionName::Mantle;
 	
 	//Animations
 	UAnimMontage* TransitionMontage = nullptr;
 	CurrentProxyMontage = nullptr;
-	if (MantleType == EMantleType::TMANTLE_Tall)
+	if (MantleType == EMantleType::Tall)
 	{
 		TransitionQueuedMontage = TallMantleAnimData.MantleMontage;
 		TransitionMontage = TallMantleAnimData.TransitionMontage;
 		CurrentProxyMontage = TallMantleAnimData.ProxyMontage;
 	}
-	else if (MantleType == EMantleType::TMANTLE_Short)
+	else if (MantleType == EMantleType::Short)
 	{
 		TransitionQueuedMontage = ShortMantleAnimData.MantleMontage;
 		TransitionMontage = ShortMantleAnimData.TransitionMontage;
@@ -571,19 +715,26 @@ bool UShooterMovementComponent::TryMantle()
 		CurrentProxyMontage = nullptr;
 		CurrentProxyMontage = nullptr;
 	}
-	
+
+	StartNewMovementAction(EMovementAction::Mantle);
 	return true;
 }
 
 FVector UShooterMovementComponent::GetMantleStartLocation(const FHitResult& FrontHit, const FHitResult& SurfaceHit, EMantleType MantleType) const
 {
-	float CosWallAngle = FrontHit.Normal | FVector::UpVector;
+	const float CosWallAngle = FrontHit.Normal | FVector::UpVector;
 	float DownDistance = 0;
-	if (MantleType == EMantleType::TMANTLE_Short) DownDistance = (MaxStepHeight - 1) - ShortMantleTransitionZOffset;
-	else if (MantleType == EMantleType::TMANTLE_Tall) DownDistance = (GetCapsuleHalfHeight() * 2.f) - TallMantleTransitionZOffset;
+	
+	if (MantleType == EMantleType::Short)
+	{
+		DownDistance = (MaxStepHeight - 1) - ShortMantleTransitionZOffset;
+	}
+	else if (MantleType == EMantleType::Tall)
+	{
+		DownDistance = (GetCapsuleHalfHeight() * 2.f) - TallMantleTransitionZOffset;
+	}
 
-	FVector EdgeTangent = FVector::CrossProduct(SurfaceHit.Normal,FrontHit.Normal);
-	GEngine->AddOnScreenDebugMessage(-1,2,FColor::Green,FString::Printf(TEXT("Edge Tangent: %s"),*EdgeTangent.ToString()));
+	const FVector EdgeTangent = FVector::CrossProduct(SurfaceHit.Normal,FrontHit.Normal);
 
 	FVector MantleStart = SurfaceHit.Location;
 	MantleStart += FrontHit.Normal.GetSafeNormal2D() * (2.f + GetCapsuleRadius());
@@ -600,11 +751,13 @@ FVector UShooterMovementComponent::GetMantleStartLocation(const FHitResult& Fron
 #pragma region Slide
 bool UShooterMovementComponent::CanSlide() const
 {
-	FVector Start = UpdatedComponent->GetComponentLocation();
-	FVector End = Start + CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2.5f * FVector::DownVector;
-	FName ProfileName = TEXT("BlockAll");
-	bool bValidSurface = GetWorld()->LineTraceTestByProfile(Start, End, ProfileName, ShooterCharacterOwner->GetIgnoreCharacterParams());
-	bool bEnoughSpeed = Velocity.SizeSquared() > pow(MinSlideSpeed, 2);
+	const FVector Start = UpdatedComponent->GetComponentLocation();
+	const FVector End = Start + CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2.5f * FVector::DownVector;
+	
+	const FName ProfileName = TEXT("BlockAll");
+	
+	const bool bValidSurface = GetWorld()->LineTraceTestByProfile(Start, End, ProfileName, ShooterCharacterOwner->GetIgnoreCharacterParams());
+	const bool bEnoughSpeed = Velocity.SizeSquared() > pow(MinSlideSpeed, 2);
 	
 	return bValidSurface && bEnoughSpeed /*IsFalling()*/;
 }
@@ -618,15 +771,13 @@ void UShooterMovementComponent::EnterSlide()
 
 	FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, true, NULL);
 
-	UE_LOG(LogTemp,Warning,TEXT("EnterSlide"));
 }
 
 void UShooterMovementComponent::ExitSlide()
 {
 	//CharacterOwner->bUseControllerRotationYaw = true;
 	bWantsToCrouch = false;
-	
-	UE_LOG(LogTemp,Display,TEXT("ExitSlide"));
+
 }
 
 void UShooterMovementComponent::PhysSlide(float deltaTime, int32 Iterations)
@@ -877,6 +1028,16 @@ bool UShooterMovementComponent::IsWallOnSideTrace(FHitResult& WallHit,bool bWall
 	return GetWorld()->LineTraceSingleByChannel(WallHit,Start,End,ECC_Visibility,ShooterCharacterOwner->GetIgnoreCharacterParams());
 }
 
+void UShooterMovementComponent::EnterMantle()
+{
+	CharacterOwner->bUseControllerRotationYaw = false;
+}
+
+void UShooterMovementComponent::ExitMantle()
+{
+	CharacterOwner->bUseControllerRotationYaw = true;
+}
+
 float UShooterMovementComponent::GetCapsuleRadius() const
 {
 	return CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleRadius();
@@ -894,14 +1055,31 @@ ACharacter* UShooterMovementComponent::GetDefaultCharacter() const
 #pragma endregion
 
 #pragma region WallRun
+
+void UShooterMovementComponent::EnterWallRun()
+{
+	if (GetOwnerRole() == ROLE_SimulatedProxy)
+	{
+		FHitResult WallHit;
+		Safe_bWallRunIsRight = IsWallOnSideTrace(WallHit,true);
+	}
+}
+
+void UShooterMovementComponent::ExitWallRun()
+{
+}
+
 bool UShooterMovementComponent::TryWallRun()
 {
-	if (!IsFalling()) return false;
-	if (Velocity.SizeSquared2D() < pow(MinWallRunSpeed,2)) return false;
-	if (Velocity.Z < -MaxVerticalWallRunSpeed) return false; //If player fall very quickly, he can not enter the wall run
-	
-	FHitResult FloorHit;
+	/*If player is not falling or falling very quickly, he can not enter the wall run*/
+	// TODO: put the conditions into separate variables?
+	if (!IsFalling() || (Velocity.SizeSquared2D() < pow(MinWallRunSpeed,2)) || (Velocity.Z < -MaxVerticalWallRunSpeed) || (Velocity.Z < -MaxVerticalWallRunSpeed))
+	{
+		return false;
+	}
+
 	//Player height check
+	FHitResult FloorHit;
 	if (GetWorld()->LineTraceSingleByChannel(FloorHit,
 		UpdatedComponent->GetComponentLocation(),
 		UpdatedComponent->GetComponentLocation() + FVector::DownVector * (GetCapsuleHalfHeight() + MinWallRunHeight),
@@ -930,11 +1108,12 @@ bool UShooterMovementComponent::TryWallRun()
 		}
 		
 	}
+	
 	FVector ProjectedVelocity = FVector::VectorPlaneProject(Velocity,WallHit.Normal);
 	Velocity = ProjectedVelocity;
 	Velocity.Z = FMath::Clamp(Velocity.Z,0.f,MaxVerticalWallRunSpeed);
+	
 	SetMovementMode(MOVE_Custom,CMOVE_WallRun);
-	DEBUG_SLOG("Start WallRun", FColor::Blue);
 	
 	return true;
 }
@@ -1033,6 +1212,15 @@ void UShooterMovementComponent::PhysWallRun(float DeltaTime, int32 Iterations)
 }
 
 
+
+#pragma endregion
+
+#pragma region GrappingHook
+
+void UShooterMovementComponent::EnterGrapple()
+{
+}
+
 void UShooterMovementComponent::ExitGrapple()
 {
 	Safe_bWantsToGrapple = false;
@@ -1041,12 +1229,12 @@ void UShooterMovementComponent::ExitGrapple()
 	OnGrappleExit.Broadcast(ShooterCharacterOwner);
 }
 
-#pragma endregion
-
-#pragma region GrappingHook
 bool UShooterMovementComponent::TryGrapple()
 {
-	if (!ShooterCharacterOwner->IsLocallyControlled()) return false;
+	if (!ShooterCharacterOwner->IsLocallyControlled())
+	{
+		return false;
+	}
 	
 	ShooterCharacterOwner->GetCableComponent()->SetVisibility(true);
 
@@ -1131,7 +1319,7 @@ void UShooterMovementComponent::StopGrappling()
 
 void UShooterMovementComponent::OnRep_bInMantle(bool OldbInMantle)
 {
-	ShooterCharacterOwner->bUseControllerRotationYaw = OldbInMantle;
+	/*ShooterCharacterOwner->bUseControllerRotationYaw = OldbInMantle;
 	if (ShooterCharacterOwner->bUseControllerRotationYaw)
 	{
 		DEBUG_SLOG("bUserControllerRotationYaw = true",FColor::Green);
@@ -1139,7 +1327,7 @@ void UShooterMovementComponent::OnRep_bInMantle(bool OldbInMantle)
 	else
 	{
 		DEBUG_SLOG("bUserControllerRotationYaw = false",FColor::Red);
-	}
+	}*/
 }
 
 void UShooterMovementComponent::PhysGrappling(float DeltaTime, int32 Iterations)
@@ -1204,10 +1392,17 @@ void UShooterMovementComponent::PhysGrappling(float DeltaTime, int32 Iterations)
 		UE_LOG(LogTemp,Display,TEXT("Length: %f: "),CharacterToAttachPointVec.Length());
 		SetMovementMode(MOVE_Falling);
 		StartNewPhysics(DeltaTime, Iterations);
-		//GEngine->AddOnScreenDebugMessage(-1,5,FColor::Cyan,FString::Printf(TEXT("END GRAPPLING (CharacterToAttachPointVec.GetSafeNormal() | GrapplingHookAttachData.SurfaceNormal) : %f > 0 | CharacterToAttachPointVec.Length(): %f <= GrapplingReleasedDistance: %f"),(CharacterToAttachPointVec.GetSafeNormal() | GrapplingHookAttachData.SurfaceNormal), CharacterToAttachPointVec.Length(),GrapplingReleasedDistance));
 		return;
 	}
 	
+}
+
+void UShooterMovementComponent::SetDefaultRotationData()
+{
+	RotationTimeElapsed = 0.f;
+
+	bCharacterRotatingLeft = false;
+	bCharacterRotatingRight = false;
 }
 
 void UShooterMovementComponent::Server_ExitGrapple_Implementation()

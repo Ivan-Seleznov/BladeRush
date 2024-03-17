@@ -3,6 +3,7 @@
 
 #include "Characters/BaseCharacter.h"
 #include "CableComponent.h"
+#include "Camera/BladeRushCameraManager.h"
 #include "Characters/Components/PlayerHealthComponent.h"
 #include "Characters/Components/ShooterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -82,6 +83,16 @@ void ABaseCharacter::TryApplyAbilitySet(const UShooterAbilitySet* AbilitySet, bo
 	{
 		AbilitySet->GiveToAbilitySystem(AbilitySystemComponent, &GrantedHandles);
 	}
+}
+
+ABladeRushCameraManager* ABaseCharacter::GetBladeRushCameraManager() const
+{
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		return Cast<ABladeRushCameraManager>(PC->PlayerCameraManager);
+	}
+
+	return nullptr;
 }
 
 void ABaseCharacter::Jump()
@@ -216,6 +227,11 @@ void ABaseCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	CableComponent->SetVisibility(false);
+
+	if (ABladeRushCameraManager* CameraManager = GetBladeRushCameraManager())
+	{
+		CameraManager->InitCameraManagerPawn(this);	
+	}
 }
 
 void ABaseCharacter::Multicast_StartDeath_Implementation()

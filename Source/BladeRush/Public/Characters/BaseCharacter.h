@@ -8,6 +8,7 @@
 #include "GAS/ShooterAbilitySet.h"
 #include "BaseCharacter.generated.h"
 
+class ABladeRushCameraManager;
 class UEquipmentManagerComponent;
 class UPlayerHealthComponent;
 class UShooterMovementComponent;
@@ -42,6 +43,8 @@ public:
 	FORCEINLINE UPlayerHealthComponent* GetPlayerHealthComponent() const {return PlayerHealthComponent;}
 	FORCEINLINE UCableComponent* GetCableComponent() const {return CableComponent;}
 	FORCEINLINE UEquipmentManagerComponent* GetEquipmentManagerComponent() const {return EquipmentManagerComponent;}
+
+	ABladeRushCameraManager* GetBladeRushCameraManager() const;
 	
 	virtual void Jump() override;
 	virtual void StopJumping() override;
@@ -68,8 +71,8 @@ public:
 	bool bPlayerPressedJump;
 	
 	virtual void Tick(float DeltaSeconds) override;
+	
 protected:
-
 	UFUNCTION(Client, Unreliable)
 	void TryApplyAbilitySet_Server(const UShooterAbilitySet* AbilitySet, bool bCancelEarlySet = false);
 

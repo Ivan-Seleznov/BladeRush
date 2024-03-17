@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "BladeRushGlobals.h"
 #include "ShooterMovementComponent.generated.h"
 
 #define ERROR_VALUE -1.f;
@@ -13,30 +14,23 @@ class UCableComponent;
 class ABaseCharacter;
 class AGrapplingHookProjectile;
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnGrappleExit, ABaseCharacter* /*Character*/)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnGrappleExit, ABaseCharacter* /*Character*/);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMovementActionStartedDelegate, TEnumAsByte<EMovementAction> ,CurrentMovementAction, TEnumAsByte<EMovementAction>, PrevMovementAction);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMovementActionEndedDelegate, TEnumAsByte<EMovementAction>, EndedMovementAction);
 
 UENUM(BlueprintType)
-enum ECustomMovementMode
+enum class ETransitionName  : uint8
 {
-	CMOVE_None		UMETA(Hidden),
-	CMOVE_Slide		UMETA(DisplayName = "Slide"),
-	CMOVE_WallRun	UMETA(DisplayName="WallRun"),
-	CMOVE_Grappling UMETA(DisplayName="Grappling"),
-	CMOVE_Max		UMETA(Hidden)
+	None,
+	Mantle
 };
 
 UENUM(BlueprintType)
-enum ETransitionName
+enum class EMantleType : uint8
 {
-	TNAME_None		UMETA(DispayName="NoneTransition"),
-	TNAME_Mantle	UMETA(DispayName="MantleTransition"),
-};
-
-UENUM(BlueprintType)
-enum EMantleType
-{
-	TMANTLE_Tall	UMETA(DispayName="TallMantle"),
-	TMANTLE_Short	UMETA(DispayName="ShortMantle"),
+	Tall,
+	Short
 };
 
 USTRUCT()
@@ -53,6 +47,7 @@ struct FMantleAnimData
 	UPROPERTY(EditDefaultsOnly)
 	UAnimMontage* ProxyMontage;
 };
+
 
 USTRUCT()
 struct FGrapplingHookAttachData
@@ -110,23 +105,60 @@ class BLADERUSH_API UShooterMovementComponent : public UCharacterMovementCompone
 		
 		virtual FSavedMovePtr AllocateNewMove() override;
 	};
+
 	
 public:
-	
-	UShooterMovementComponent();
-	virtual void InitializeComponent() override;
-	
-	virtual FNetworkPredictionData_Client* GetPredictionData_Client() const override;
-	
+	/*Safe variables & fags*/
 	/*Client flag*/
 	bool Safe_bWantsToSprint;
 	bool Safe_bWantsToGrapple;
 	
 	/*Other variables*/
 	bool Safe_bWantsToSlide;
+	bool Safe_bWallRunIsRight;
+	
+	UShooterMovementComponent();
+
+	FMovementActionStartedDelegate MovementActionStartedDelegate;
+	FMovementActionEndedDelegate MovementActionEndedDelegate;
+	
+	FOnGrappleExit OnGrappleExit;
+	
+	virtual FNetworkPredictionData_Client* GetPredictionData_Client() const override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	virtual void InitializeComponent() override;
+	virtual void BeginPlay() override;
+	
+	virtual float GetMaxSpeed() const override;
+	virtual float GetMaxBrakingDeceleration() const override;
+	
+	virtual bool CanAttemptJump() const override;
+	virtual bool DoJump(bool bReplayingMoves) override;
+	
+	virtual bool IsMovingOnGround() const override;
+
+	virtual bool CanCrouchInCurrentState() const override;
+
+	UFUNCTION(BlueprintPure)
+	TEnumAsByte<EMovementAction> GetCurrentMovementAction() const {return CurrentMovementAction;}
 	
 	UFUNCTION(BlueprintCallable)
 	bool TryGrapple();
+	void StartGrappling(const FGrapplingHookAttachData& AttachData);
+	void StopGrappling();
+	
+	UFUNCTION(BlueprintPure)
+	bool CanGrapple() const;
+	
+	UFUNCTION(BlueprintPure)
+	bool CanSprint() const;
+
+	UFUNCTION(BlueprintPure)
+	bool CanSlide() const;
+
+	UFUNCTION(BlueprintPure)
+	bool CanUpdateCharacterRotation() const;
 	
 	UFUNCTION(BlueprintPure)
 	bool IsMovementMode(EMovementMode InMovementMode) const;
@@ -136,20 +168,6 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	bool IsInMantle() const {return bInMantle;}
-	
-	virtual float GetMaxSpeed() const override;
-	virtual float GetMaxBrakingDeceleration() const override;
-	
-	virtual bool CanAttemptJump() const override;
-	virtual bool DoJump(bool bReplayingMoves) override;
-	
-	bool CanSprint() const;
-	bool CanGrapple() const;
-	
-	void StartGrappling(const FGrapplingHookAttachData& AttachData);
-	void StopGrappling();
-
-	FOnGrappleExit OnGrappleExit;
 	
 	UFUNCTION(BlueprintPure)
 	bool IsWallRunning() const {return IsCustomMovementMode(CMOVE_WallRun);} 
@@ -163,21 +181,45 @@ public:
 	UFUNCTION(BlueprintPure)
 	bool IsWallRunningRight() const {return Safe_bWallRunIsRight;}
 	
+	UFUNCTION(BlueprintPure)
+	bool IsMoving() const;
+
+	UFUNCTION(BlueprintPure)
+	bool IsRotatingAroundYaw() const;
+
+	UFUNCTION(BlueprintPure)
+	bool IsTurningRight() const {return bCharacterRotatingRight;}
+
+	UFUNCTION(BlueprintPure)
+	bool IsTurningLeft() const {return bCharacterRotatingLeft;}
+
+protected:
+	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
+
+	virtual void UpdateCharacterStateAfterMovement(float DeltaSeconds) override;
+	virtual void UpdateCharacterStateBeforeMovement(float DeltaSeconds) override;
+
+	virtual void PhysCustom(float deltaTime, int32 Iterations) override;
+	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
+
+	void ExitCustomMovementMode(EMovementMode PreviousMovementMode);
+	void EnterCustomMovementMode();
+	
+	virtual void UpdateCharacterRotation(float DeltaTime);
+
+	void StartNewMovementAction(EMovementAction NewMovementAction);
+	void EndCurrentMovementAction();
+	
+	/*Helpers*/
+	ACharacter* GetDefaultCharacter() const;
+	
 	/*Sprint*/
 	UPROPERTY(EditDefaultsOnly,Category="Sprint")
 	float MaxSprintSpeed = 500.f;
 
 	UPROPERTY(EditDefaultsOnly,Category="Sprint|Crouching")
 	float MaxCrouchingSprintSpeed = 350.f;
-
-	bool CanSlide() const;
 	
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-
-	virtual bool IsMovingOnGround() const override;
-	virtual bool CanCrouchInCurrentState() const override;
-protected:
 	/*Mantle*/
 	UPROPERTY(EditDefaultsOnly,Category="Mantle")
 	float MantleMaxWallHeight = 300.f;
@@ -243,7 +285,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly,Category="WallRun")
 	UCurveFloat* WallRunGravityScaleCurve;
-
 	
 	/*Grappling hook*/
 	UPROPERTY(EditDefaultsOnly,Category="Grappling")
@@ -265,21 +306,8 @@ protected:
 	UPROPERTY(Transient)
 	ABaseCharacter* ShooterCharacterOwner;
 
-	UPROPERTY(Replicated)
-	FVector_NetQuantize MoveVector;
-	
-	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
-	ACharacter* GetDefaultCharacter() const;
-
-	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
-
-	virtual void UpdateCharacterStateAfterMovement(float DeltaSeconds) override;
-	virtual void UpdateCharacterStateBeforeMovement(float DeltaSeconds) override;
-
-	virtual void PhysCustom(float deltaTime, int32 Iterations) override;
-
-	virtual void BeginPlay() override;
 private:
+	/*Slide*/
 	void EnterSlide();
 	void ExitSlide();
 
@@ -287,17 +315,33 @@ private:
 	bool GetSlideSurface(FHitResult& Hit) const;
 
 	bool IsWallOnSideTrace(FHitResult& WallHit, bool bWallRight) const;
-
-	/*Call on client*/
-	bool TryMantle();
+	
+	/*Mantle*/
+	void EnterMantle();
+	void ExitMantle();
+	
+	bool TryMantle(); // should be called on the client
 	
 	FVector GetMantleStartLocation(const FHitResult& FrontHit, const FHitResult& SurfaceHit, EMantleType MantleType) const;
 	float GetCapsuleRadius() const;
 	float GetCapsuleHalfHeight() const;
 
+	UFUNCTION(NetMulticast,Unreliable)
+	void Multicast_PlayMantleProxyAnim(UAnimMontage* ProxyMontage);
+	
+	/*WallRun*/
+	void EnterWallRun();
+	void ExitWallRun();
+	
 	bool TryWallRun();
 	void PhysWallRun(float DeltaTime, int32 Iterations);
 
+	/*Grappling hook*/
+	void EnterGrapple();
+	void ExitGrapple();
+
+	void PhysGrappling(float DeltaTime,int32 Iterations);
+	
 	AGrapplingHookProjectile* SpawnGrapplingHookProjectile(const FVector& Location, const FVector& Direction);
 	void EnableGrapplingHookCableComponent(bool bEnabled);
 	
@@ -309,8 +353,15 @@ private:
 
 	UFUNCTION(Server,Reliable)
 	void Server_SetGrapplingHookAttachPoint(const FGrapplingHookAttachData& AttachData);
+    
+	UFUNCTION(Unreliable,Server)
+	void Server_ExitGrapple();
+    	
+	UFUNCTION(Unreliable,NetMulticast)
+	void Multicast_ExitGrapple();
 	
-	void ExitGrapple();
+	void SetDefaultRotationData();
+	
 	
 	bool Safe_bTransitionFinished;
 	
@@ -322,38 +373,35 @@ private:
 	int TransitionRMS_ID;
 	ETransitionName TransitionName;
 
-	bool Safe_bWallRunIsRight;
-
-	UPROPERTY(Replicated,ReplicatedUsing=OnRep_bInMantle)
-	bool bInMantle;
-
+	
 	UFUNCTION()
 	void OnRep_bInMantle(bool OldbInMantle);
-	
-	void PhysGrappling(float DeltaTime,int32 Iterations);
-	
-	//FHitResult AttachPointHit;
+	UPROPERTY(Replicated,ReplicatedUsing=OnRep_bInMantle)
+	bool bInMantle;
 	
 	FGrapplingHookAttachData GrapplingHookAttachData;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Grappling|Projectile")
 	TSubclassOf<AGrapplingHookProjectile> ProjectileClass;
-	
 	UPROPERTY()
 	AGrapplingHookProjectile* GrapplingHookProjectile;
 
 	UPROPERTY()
 	const UMovementAttributeSet* MovementAttributeSet;
 
-	UFUNCTION(NetMulticast,Unreliable)
-	void Multicast_PlayMantleProxyAnim(UAnimMontage* ProxyMontage);
-
-	UFUNCTION(Unreliable,Server)
-	void Server_ExitGrapple();
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,meta=(AllowPrivateAccess=true))
+	float RotationThreshold = 10.f;
+	float PrevRotationYaw = 0.f;
+	float RotationTimeElapsed = 0.f;
 	
-	UFUNCTION(Unreliable,NetMulticast)
-	void Multicast_ExitGrapple();
+	float StartRotationYaw;
+	bool bEndRotating;
+	
+	bool bCharacterRotatingLeft = false;
+	bool bCharacterRotatingRight = false;
 	
 	UPROPERTY()
 	UAnimMontage* CurrentProxyMontage;
+
+	UPROPERTY(VisibleAnywhere)
+	TEnumAsByte<EMovementAction> CurrentMovementAction = EMovementAction::None;
 };

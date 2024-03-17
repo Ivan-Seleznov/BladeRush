@@ -9,11 +9,6 @@
 #include "GAS/Attributes/AttributeStamina.h"
 
 
-UCrouchSlidePlayerAbility::UCrouchSlidePlayerAbility()
-{
-	bCrouching = false;
-}
-
 void UCrouchSlidePlayerAbility::InputPressed(const FGameplayAbilitySpecHandle Handle,
                                         const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
 {
@@ -86,17 +81,25 @@ void UCrouchSlidePlayerAbility::EndAbility(const FGameplayAbilitySpecHandle Hand
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 	
 	ABaseCharacter* Character = GetCharacterFromActorInfo();
-	if (!Character) return;
+	if (!Character)
+	{
+		return;
+	}
 
-	if (!SlideEffect.GameplayEffect) return;
+	if (!SlideEffect.GameplayEffect)
+	{
+		return;
+	}
 	Character->GetAbilitySystemComponent()->RemoveActiveGameplayEffectBySourceEffect(SlideEffect.GameplayEffect, nullptr);
 	
 	Character->UnCrouch();
-	
 }
 
 void UCrouchSlidePlayerAbility::MovementModeChanged(ACharacter* Character, EMovementMode PrevMovementMode,
 	uint8 PreviousCustomMode)
 {
-	if (PrevMovementMode == CMOVE_Slide) EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+	if (PrevMovementMode == MOVE_Custom && PreviousCustomMode == CMOVE_Slide)
+	{
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+	}
 }
