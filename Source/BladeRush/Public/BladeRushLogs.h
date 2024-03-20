@@ -19,6 +19,9 @@
 #define DEBUG_LOG(Format, ...)                                                                                           \
 UE_LOG(LogTemp, Warning, TEXT("%s : %s"), *CURRENT_CLASS_FUNC_LINE, *FString::Printf(TEXT(Format), ##__VA_ARGS__));
 
+#define DEBUG_ERROR_LOG(Format, ...)                                                                                           \
+UE_LOG(LogTemp, Error, TEXT("%s : %s"), *CURRENT_CLASS_FUNC_LINE, *FString::Printf(TEXT(Format), ##__VA_ARGS__));
+
 #define DEBUG_SLOG(x,c)		GEngine->AddOnScreenDebugMessage(-1,3.f,c,x);
 #define DEBUG_POINT(x,c)	DrawDebugPoint(GetWorld(),x,10,c, false,3.f);
 #define DEBUG_LINE(x1,x2,c) DrawDebugLine(GetWorld(),x1,x2,c,false,3.f);

@@ -10,7 +10,7 @@
 #include "Equipment/EquipmentManagerComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
-#include "GAS/Attributes/AttributeHealth.h"
+#include "GAS/Attributes/AttributeHitPoints.h"
 #include "Weapons/WeaponItemInstance.h"
 
 ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer)

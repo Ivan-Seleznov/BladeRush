@@ -7,7 +7,7 @@
 #include "Characters/BaseCharacter.h"
 #include "GameMods/BladeRushGameMode.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
-#include "GAS/Attributes/AttributeHealth.h"
+#include "GAS/Attributes/AttributeHitPoints.h"
 #include "Kismet/GameplayStatics.h"
 
 UPlayerHealthComponent::UPlayerHealthComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -25,16 +25,16 @@ void UPlayerHealthComponent::BeginPlay()
 	const UPlayerAbilitySystemComponent* AbilitySystemComponent = Cast<UPlayerAbilitySystemComponent>(OwnerCharacter->GetAbilitySystemComponent());
 	if (!AbilitySystemComponent) return;
 	
-	HealthAttributeSet = UAttributeHealth::Find(AbilitySystemComponent);
+	HealthAttributeSet = UAttributeHitPoints::Find(AbilitySystemComponent);
 	if (!HealthAttributeSet) return;
 
 	
-	HealthAttributeSet->OnOutOfHealthPoints.AddUObject(this,&ThisClass::HandleOutOfHealth);
+	OwnerCharacter->GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(UAttributeHitPoints::GetHitPointsAttribute()).AddUObject(this, &ThisClass::OnHitPointsChanged);
 }
 
 float UPlayerHealthComponent::GetHealth() const
 {
-	return HealthAttributeSet ? HealthAttributeSet->GetHealthPoints() : 0.f;
+	return HealthAttributeSet ? HealthAttributeSet->GetHitPoints() : 0.f;
 }
 
 void UPlayerHealthComponent::HandleOutOfHealth(AActor* DamageInstigator, AActor* DamageCauser,
@@ -51,6 +51,29 @@ void UPlayerHealthComponent::HandleOutOfHealth(AActor* DamageInstigator, AActor*
 	if (!GameMode) return;
 	
 	GameMode->CharacterDied(Character);
+}
+
+void UPlayerHealthComponent::OnHitPointsChanged(const FOnAttributeChangeData& ChangeData)
+{
+	if (ChangeData.NewValue <= 0)
+	{
+		ABaseCharacter* Character = Cast<ABaseCharacter>(GetOwner());
+		if (!Character)
+		{
+			return;
+		}
+		
+		OnDeathFinished.Broadcast(GetOwner());
+		CharacterDeath_Client(Character);
+	
+		ABladeRushGameMode* GameMode = Cast<ABladeRushGameMode>(UGameplayStatics::GetGameMode(Character));
+		if (!GameMode)
+		{
+			return;
+		}
+	
+		GameMode->CharacterDied(Character);
+	}
 }
 
 void UPlayerHealthComponent::CharacterDeath_Client_Implementation(ABaseCharacter* Character)

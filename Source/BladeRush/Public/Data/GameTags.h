@@ -21,8 +21,10 @@ protected:
 	void AddMovementModeTag(FGameplayTag& OutTag, const ANSICHAR* TagName, uint8 MovementMode);
 	void AddCustomMovementModeTag(FGameplayTag& OutTag, const ANSICHAR* TagName, uint8 CustomMovementMode);
 
-public:
+private:
+	static FGameTags GameTags;
 
+public:
 	/*Input tags*/
 	FGameplayTag InputTag_Abilities_Sprint;
 	FGameplayTag InputTag_Abilities_Crouch;
@@ -56,9 +58,13 @@ public:
 	FGameplayTag Ability_Weapon_ADS;
 	FGameplayTag Ability_Weapon_Fire;
 
-	//Ammo
-	FGameplayTag Ammo_Type_1;
-	FGameplayTag Ammo_Type_2;
-private:
-	static FGameTags GameTags;
+	//Weapon
+	FGameplayTag Weapon_MagazineSize;
+	FGameplayTag Weapon_MagazineAmmo;
+	FGameplayTag Weapon_SpareAmmo;
+
+	//Data
+	FGameplayTag Data_Effect_Damage;
+	FGameplayTag Data_Chance_Crit;
+
 };

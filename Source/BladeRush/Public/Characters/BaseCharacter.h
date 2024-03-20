@@ -15,7 +15,7 @@ class UShooterMovementComponent;
 class UShooterAbilitySet;
 class UPlayerAbilitySystemComponent;
 class UAbilitySystemComponent;
-class UAttributeHealth;
+class UAttributeHitPoints;
 class UGameplayEffect;
 class UGameplayAbility;
 class UShooterCharacterData;

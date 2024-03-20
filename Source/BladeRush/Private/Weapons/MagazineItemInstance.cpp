@@ -3,6 +3,10 @@
 
 #include "Weapons/MagazineItemInstance.h"
 
+#include "Characters/BaseCharacter.h"
+#include "Equipment/EquipmentManagerComponent.h"
+#include "Weapons/WeaponItemInstance.h"
+
 int32 UMagazineItemInstance::AddCartridgeToMagazine(const int32& CartridgeCount)
 {
 	int32 AmmoToAdd = FMath::Min(CartridgeCount, MaxAmmoCount - CurrentAmmoCount);

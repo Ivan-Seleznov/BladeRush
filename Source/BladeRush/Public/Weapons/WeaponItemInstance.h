@@ -94,6 +94,12 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_Test_AddRecoil(ABaseCharacter* Character);
+
+	UFUNCTION(BlueprintPure)
+	float GetWeaponDamage(float Distance) const;
+	UFUNCTION(BlueprintPure)
+	float GetCriticalDamageChance() const;
+
 protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	int32 SpawnedWeaponActorIndex = 0;
@@ -151,6 +157,15 @@ protected:
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Weapon|Spread")
 	float MovingSpreadModifier = 1.3f;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Weapon|Damage")
+	float MaxWeaponDamage;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "Weapon|Damage", meta=(UIMin=0, ClampMin=0, UIMax=1, ClampMax=1))
+	float CriticalDamageChance;
+	
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Weapon|Damage")
+	UCurveFloat* DamageDistanceCurve;
 	
 private:
 	double TimeLastEquipped = 0.0;

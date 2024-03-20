@@ -111,13 +111,32 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	TArray<UEquipmentInstance*> GetEquipmentInstancesOfType(TSubclassOf<UEquipmentInstance> InstanceType) const;
 
-	template <typename T>
-	T* GetFirstInstanceOfType()
-	{
-		return (T*)GetFirstInstanceOfType(T::StaticClass());
-	}
+	template<typename T>
+	T* GetFirstInstanceOfType();
 
+	template<typename T>
+	TArray<T*> GetEquipmentInstancesOfType();
 private:
 	UPROPERTY(Replicated)
 	FEquipmentList EquipmentList;
 };
+
+template <typename T>
+T* UEquipmentManagerComponent::GetFirstInstanceOfType()
+{
+	return (T*)GetFirstInstanceOfType(T::StaticClass());
+}
+
+template <typename T>
+TArray<T*> UEquipmentManagerComponent::GetEquipmentInstancesOfType()
+{
+	TArray<T*> Results;
+	for (const FAppliedEquipmentEntry& Entry : EquipmentList.Entries)
+	{
+		if (T* Instance = Cast<T>(Entry.Instance))
+		{
+			Results.Add(Instance);
+		}
+	}
+	return Results;
+}

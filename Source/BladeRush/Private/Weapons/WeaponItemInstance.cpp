@@ -30,7 +30,7 @@ void UWeaponItemInstance::OnEquipped()
 	{
 		if (!CurrentMagazine)
 		{
-			FindNewMagazineInstance();
+			CurrentMagazine = FindNewMagazineInstance();
 		}
 	}
 }
@@ -67,9 +67,8 @@ bool UWeaponItemInstance::CanFire() const
 	UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
 	if (!MovementComponent) return false;
 
-	if (!CurrentMagazine) return false;
-	
-	return IsFireRateValid() && !CurrentMagazine->IsOutOfAmmo() && !MovementComponent->IsInMantle() && !MovementComponent->Safe_bWantsToSprint;
+	const bool bInMantle = MovementComponent->GetCurrentMovementAction() == EMovementAction::Mantle;
+	return IsFireRateValid() && !bInMantle && !MovementComponent->Safe_bWantsToSprint;
 }
 
 bool UWeaponItemInstance::IsFireRateValid() const
@@ -231,6 +230,26 @@ void UWeaponItemInstance::OnExitADS()
 	{
 		WeaponActor->OnExitADS(this);
 	}
+}
+
+float UWeaponItemInstance::GetWeaponDamage(float Distance) const
+{
+	float DamageMultiplier = 1.f;
+	if (DamageDistanceCurve)
+	{
+		DamageMultiplier = DamageDistanceCurve->GetFloatValue(Distance);
+	}
+	else
+	{
+		DEBUG_LOG("GetWeaponDamage does not have damage distance curve. Damage will be equal to MaxWeaponDamage");
+	}
+	
+	return MaxWeaponDamage * DamageMultiplier;
+}
+
+float UWeaponItemInstance::GetCriticalDamageChance() const
+{
+	return CriticalDamageChance;
 }
 
 UCharacterMovementComponent* UWeaponItemInstance::GetCharacterMovementComponent() const

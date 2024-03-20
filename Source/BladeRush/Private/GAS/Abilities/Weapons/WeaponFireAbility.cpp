@@ -5,6 +5,9 @@
 #include "BladeRushLogs.h"
 #include "AbilitySystemComponent.h"
 #include "Characters/BaseCharacter.h"
+#include "Characters/Components/HitReactComponent.h"
+#include "Data/GameTags.h"
+#include "Inventory/InventoryItemInstance.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Weapons/BaseWeaponActor.h"
 #include "Weapons/WeaponItemInstance.h"
@@ -51,8 +54,14 @@ void UWeaponFireAbility::ActivateLocalPlayerAbility(const FGameplayAbilitySpecHa
 	UWeaponItemInstance* WeaponItemInstance = GetWeaponInstance();
 	if (!WeaponItemInstance) return;
 
+	UInventoryItemInstance* InventoryItemInstance = GetAssociatedInventoryItemInstance();
+	if (!InventoryItemInstance)
+	{
+		return;
+	}
 
-	const bool bCanFire = CanFire(WeaponItemInstance,Character,PlayerController);
+	
+	const bool bCanFire = CanFire(WeaponItemInstance,InventoryItemInstance,Character,PlayerController);
 	if (!bCanFire)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, false,true);
@@ -81,24 +90,38 @@ void UWeaponFireAbility::ActivateAbilityWithTargetData(const FGameplayAbilityTar
 
 	UWeaponItemInstance* WeaponInstance = GetWeaponInstance();
 	check(WeaponInstance);
+
+	UInventoryItemInstance* InventoryItemInstance = GetAssociatedInventoryItemInstance();
+	check(InventoryItemInstance);
 	
+	
+	//for client-side prediction
 	if (!ActorInfo->IsNetAuthority())
 	{
-		return; 
+		return;
 	}
+
 	
 	if (ActorInfo->IsNetAuthority())
 	{
+		if (InventoryItemInstance->GetStatTagStackCount(FGameTags::Get().Weapon_MagazineAmmo) <= 0)
+		{
+			DEBUG_SLOG("Not confirm hit",FColor::Red);
+			EndAbility(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), GetCurrentActivationInfo(),true,false);
+		}
+		
+		InventoryItemInstance->RemoveStatTagStack(FGameTags::Get().Weapon_MagazineAmmo,1);
+		
 		TArray<FHitResult> Hits;
 		for (uint8 i = 0; (i < TargetDataHandle.Num()) && (i < 255); ++i)
 		{
 			if (TargetDataHandle.Get(i))
 			{
-				Hits.Add(*TargetDataHandle.Get(i)->GetHitResult());
-				WeaponInstance->RemoveCartridge();
+				FHitResult Hit = *TargetDataHandle.Get(i)->GetHitResult();
+				Hits.Add(Hit);
+				ApplyDamageToTarget(Hit,WeaponInstance);
 			}
 		}
-		
 		if (FireEffect.GameplayEffect)
 		{
 			ApplyGameplayEffect(FireEffect);
@@ -114,24 +137,41 @@ void UWeaponFireAbility::ActivateAbilityWithTargetData(const FGameplayAbilityTar
 }
 
 
-bool UWeaponFireAbility::CanFire(const UWeaponItemInstance* WeaponInstance, const ABaseCharacter* Character,
+bool UWeaponFireAbility::CanFire(const UWeaponItemInstance* WeaponInstance,  const UInventoryItemInstance* InventoryItemInstance, const ABaseCharacter* Character,
                                  const APlayerController* PlayerController) const
 {
-	//TODO: check ammo
-	return WeaponInstance && WeaponInstance->CanFire();
+	return WeaponInstance && WeaponInstance->CanFire() && InventoryItemInstance && InventoryItemInstance->GetStatTagStackCount(FGameTags::Get().Weapon_MagazineAmmo) > 0;
 }
 
 void UWeaponFireAbility::WeaponFire(const FGameplayAbilityActorInfo* ActorInfo,
 	const FWeaponTraceData& StartWeaponTraceData, UWeaponItemInstance* WeaponInstance, TArray<FHitResult> Impacts)
 {
-	WeaponInstance->AddRecoil(); // ?
+	//UInventoryItemInstance* InventoryItemInstance = GetAssociatedInventoryItemInstance();
+	//check(InventoryItemInstance);
 
+	//InventoryItemInstance->RemoveStatTagStack(FGameTags::Get().Weapon_MagazineAmmo,1);
+
+	UHitReactComponent* HitReactComponent = nullptr;
+	if (GetCharacterFromActorInfo())
+	{
+		HitReactComponent = GetCharacterFromActorInfo()->FindComponentByClass<UHitReactComponent>();
+	}
+	
+	WeaponInstance->AddRecoil(); // ?
+	
 	TArray<FHitResult> Hits;
 	for (int i = 0; i < WeaponInstance->GetBulletsPerCartridge(); i++)
 	{
-		Hits.Add(SingleBulletFire(StartWeaponTraceData,WeaponInstance,Impacts));
+		FHitResult Hit = SingleBulletFire(StartWeaponTraceData,WeaponInstance,Impacts);
+		Hits.Add(Hit);
+		
 		WeaponInstance->UpdateFiringTime();
 		WeaponInstance->RemoveCartridge();
+
+		if (HitReactComponent && Hit.GetActor())
+		{
+			HitReactComponent->OnHitReactClient(Hit);
+		}
 	}
 
 	ABaseWeaponActor* WeaponActor = WeaponInstance->GetSpawnedWeaponActor();
@@ -155,7 +195,48 @@ void UWeaponFireAbility::WeaponFire(const FGameplayAbilityActorInfo* ActorInfo,
 	{
 		ApplyGameplayEffect(FireEffect);
 	}
+	
+
 	NotifyTargetDataReady(TargetDataHandle, FGameplayTag());
+}
+
+void UWeaponFireAbility::ApplyDamageToTarget(const FHitResult& Hit, const UWeaponItemInstance* WeaponInstance)
+{
+	const FGameplayAbilityActorInfo* ActorInfo = GetCurrentActorInfo();
+	if (!ActorInfo) return;
+
+	const IAbilitySystemInterface* TargetAbilitySystem = Cast<IAbilitySystemInterface>(Hit.GetActor());
+	if (!TargetAbilitySystem)
+	{
+		return;
+	}
+	
+	if (!DamageEffect.GameplayEffect)
+	{
+		DEBUG_ERROR_LOG("No damage effect in fire ability");
+		return;
+	}
+	
+	FGameplayEffectContextHandle DamageEffectContextHandle = ActorInfo->AbilitySystemComponent->MakeEffectContext();
+	DamageEffectContextHandle.AddSourceObject(WeaponInstance);
+	DamageEffectContextHandle.AddInstigator(ActorInfo->AvatarActor.Get(),WeaponInstance->GetSpawnedWeaponActor());
+	DamageEffectContextHandle.AddHitResult(Hit);
+
+	const FGameplayEffectSpecHandle DamageEffectSpec = ActorInfo->AbilitySystemComponent->MakeOutgoingSpec(DamageEffect.GameplayEffect,DamageEffect.Level,DamageEffectContextHandle);
+	FGameplayEffectSpec* Spec = DamageEffectSpec.Data.Get();
+	if (!Spec)
+	{
+		DEBUG_ERROR_LOG("Invalid DamageEffect SpecHandle");
+		return;
+	}
+	
+	const float Distance = FVector::Distance(WeaponInstance->GetSpawnedWeaponActor()->GetActorLocation(),Hit.Location);
+	Spec->SetSetByCallerMagnitude(FGameTags::Get().Data_Effect_Damage, WeaponInstance->GetWeaponDamage(Distance));
+	Spec->SetSetByCallerMagnitude(FGameTags::Get().Data_Chance_Crit, WeaponInstance->GetCriticalDamageChance());
+
+	DEBUG_SLOG(FString::Printf(TEXT("AppliedDamage: %f , Distance: %f"),WeaponInstance->GetWeaponDamage(Distance),Distance),FColor::Green);
+	
+	ActorInfo->AbilitySystemComponent->ApplyGameplayEffectSpecToTarget(*Spec,TargetAbilitySystem->GetAbilitySystemComponent());
 }
 
 FHitResult UWeaponFireAbility::SingleBulletFire(const FWeaponTraceData& StartWeaponTraceData, UWeaponItemInstance* WeaponInstance,OUT TArray<FHitResult> Impacts)

@@ -18,6 +18,7 @@ class BLADERUSH_API UBaseWeaponAbility : public UGameplayAbilityFromEquipment
 public:
 	UFUNCTION(BlueprintPure)
 	UWeaponItemInstance* GetWeaponInstance() const;
+
 protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	bool bEnableDebug = true;

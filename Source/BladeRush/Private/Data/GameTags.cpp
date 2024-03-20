@@ -62,6 +62,13 @@ void FGameTags::AddTags()
 	AddTag(Ability_Weapon_ADS,"Ability.Weapon.ADS","ADS weapon ability");
 	AddTag(Ability_Weapon_Fire,"Ability.Weapon.Fire","Weapon fire ability");
 
+	AddTag(Weapon_MagazineSize,"Weapon.MagazineSize","Weapon magazine size");
+	AddTag(Weapon_MagazineAmmo,"Weapon.MagazineAmmo","Weapon magazine ammo");
+	AddTag(Weapon_SpareAmmo,"Weapon.SpareAmmo","Weapon spare ammo");
+
+	AddTag(Data_Effect_Damage,"Data.Effect.Damage","Data damage tag");
+	AddTag(Data_Chance_Crit,"Data.Chance.Crit","Data crit chance tag");
+
 }
 
 void FGameTags::AddTag(FGameplayTag& OutTag, const ANSICHAR* TagName, const ANSICHAR* TagComment)
@@ -80,3 +87,4 @@ void FGameTags::AddCustomMovementModeTag(FGameplayTag& OutTag, const ANSICHAR* T
 	AddTag(OutTag, TagName, "Character custom movement mode tag.");
 	GameTags.CustomMovementModeTagMap.Add(CustomMovementMode, OutTag);
 }
+

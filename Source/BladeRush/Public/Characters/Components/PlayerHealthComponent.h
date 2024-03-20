@@ -8,7 +8,7 @@
 #include "PlayerHealthComponent.generated.h"
 
 
-class UAttributeHealth;
+class UAttributeHitPoints;
 class ABaseCharacter;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHealth_DeathEvent, AActor*, OwningActor);
@@ -37,6 +37,8 @@ protected:
 	UFUNCTION(Client,Reliable)
 	void CharacterDeath_Client(ABaseCharacter* Character);
 private:
+	void OnHitPointsChanged(const FOnAttributeChangeData& ChangeData);
+
 	UPROPERTY()
-	const UAttributeHealth* HealthAttributeSet;
+	const UAttributeHitPoints* HealthAttributeSet;
 };

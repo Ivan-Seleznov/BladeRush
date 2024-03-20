@@ -16,6 +16,7 @@ void UInventoryItemInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	
 	DOREPLIFETIME(ThisClass, InventoryItemDefinitionClass);
 	DOREPLIFETIME(ThisClass,SlotType);
+	DOREPLIFETIME(ThisClass, StatTags);
 }
 
 const UInventoryItemFragment* UInventoryItemInstance::FindFragmentByClass(
@@ -30,6 +31,31 @@ const UInventoryItemFragment* UInventoryItemInstance::FindFragmentByClass(
 }
 
 void UInventoryItemInstance::SetItemDefClass(TSubclassOf<UInventoryItemDefinition> InDef)
+{
+	InventoryItemDefinitionClass = InDef;
+}
+
+void UInventoryItemInstance::AddStatTagStack(FGameplayTag Tag, int32 StackCount)
+{
+	StatTags.AddStack(Tag, StackCount);
+}
+
+void UInventoryItemInstance::RemoveStatTagStack(FGameplayTag Tag, int32 StackCount)
+{
+	StatTags.RemoveStack(Tag, StackCount);
+}
+
+int32 UInventoryItemInstance::GetStatTagStackCount(FGameplayTag Tag) const
+{
+	return StatTags.GetStackCount(Tag);
+}
+
+bool UInventoryItemInstance::HasStatTag(FGameplayTag Tag) const
+{
+	return StatTags.ContainsTag(Tag);
+}
+
+void UInventoryItemInstance::SetItemDef(TSubclassOf<UInventoryItemDefinition> InDef)
 {
 	InventoryItemDefinitionClass = InDef;
 }

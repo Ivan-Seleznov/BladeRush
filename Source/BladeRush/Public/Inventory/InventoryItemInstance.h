@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
+#include "Data/GameplayTagStack.h"
 #include "InventoryItemInstance.generated.h"
 
 class UInventoryItemDefinition;
@@ -41,10 +43,27 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	ESlotType GetSlotType() {return SlotType;}
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category=Inventory)
+	void AddStatTagStack(FGameplayTag Tag, int32 StackCount);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category= Inventory)
+	void RemoveStatTagStack(FGameplayTag Tag, int32 StackCount);
+
+	UFUNCTION(BlueprintCallable, Category=Inventory)
+	int32 GetStatTagStackCount(FGameplayTag Tag) const;
+	
+	UFUNCTION(BlueprintCallable, Category=Inventory)
+	bool HasStatTag(FGameplayTag Tag) const;
+	void SetItemDef(TSubclassOf<UInventoryItemDefinition> InDef);
+
 private:
 	UPROPERTY(Replicated)
 	TEnumAsByte<ESlotType> SlotType = ESlotType::None;
 	
 	UPROPERTY(Replicated)
 	TSubclassOf<UInventoryItemDefinition> InventoryItemDefinitionClass;
+	
+	UPROPERTY(Replicated)
+	FGameplayTagStackContainer StatTags;
 };

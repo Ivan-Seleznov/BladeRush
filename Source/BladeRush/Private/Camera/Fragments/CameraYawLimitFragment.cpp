@@ -12,8 +12,8 @@ void UCameraYawLimitFragment::Activate(ABladeRushCameraManager* CameraManager)
 	DefaultMaxViewYaw = CameraManager->ViewYawMax;
 	DefaultMinViewYaw = CameraManager->ViewYawMin;
 
-	CameraManager->ViewYawMax = CameraManager->GetOwningPawn()->GetActorRotation().Yaw + ViewYawLimit;
-	CameraManager->ViewYawMin = CameraManager->GetOwningPawn()->GetActorRotation().Yaw - ViewYawLimit;
+	CameraManager->ViewYawMax = CameraManager->GetOwningPawn()->GetActorRotation().Yaw + ViewYawMaxLimit;
+	CameraManager->ViewYawMin = CameraManager->GetOwningPawn()->GetActorRotation().Yaw + ViewYawMinLimit;
 }
 
 void UCameraYawLimitFragment::ResetToDefault(ABladeRushCameraManager* CameraManager)

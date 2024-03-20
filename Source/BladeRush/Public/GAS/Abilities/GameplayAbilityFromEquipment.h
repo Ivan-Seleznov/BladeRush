@@ -15,11 +15,12 @@ UCLASS()
 class BLADERUSH_API UGameplayAbilityFromEquipment : public UGameplayAbilityBase
 {
 	GENERATED_BODY()
+	
 public:
 	UGameplayAbilityFromEquipment(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	UFUNCTION(BlueprintPure)
 	UEquipmentInstance* GetAssociatedEquipmentInstance() const;
+	UFUNCTION(BlueprintPure)
 	UInventoryItemInstance* GetAssociatedInventoryItemInstance() const;
-
-	
 };

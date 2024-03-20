@@ -20,7 +20,10 @@ public:
 	
 private:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,meta=(AllowPrivateAccess=true))
-	float ViewYawLimit = 0.f;
+	float ViewYawMaxLimit = 0.f;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,meta=(AllowPrivateAccess=true))
+	float ViewYawMinLimit = 0.f;
 	
 	UPROPERTY(BlueprintReadOnly,meta=(AllowPrivateAccess=true))
 	float DefaultMaxViewYaw;

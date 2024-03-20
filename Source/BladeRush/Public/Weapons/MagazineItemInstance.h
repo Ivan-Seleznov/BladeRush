@@ -33,6 +33,7 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	bool IsOutOfAmmo() const {return bOutOfAmmo;}
+
 protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly, Category = "")
 	int32 CurrentAmmoCount;

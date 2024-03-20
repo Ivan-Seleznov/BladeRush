@@ -4,7 +4,7 @@
 #include "UI/HealthWidget.h"
 #include "Characters/BaseCharacter.h"
 #include "Components/ProgressBar.h"
-#include "GAS/Attributes/AttributeHealth.h"
+#include "GAS/Attributes/AttributeHitPoints.h"
 
 
 void UHealthWidget::NativeConstruct()
@@ -31,7 +31,7 @@ void UHealthWidget::NativeDestruct()
 	
 	if (!OwnerCharacter->GetAbilitySystemComponent()) return;
 
-	OwnerCharacter->GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(UAttributeHealth::GetHealthPointsAttribute()).RemoveAll(this);
+	OwnerCharacter->GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(UAttributeHitPoints::GetHitPointsAttribute()).RemoveAll(this);
 }
 
 
@@ -47,9 +47,9 @@ void UHealthWidget::SetFromHealthPointsAttribute()
 
 	if (!OwnerCharacter->GetAbilitySystemComponent()) return;
 	
-	if (const UAttributeHealth* AttributeHealthPoints = UAttributeHealth::Find(OwnerCharacter->GetAbilitySystemComponent()))
+	if (const UAttributeHitPoints* AttributeHealthPoints = UAttributeHitPoints::Find(OwnerCharacter->GetAbilitySystemComponent()))
 	{
-		float Percent = AttributeHealthPoints->GetHealthPoints() / AttributeHealthPoints->GetMaxHealthPoints();
+		float Percent = AttributeHealthPoints->GetHitPoints() / AttributeHealthPoints->GetMaxHitPoints();
 		Percent = FMath::Clamp(Percent, 0.f, 1.f);
 		HealthPointsBar->SetPercent(Percent);
 	}
@@ -62,6 +62,6 @@ void UHealthWidget::BindHealthPointsChangeDelegate()
 	
 	if (!OwnerCharacter->GetAbilitySystemComponent()) return;
 
-	OwnerCharacter->GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(UAttributeHealth::GetHealthPointsAttribute()).AddUObject(this, &ThisClass::HandleHealthPointsChanged);
+	OwnerCharacter->GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(UAttributeHitPoints::GetHitPointsAttribute()).AddUObject(this, &ThisClass::HandleHealthPointsChanged);
 	SetFromHealthPointsAttribute();
 }

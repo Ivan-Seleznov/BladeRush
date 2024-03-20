@@ -44,22 +44,29 @@ void FInventoryList::PostReplicatedChange(const TArrayView<int32> ChangedIndices
 UInventoryItemInstance* FInventoryList::AddEntry(TSubclassOf<UInventoryItemDefinition> ItemDefinitionClass,
 	int32 StackCount)
 {
-	if (!OwnerComponent || !ItemDefinitionClass) return nullptr;
+	UInventoryItemInstance* Result = nullptr;
+
+	check(ItemDefinitionClass != nullptr);
+	check(OwnerComponent);
 
 	AActor* OwningActor = OwnerComponent->GetOwner();
-	if (!OwningActor->HasAuthority()) return nullptr;
-	
+	check(OwningActor->HasAuthority());
+
+
 	FInventoryEntry& NewEntry = Entries.AddDefaulted_GetRef();
-	NewEntry.Instance = NewObject<UInventoryItemInstance>(OwningActor); //TODO: Actor in UObject ctor?
-
-	NewEntry.Instance->SetItemDefClass(ItemDefinitionClass);
-	for (const UInventoryItemFragment* InventoryItemFragment : GetDefault<UInventoryItemDefinition>(ItemDefinitionClass)->Fragments)
+	NewEntry.Instance = NewObject<UInventoryItemInstance>(OwnerComponent->GetOwner());  //@TODO: Using the actor instead of component as the outer due to UE-127172
+	NewEntry.Instance->SetItemDef(ItemDefinitionClass);
+	for (UInventoryItemFragment* Fragment : GetDefault<UInventoryItemDefinition>(ItemDefinitionClass)->Fragments)
 	{
-		InventoryItemFragment->OnInstanceCreated(NewEntry.Instance);
+		if (Fragment != nullptr)
+		{
+			Fragment->OnInstanceCreated(NewEntry.Instance);
+		}
 	}
-
-	NewEntry.StackCount = StackCount;
 	
+	NewEntry.StackCount = StackCount;
+	Result = NewEntry.Instance;
+
 	MarkItemDirty(NewEntry);
 	
 	return NewEntry.Instance;
