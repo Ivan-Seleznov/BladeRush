@@ -28,16 +28,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	float GetHealth() const;
 
-	FHealth_DeathEvent OnDeathFinished;
-
-	virtual void HandleOutOfHealth(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec& DamageEffectSpec, float DamageMagnitude);
-
+	mutable FHealth_DeathEvent OnDeathFinished;
+	
 protected:
 
 	UFUNCTION(Client,Reliable)
 	void CharacterDeath_Client(ABaseCharacter* Character);
+	
 private:
-	void OnHitPointsChanged(const FOnAttributeChangeData& ChangeData);
+	virtual void OnOutOfHealth(float OldValue);
 
 	UPROPERTY()
 	const UAttributeHitPoints* HealthAttributeSet;

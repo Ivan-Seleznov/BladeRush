@@ -7,6 +7,7 @@
 #include "AttributeHitPoints.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FHitDamageReceivedDelegate,FHitResult,HitResult,FGameplayTagContainer,SourceTags,FGameplayEffectContextHandle,GameplayEffectSpec);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOutOfHitPointsDelegate,float OldValue);
 
 /**
  * 
@@ -27,7 +28,7 @@ public:
 		return Cast<UAttributeHitPoints>(AbilitySystemComponent->GetAttributeSet(HealthPoints));
 	};
 	
-	mutable FAttributeEvent OnOutOfHitPoints;
+	mutable FOutOfHitPointsDelegate OutOfHitPointsDelegate;
 	mutable FHitDamageReceivedDelegate HitDamageReceivedDelegate;
 	
 	ATTRIBUTE_ACCESSORS(UAttributeHitPoints, HitPoints);

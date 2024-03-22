@@ -105,8 +105,6 @@ void UAttributeHitPoints::PostGameplayEffectExecute(const FGameplayEffectModCall
 			const FGameplayEffectContextHandle& EffectContext = Data.EffectSpec.GetEffectContext();
 			AActor* Instigator = EffectContext.GetOriginalInstigator();
 			AActor* Causer = EffectContext.GetEffectCauser();
-
-			OnOutOfHitPoints.Broadcast(Instigator, Causer, Data.EffectSpec, Data.EvaluatedData.Magnitude);
 		}
 		
 		if (TargetActor)
@@ -123,33 +121,31 @@ void UAttributeHitPoints::PreAttributeBaseChange(const FGameplayAttribute& Attri
 {
 	Super::PreAttributeBaseChange(Attribute, NewValue);
 
-	ClampAttribute(Attribute, NewValue);
 }
 
 void UAttributeHitPoints::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
 {
 	Super::PreAttributeChange(Attribute, NewValue);
 
-	ClampAttribute(Attribute, NewValue);
 }
 
 void UAttributeHitPoints::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)
 {
 	Super::PostAttributeChange(Attribute, OldValue, NewValue);
+
+	ClampAttribute(Attribute,NewValue);
 	
-	// if (Attribute == GetMaxHitPointsAttribute())
-	// {
-	// 	if (GetHitPoints() > NewValue)
-	// 	{
-	// 		UAbilitySystemComponent* AbilitySystemComponent = GetAbilitySystemComponent<UAbilitySystemComponent>();
-	// 		check(AbilitySystemComponent);
-	//
-	// 		AbilitySystemComponent->ApplyModToAttribute(GetHitPointsAttribute(), EGameplayModOp::Override, NewValue);
-	// 	}
-	// }
-	if (bOutOfHitPoints && (GetHitPoints() > 0.0f))
+	if (Attribute == GetHitPointsAttribute())
 	{
-		bOutOfHitPoints = false;
+		if (NewValue <= 0 )
+		{
+			bOutOfHitPoints = true;
+			OutOfHitPointsDelegate.Broadcast(OldValue);
+		}
+		if (bOutOfHitPoints && NewValue > 0.f)
+		{
+			bOutOfHitPoints = false;
+		}
 	}
 }
 
