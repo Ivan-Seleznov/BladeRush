@@ -4,36 +4,37 @@
 
 #include "CoreMinimal.h"
 #include "CameraMode.h"
-#include "CameraMode_InterpTransform.generated.h"
+#include "CameraMode_InterpLocation.generated.h"
 
 
 UCLASS()
-class BLADERUSH_API UCameraMode_InterpTransform : public UCameraMode
+class BLADERUSH_API UCameraMode_InterpLocation : public UCameraMode
 {
 	GENERATED_BODY()
 public:
 	virtual void SetCameraManager(APlayerCameraManager* CameraManager) override;
 
-	void SetTargetTransform(const FTransform& Transform) {TargetTransform = Transform;}
+	void SetTargetTransform(const FVector& Location) {TargetLocation = Location;}
 
 	UFUNCTION(BlueprintCallable)
-	const FTransform& GetTargetTransform() const { return TargetTransform;}
+	const FVector& GetTargetTransform() const { return TargetLocation;}
 	UFUNCTION(BlueprintCallable)
-	void SetTargetTransformOffset(const FTransform& Offset);
+	void SetTargetOffset(const FVector& Offset);
+	
 protected:
 	virtual bool UpdateCameraTransition(float DeltaTime, USpringArmComponent* SpringArm) override;
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
-	FTransform TargetTransform;
+	FVector TargetLocation;
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
-	bool bUseCustomOriginalTransform = false;
+	bool bUseCustomOriginalLocation = false;
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,meta=(EditCondition="bUseCustomOriginalTransform"))
-	FTransform CustomOriginalTransform;
+	FVector CustomOriginalLocation;
 
 	UPROPERTY(BlueprintReadOnly)
-	FTransform OriginalTransform;
+	FVector OriginalLocation;
 
 	UPROPERTY(BlueprintReadOnly)
-	FTransform TargetOffset;
+	FVector TargetOffset;
 };

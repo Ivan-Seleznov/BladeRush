@@ -266,7 +266,6 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 	if (CanUpdateCharacterRotation())
 	{
 		UpdateCharacterRotation(DeltaSeconds);
-		UE_LOG(LogTemp,Display,TEXT("PrevRot: %f | CurrentRot: %f , Left: %i, Right: %i "),PrevRotationYaw,UpdatedComponent->GetComponentRotation().Yaw,bCharacterRotatingLeft,bCharacterRotatingRight);
 	}
 	else
 	{
@@ -418,7 +417,6 @@ void UShooterMovementComponent::UpdateCharacterRotation(float DeltaTime)
 	}
 
 	const float DeltaRotation = FMath::Abs(UpdatedComponent->GetComponentRotation().Yaw) - FMath::Abs(StartRotationYaw);
-	UE_LOG(LogTemp,Display,TEXT("Current[%f] - Start[%f] =  DeltaRot[%f]"),FMath::Abs(UpdatedComponent->GetComponentRotation().Yaw),FMath::Abs(StartRotationYaw), FMath::Abs(DeltaRotation))
 	if (FMath::Abs(DeltaRotation) >= RotationThreshold)
 	{
 		if (UpdatedComponent->GetComponentRotation().Yaw > PrevRotationYaw)
@@ -837,7 +835,7 @@ void UShooterMovementComponent::PhysSlide(float deltaTime, int32 Iterations)
 		Velocity += Acceleration * deltaTime;
 		ApplyVelocityBraking(deltaTime,GroundFriction * SlideFrictionFactor,GetMaxBrakingDeceleration());
 		
-		DEBUG_LOG("Slide acceleration: %s | Move direction dot product: %f | Vel: %s" ,*Acceleration.ToString(),MoveDirection, *Velocity.ToString());
+		//DEBUG_LOG("Slide acceleration: %s | Move direction dot product: %f | Vel: %s" ,*Acceleration.ToString(),MoveDirection, *Velocity.ToString());
 		//CalcVelocity(timeTick,GroundFriction * SlideFrictionFactor, false, GetMaxBrakingDeceleration());
 		
 		// Compute move parameters

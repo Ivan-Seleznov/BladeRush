@@ -42,8 +42,6 @@ FTransform ABaseWeaponActor::GetHandSocketTransform() const
 	Result.SetRotation(OutRot.Quaternion());
 	Result.SetScale3D(FVector(1,1,1));
 	
-	GEngine->AddOnScreenDebugMessage(-1,0,FColor::Green,FString::Printf(TEXT("%s"),*Result.ToString()));
-	UE_LOG(LogTemp,Display,TEXT("Transform: %s"),*Result.ToString());
 	return Result;
 }
 

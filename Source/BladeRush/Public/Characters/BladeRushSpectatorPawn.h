@@ -24,8 +24,7 @@ public:
 	void ViewPrevPlayer();
 
 	void ViewSelf();
-	
-	virtual void BeginPlay() override;
+
 protected:
 	UPROPERTY(EditDefaultsOnly,Category="Input")
 	UInputAction* ViewNextInputAction;

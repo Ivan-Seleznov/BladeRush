@@ -44,9 +44,3 @@ void ABladeRushSpectatorPawn::ViewSelf()
 		PlayerController->ServerViewSelf();
 	}
 }
-
-void ABladeRushSpectatorPawn::BeginPlay()
-{
-	Super::BeginPlay();
-	UE_LOG(LogTemp,Display,TEXT("TEST SPECTATOR PAWN BEGIN PLAY"));
-}

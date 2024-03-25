@@ -8,16 +8,14 @@ public class BladeRush : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore","EnhancedInput","DataRegistry", "GameplayAbilities", "ModularGameplay" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore","EnhancedInput","DataRegistry","ModularGameplay", "GameplayAbilities"});
 
 		PrivateDependencyModuleNames.AddRange(new string[] 
 		{ 
-		 "GameplayAbilities",
 		 "GameplayTags",	
 		 "GameplayTasks",
 		 "Slate", "SlateCore",
 		 "CableComponent",
-		 "ModularGameplay",
 		 "NetCore",
 		 "PhysicsCore"
 		});

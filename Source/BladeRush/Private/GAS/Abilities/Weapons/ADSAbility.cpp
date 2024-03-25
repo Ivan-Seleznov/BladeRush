@@ -5,7 +5,7 @@
 
 #include "BladeRushLogs.h"
 #include "Camera/BladeRushCameraManager.h"
-#include "Camera/CameraMode_InterpTransform.h"
+#include "Camera/CameraMode_InterpLocation.h"
 #include "Characters/Player/PlayerCharacter.h"
 #include "Weapons/BaseWeaponActor.h"
 #include "Weapons/WeaponItemInstance.h"
@@ -35,8 +35,8 @@ void UADSAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const
 	
 	if (ABladeRushCameraManager* CameraManager = GetCameraManager())
 	{
-		UCameraMode_InterpTransform* CameraMode = NewObject<UCameraMode_InterpTransform>(CameraManager,CameraModeClass);
-		CameraMode->SetTargetTransformOffset(WeaponActor->GetAimOffset());
+		UCameraMode_InterpLocation* CameraMode = NewObject<UCameraMode_InterpLocation>(CameraManager,CameraModeClass);
+		//CameraMode->SetTargetOffset(WeaponActor->GetAimOffset().);
 		CameraManager->SetCameraModeObject(CameraMode);
 	}
 	DEBUG_LOG("ActivateAbility");

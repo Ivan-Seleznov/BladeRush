@@ -6,7 +6,7 @@
 #include "GAS/Abilities/Weapons/BaseWeaponAbility.h"
 #include "ADSAbility.generated.h"
 
-class UCameraMode_InterpTransform;
+class UCameraMode_InterpLocation;
 class ABladeRushCameraManager;
 /**
  * ADS gameplay ability
@@ -28,7 +28,7 @@ protected:
 	FShooterGameplayEffect ADSGameplayEffect;
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)	
-	TSubclassOf<UCameraMode_InterpTransform> CameraModeClass;
+	TSubclassOf<UCameraMode_InterpLocation> CameraModeClass;
 	
 	FActiveGameplayEffectHandle ActiveGameplayEffectHandle;
 };
