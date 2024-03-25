@@ -9,8 +9,10 @@
 #include "Components/CapsuleComponent.h"
 #include "Equipment/EquipmentManagerComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameMods/BladeRushGameMode.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
 #include "GAS/Attributes/AttributeHitPoints.h"
+#include "Kismet/GameplayStatics.h"
 #include "Weapons/WeaponItemInstance.h"
 
 ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer)
@@ -108,6 +110,22 @@ void ABaseCharacter::StopJumping()
 	Super::StopJumping();
 
 	bPlayerPressedJump = false;
+}
+
+void ABaseCharacter::KillYourSelf()
+{
+	KillYourSelf_Server();
+}
+
+void ABaseCharacter::KillYourSelf_Server_Implementation()
+{
+	ABladeRushGameMode* GameMode = Cast<ABladeRushGameMode>(UGameplayStatics::GetGameMode(this));
+	if (!GameMode)
+	{
+		return;
+	}
+	
+	GameMode->CharacterDied(this);
 }
 
 void ABaseCharacter::OnDeathStarted()

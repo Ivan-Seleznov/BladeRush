@@ -6,6 +6,8 @@
 #include "Delegates/Delegate.h"
 #include "GameplayEffectExtension.h"
 #include "Characters/BaseCharacter.h"
+#include "Characters/Player/PlayerCharacter.h"
+#include "GameMods/BladeRushPlayerState.h"
 
 UAttributeHitPoints::UAttributeHitPoints()
 {
@@ -96,6 +98,20 @@ void UAttributeHitPoints::PostGameplayEffectExecute(const FGameplayEffectModCall
 
 		// set new health
 		const float NewHealth = GetHitPoints() - LocalDamageDone;
+		if (NewHealth <= 0.f && PrevSourceCharacter != SourceCharacter)
+		{
+			if (ABladeRushPlayerState* SourcePlayerState = Cast<ABladeRushPlayerState>(SourceCharacter->GetPlayerState()))
+			{
+				SourcePlayerState->AddKill();
+				PrevSourceCharacter = SourceCharacter;
+			}
+			
+			if (ABladeRushPlayerState* TargetPlayerState = Cast<ABladeRushPlayerState>(TargetCharacter->GetPlayerState()))
+			{
+				TargetPlayerState->AddDeath();
+			}
+		}
+		
 		SetHitPoints(FMath::Clamp(NewHealth, 0.0f, GetMaxHitPoints()));
 
 		if (GetHitPoints() <= 0.0f)
@@ -103,9 +119,11 @@ void UAttributeHitPoints::PostGameplayEffectExecute(const FGameplayEffectModCall
 			bOutOfHitPoints = true;
 			
 			const FGameplayEffectContextHandle& EffectContext = Data.EffectSpec.GetEffectContext();
-			AActor* Instigator = EffectContext.GetOriginalInstigator();
+			ABaseCharacter* Instigator = Cast<ABaseCharacter>(EffectContext.GetOriginalInstigator());
 			AActor* Causer = EffectContext.GetEffectCauser();
 		}
+
+
 		
 		if (TargetActor)
 		{

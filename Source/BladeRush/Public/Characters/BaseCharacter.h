@@ -49,6 +49,11 @@ public:
 	virtual void Jump() override;
 	virtual void StopJumping() override;
 
+	UFUNCTION(Exec,Category="Commands")
+	void KillYourSelf();
+	UFUNCTION(Server,Reliable)
+	void KillYourSelf_Server();
+	
 	void OnDeathStarted();
 	void OnDeathFinished();
 	

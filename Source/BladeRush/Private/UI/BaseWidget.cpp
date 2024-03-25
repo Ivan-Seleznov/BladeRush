@@ -16,7 +16,10 @@ void UBaseWidget::NativeConstruct()
 	GetOwningPlayer()->OnPossessedPawnChanged.AddDynamic(this,&ThisClass::OnPawnChanged);
 }
 
-void UBaseWidget::OnPawnInitialize() {}
+void UBaseWidget::OnPawnInitialize(APawn* NewPawn)
+{
+	K2_OnPawnInitialize(NewPawn);
+}
 
 void UBaseWidget::OnPawnChanged(APawn* OldPawn, APawn* NewPawn)
 {
@@ -25,5 +28,5 @@ void UBaseWidget::OnPawnChanged(APawn* OldPawn, APawn* NewPawn)
 
 	if (PlayerController->IsSpectating()) return;
 
-	OnPawnInitialize();
+	OnPawnInitialize(NewPawn);
 }

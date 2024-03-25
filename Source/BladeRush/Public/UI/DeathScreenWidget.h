@@ -20,7 +20,7 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual void OnPawnInitialize() override;
+	virtual void OnPawnInitialize(APawn* NewPawn) override;
 	
 	UFUNCTION()
 	void OnRespawnButtonClicked();

@@ -105,6 +105,16 @@ UInventoryItemInstance* UQuickBarComponent::RemoveItemFromSlot(int32 SlotIndex)
 	return Result;
 }
 
+UInventoryItemInstance* UQuickBarComponent::GetCurrentInventoryItemInstance() const
+{
+	if (ActiveSlotIndex >= 0 && ActiveSlotIndex < Slots.Num())
+	{
+		return Slots[ActiveSlotIndex];
+	}
+
+	return nullptr;
+}
+
 void UQuickBarComponent::BeginPlay()
 {
 	Super::BeginPlay();

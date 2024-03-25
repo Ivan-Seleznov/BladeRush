@@ -39,7 +39,6 @@ void UADSAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const
 		//CameraMode->SetTargetOffset(WeaponActor->GetAimOffset().);
 		CameraManager->SetCameraModeObject(CameraMode);
 	}
-	DEBUG_LOG("ActivateAbility");
 }
 
 void UADSAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,

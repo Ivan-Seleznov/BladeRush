@@ -26,7 +26,6 @@ void UWeaponFireAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	
 	if (ActorInfo->IsLocallyControlledPlayer())
 	{
-		DEBUG_LOG("ActivateLocalAbility");
 		ActivateLocalPlayerAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 	}
 	else if (ActorInfo->IsNetAuthority())
@@ -285,7 +284,10 @@ DEBUG_LOG("Trace WithoutSpread: %s | EndWeapTrace: %s | SpreadVector: %s",*BaseE
 	if (Impacts.Num() > 0)
 	{
 		Hit = Impacts.Last();
-		DrawDebugPoint(GetWorld(),Hit.Location,4.f,FColor::Red,false,3.f);
+		if (bEnableDebug)
+		{
+			DrawDebugPoint(GetWorld(),Hit.Location,4.f,FColor::Red,false,3.f);
+		}
 	}
 	else
 	{

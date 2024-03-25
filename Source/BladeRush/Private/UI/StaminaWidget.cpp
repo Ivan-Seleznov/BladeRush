@@ -79,9 +79,9 @@ void UStaminaWidget::HandleStaminaPointsChanged(const FOnAttributeChangeData& Ch
 	LastHPUpdateTime = CurrentTime;
 }
 
-void UStaminaWidget::OnPawnInitialize()
+void UStaminaWidget::OnPawnInitialize(APawn* NewPawn)
 {
-	Super::OnPawnInitialize();
+	Super::OnPawnInitialize(NewPawn);
 	BindStaminaChangedDelegate();
 }
 

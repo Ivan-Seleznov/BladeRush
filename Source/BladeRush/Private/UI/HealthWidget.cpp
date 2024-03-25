@@ -16,9 +16,9 @@ void UHealthWidget::NativeConstruct()
 	BindHealthPointsChangeDelegate();
 }
 
-void UHealthWidget::OnPawnInitialize()
+void UHealthWidget::OnPawnInitialize(APawn* NewPawn)
 {
-	Super::OnPawnInitialize();
+	Super::OnPawnInitialize(NewPawn);
 	BindHealthPointsChangeDelegate();
 }
 

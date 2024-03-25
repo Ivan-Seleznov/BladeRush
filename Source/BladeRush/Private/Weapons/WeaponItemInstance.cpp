@@ -113,7 +113,6 @@ FVector2D UWeaponItemInstance::CalculateBulletSpread(const float& Distance)
 	if (IsMoving())
 	{
 		BulletSpreadAngle *= MovingSpreadModifier;
-		GEngine->AddOnScreenDebugMessage(-1,1,FColor::Blue,"IsMoving");
 	}
 	
 	const float Radius = FMath::Tan(FMath::DegreesToRadians(BulletSpreadAngle)) * MaxTraceDistance;

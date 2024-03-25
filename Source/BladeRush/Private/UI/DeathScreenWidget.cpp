@@ -28,8 +28,8 @@ void UDeathScreenWidget::OnRespawnButtonClicked()
 	RespawnButton->SetIsEnabled(false);
 }
 
-void UDeathScreenWidget::OnPawnInitialize()
+void UDeathScreenWidget::OnPawnInitialize(APawn* NewPawn)
 {
-	Super::OnPawnInitialize();
+	Super::OnPawnInitialize(NewPawn);
 	RespawnButton->SetIsEnabled(false);
 }

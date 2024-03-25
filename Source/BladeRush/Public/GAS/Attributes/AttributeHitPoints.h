@@ -6,7 +6,9 @@
 #include "GAS/Attributes/AttributeBase.h"
 #include "AttributeHitPoints.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FHitDamageReceivedDelegate,FHitResult,HitResult,FGameplayTagContainer,SourceTags,FGameplayEffectContextHandle,GameplayEffectSpec);
+class ABaseCharacter;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FHitDamageReceivedDelegate, FHitResult, HitResult, FGameplayTagContainer,
+                                               SourceTags, FGameplayEffectContextHandle, GameplayEffectSpec);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOutOfHitPointsDelegate,float OldValue);
 
 /**
@@ -63,4 +65,6 @@ private:
 	
 	
 	bool bOutOfHitPoints;
+
+	ABaseCharacter* PrevSourceCharacter;
 };

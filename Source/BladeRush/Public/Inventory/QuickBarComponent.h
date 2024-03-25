@@ -40,7 +40,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	int32 GetMaxSlotsCount() const {return MaxSlotsCount;}
-	
+
+	UFUNCTION(BlueprintPure)
+	UInventoryItemInstance* GetCurrentInventoryItemInstance() const;
 protected:
 	virtual void BeginPlay() override;
 
@@ -60,10 +62,10 @@ private:
 	UPROPERTY()
 	TObjectPtr<UEquipmentInstance> EquippedItem;
 	
-	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,meta=(AllowPrivateAccess))
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,BlueprintReadOnly,meta=(AllowPrivateAccess=true))
 	int32 MaxSlotsCount = 3;
 
-	UPROPERTY(ReplicatedUsing=OnRep_ActiveSlotIndex)
+	UPROPERTY(ReplicatedUsing=OnRep_ActiveSlotIndex,BlueprintReadOnly,meta=(AllowPrivateAccess=true))
 	int32 ActiveSlotIndex = -1;
 
 	UFUNCTION()

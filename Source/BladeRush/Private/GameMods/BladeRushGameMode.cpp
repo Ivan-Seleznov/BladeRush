@@ -43,3 +43,4 @@ void ABladeRushGameMode::RespawnCharacterFromSpectator(APlayerController* Contro
 	ABaseCharacter* BaseCharacter = GetWorld()->SpawnActor<ABaseCharacter>(DefaultPawnClass, PlayerStartLocation, FRotator::ZeroRotator);
 	Controller->Possess(BaseCharacter);
 }
+

@@ -12,10 +12,8 @@ UGameplayAbilityFromEquipment::UGameplayAbilityFromEquipment(const FObjectInitia
 
 UEquipmentInstance* UGameplayAbilityFromEquipment::GetAssociatedEquipmentInstance() const
 {
-	UE_LOG(LogTemp,Display,TEXT("Assos equp inst"));
 	if (FGameplayAbilitySpec* Spec = UGameplayAbility::GetCurrentAbilitySpec())
 	{
-		UE_LOG(LogTemp,Display,TEXT("ab spec"));
 		return Cast<UEquipmentInstance>(Spec->SourceObject.Get());
 	}
 

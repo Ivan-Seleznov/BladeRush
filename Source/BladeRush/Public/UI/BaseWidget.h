@@ -18,9 +18,13 @@ class BLADERUSH_API UBaseWidget : public UUserWidget
 
 public:
 	virtual void NativeConstruct() override;
-protected:
-	virtual void OnPawnInitialize();
 	
+protected:
+	UFUNCTION()
+	virtual void OnPawnInitialize(APawn* NewPawn);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_OnPawnInitialize(APawn* NewPawn);
 private:
 	UFUNCTION()
 	void OnPawnChanged(APawn* OldPawn, APawn* NewPawn);

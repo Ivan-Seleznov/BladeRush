@@ -23,7 +23,7 @@ class BLADERUSH_API UStaminaWidget : public UBaseWidget
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual void OnPawnInitialize() override;
+	virtual void OnPawnInitialize(APawn* NewPawn) override;
 
 	virtual void NativeDestruct() override;
 	

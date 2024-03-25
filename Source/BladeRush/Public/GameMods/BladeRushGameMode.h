@@ -22,9 +22,7 @@ public:
 	void RespawnCharacterFromSpectator(APlayerController* Controller);
 
  	FORCEINLINE float GetRespawnTimerTime() const { return RespawnTimerTime; }
-	
 private:
-	
 	FVector PlayerStartLocation;
 
 	UPROPERTY(EditDefaultsOnly,Category="Gameplay",meta=(AllowPrivateAccess="true"))
