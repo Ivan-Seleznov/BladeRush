@@ -163,7 +163,7 @@ void UWeaponFireAbility::WeaponFire(const FGameplayAbilityActorInfo* ActorInfo,
 	{
 		FHitResult Hit = SingleBulletFire(StartWeaponTraceData,WeaponInstance,Impacts);
 		Hits.Add(Hit);
-		
+
 		WeaponInstance->UpdateFiringTime();
 		WeaponInstance->RemoveCartridge();
 
@@ -233,7 +233,7 @@ void UWeaponFireAbility::ApplyDamageToTarget(const FHitResult& Hit, const UWeapo
 	Spec->SetSetByCallerMagnitude(FGameTags::Get().Data_Effect_Damage, WeaponInstance->GetWeaponDamage(Distance));
 	Spec->SetSetByCallerMagnitude(FGameTags::Get().Data_Chance_Crit, WeaponInstance->GetCriticalDamageChance());
 
-	DEBUG_SLOG(FString::Printf(TEXT("AppliedDamage: %f , Distance: %f"),WeaponInstance->GetWeaponDamage(Distance),Distance),FColor::Green);
+	DEBUG_LOG("AppliedDamage: %f , Distance: %f",WeaponInstance->GetWeaponDamage(Distance),Distance);
 	
 	ActorInfo->AbilitySystemComponent->ApplyGameplayEffectSpecToTarget(*Spec,TargetAbilitySystem->GetAbilitySystemComponent());
 }

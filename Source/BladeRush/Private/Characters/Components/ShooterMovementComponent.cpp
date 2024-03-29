@@ -4,6 +4,7 @@
 #include "Characters/Components/ShooterMovementComponent.h"
 
 #include "BladeRushLogs.h"
+#include "BlendSpaceAnalysis.h"
 #include "CableComponent.h"
 #include "Characters/BaseCharacter.h"
 #include "Components/CapsuleComponent.h"
@@ -176,7 +177,7 @@ void UShooterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMove
 	
 	if (PreviousMovementMode == MOVE_Custom)
 	{
-		ExitCustomMovementMode(PreviousMovementMode);
+		ExitCustomMovementMode(PreviousCustomMode);
 	}
 	
 	if (MovementMode == MOVE_Custom)
@@ -185,9 +186,9 @@ void UShooterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMove
 	}
 }
 
-void UShooterMovementComponent::ExitCustomMovementMode(EMovementMode PreviousMovementMode)
+void UShooterMovementComponent::ExitCustomMovementMode(uint8 PreviousCustomMode)
 {
-	switch (PreviousMovementMode)
+	switch (PreviousCustomMode)
 	{
 	case CMOVE_Slide:
 		ExitSlide();
@@ -773,9 +774,7 @@ void UShooterMovementComponent::EnterSlide()
 
 void UShooterMovementComponent::ExitSlide()
 {
-	//CharacterOwner->bUseControllerRotationYaw = true;
 	bWantsToCrouch = false;
-
 }
 
 void UShooterMovementComponent::PhysSlide(float deltaTime, int32 Iterations)
@@ -1363,9 +1362,14 @@ void UShooterMovementComponent::PhysGrappling(float DeltaTime, int32 Iterations)
 			return;
 		}
 
-		Velocity = CharacterToAttachPointVec.GetSafeNormal() * GetMaxSpeed();
+		Velocity = (CharacterToAttachPointVec.GetSafeNormal() * GetMaxSpeed()) * timeTick;
+
+		Acceleration.Z = 0;
 		
-		const FVector Delta = timeTick * Velocity;
+		Velocity += Acceleration * GrapplingSideAccelerationFactor * timeTick;
+		Velocity.Z += GetGravityZ() * GrapplingGravityScale * DeltaTime;
+		
+		const FVector Delta = Velocity;
 		FHitResult Hit(1.f);
 		SafeMoveUpdatedComponent(Delta,UpdatedComponent->GetComponentQuat(),true,Hit); //line that does all the movement. Keep same capsule rotation. sweep instead teleporting
 

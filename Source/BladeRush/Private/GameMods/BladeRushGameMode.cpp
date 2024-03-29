@@ -7,18 +7,13 @@
 #include "Characters/BladeRushPlayerController.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 void ABladeRushGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	TArray<AActor*> PlayerStarts;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(),APlayerStart::StaticClass(),PlayerStarts);
-
-	if (PlayerStarts[0])
-	{
-		PlayerStartLocation = PlayerStarts[0]->GetActorLocation();
-	}
 }
 
 void ABladeRushGameMode::CharacterDied(ABaseCharacter* Character)
@@ -39,8 +34,13 @@ void ABladeRushGameMode::RespawnCharacterFromSpectator(APlayerController* Contro
 {
 	APawn* SpectatorPawn = Controller->GetPawnOrSpectator();
 
+	FVector PlayerSpawnLocation = FVector::ZeroVector;
+	if (!PlayerStarts.IsEmpty())
+	{
+		PlayerSpawnLocation = PlayerStarts[UKismetMathLibrary::RandomIntegerInRange(0,PlayerStarts.Num() -1)]->GetActorLocation();;
+	}
 	
-	ABaseCharacter* BaseCharacter = GetWorld()->SpawnActor<ABaseCharacter>(DefaultPawnClass, PlayerStartLocation, FRotator::ZeroRotator);
+	ABaseCharacter* BaseCharacter = GetWorld()->SpawnActor<ABaseCharacter>(DefaultPawnClass, PlayerSpawnLocation, FRotator::ZeroRotator);
 	Controller->Possess(BaseCharacter);
 }
 

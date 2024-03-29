@@ -59,6 +59,23 @@ void AGrapplingHookProjectile::Destroyed()
 {
 	Super::Destroyed();
 	OnProjectileDestroyed.Broadcast(GetOwner());
+
+	const ABaseCharacter* Character = Cast<ABaseCharacter>(GetOwner());
+	if (!Character)
+	{
+		return;
+	}
+	
+	if (Character->IsLocallyControlled())
+	{
+		UShooterMovementComponent* ShooterMovementComponent = Character->GetShooterMovementComponent();
+		if (!ShooterMovementComponent)
+		{
+			return;
+		}
+		
+		ShooterMovementComponent->StopGrappling();
+	}
 }
 
 void AGrapplingHookProjectile::OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,

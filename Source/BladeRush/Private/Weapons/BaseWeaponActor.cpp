@@ -2,11 +2,14 @@
 
 
 #include "Weapons/BaseWeaponActor.h"
+#include "Weapons/BaseWeaponActor.h"
 
 #include "Characters/BaseCharacter.h"
 #include "Data/DecalDataAsset.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 #include "Weapons/WeaponItemInstance.h"
 
 ABaseWeaponActor::ABaseWeaponActor()
@@ -24,6 +27,13 @@ FVector ABaseWeaponActor::GetMuzzleLocation() const
 	check(WeaponMesh);
 
 	return WeaponMesh->GetSocketLocation(MuzzleSocketName);
+}
+
+FRotator ABaseWeaponActor::GetMuzzleRotation() const
+{
+	check(WeaponMesh);
+
+	return WeaponMesh->GetSocketRotation(MuzzleSocketName);
 }
 
 FTransform ABaseWeaponActor::GetHandSocketTransform() const
@@ -115,7 +125,7 @@ void ABaseWeaponActor::OnHit_Multicast_Implementation(UWeaponItemInstance* Weapo
 	
 	WeaponInstance->AddRecoil();
 	
-	HandleHits(WeaponInstance,HitResults);
+	HandleHits(WeaponInstance, HitResults);
 }
 
 void ABaseWeaponActor::HandleHits(UWeaponItemInstance* WeaponInstance, const TArray<FHitResult>& HitResults)
@@ -131,9 +141,8 @@ void ABaseWeaponActor::HandleHits(UWeaponItemInstance* WeaponInstance, const TAr
 	}
 	if (MuzzleFlashParticles)
 	{
-		UGameplayStatics::SpawnEmitterAttached(MuzzleFlashParticles,GetWeaponMesh(),MuzzleSocketName);
+		UGameplayStatics::SpawnEmitterAttached(MuzzleFlashParticles,GetWeaponMesh(),MuzzleSocketName,MuzzleFlashOffset.GetLocation(),MuzzleFlashOffset.Rotator(),MuzzleFlashOffset.GetScale3D());
 	}
-	
 }
 
 
@@ -141,10 +150,15 @@ void ABaseWeaponActor::HandleHit(UWeaponItemInstance* WeaponInstance, const FHit
 {
 	if (bDrawDebugHits && HasAuthority())
 	{
-		DrawDebugPoint(GetWorld(),Hit.bBlockingHit ? Hit.Location : Hit.TraceEnd,5.f,FColor::Green,false,3.f);
+		//DrawDebugPoint(GetWorld(),Hit.bBlockingHit ? Hit.Location : Hit.TraceEnd,5.f,FColor::Green,false,3.f);
 	}
 
 	SpawnDecal(Hit);
+	if (TracerParticles)
+	{
+		UNiagaraComponent* TracerNiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),TracerParticles,GetMuzzleLocation() + TracerParticlesOffset.GetLocation(),TracerParticlesOffset.Rotator(),TracerParticlesOffset.GetScale3D());
+		TracerNiagaraComp->SetVectorParameter(TracerParticlesEndPointParam,Hit.IsValidBlockingHit() ? Hit.Location : Hit.TraceEnd);
+	}
 	if (Hit.bBlockingHit)
 	{
 		if (HitParticles)
@@ -156,6 +170,7 @@ void ABaseWeaponActor::HandleHit(UWeaponItemInstance* WeaponInstance, const FHit
 		
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),HitParticles,SpawnTransform);
 		}
+		K2_HandleHit(Hit);
 	}
 }
 

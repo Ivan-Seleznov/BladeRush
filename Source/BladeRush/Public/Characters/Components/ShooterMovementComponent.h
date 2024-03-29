@@ -202,7 +202,7 @@ protected:
 	virtual void PhysCustom(float deltaTime, int32 Iterations) override;
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
 
-	void ExitCustomMovementMode(EMovementMode PreviousMovementMode);
+	void ExitCustomMovementMode(uint8 PreviousCustomMode);
 	void EnterCustomMovementMode();
 	
 	virtual void UpdateCharacterRotation(float DeltaTime);
@@ -297,6 +297,8 @@ protected:
 	float GrapplingGravityScale = 0.1f;
 	UPROPERTY(EditDefaultsOnly,Category="Grappling")
 	float GrapplingReleasedDistance = 150.f;
+	UPROPERTY(EditDefaultsOnly,Category="Grappling")
+	float GrapplingSideAccelerationFactor = 1.f;
 	
 	UPROPERTY(EditDefaultsOnly,Category="Grappling")
 	float GrapplingVerticalJumpBoost = 295.f;

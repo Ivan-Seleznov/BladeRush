@@ -99,7 +99,7 @@ public:
 	float GetWeaponDamage(float Distance) const;
 	UFUNCTION(BlueprintPure)
 	float GetCriticalDamageChance() const;
-
+	
 protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	int32 SpawnedWeaponActorIndex = 0;

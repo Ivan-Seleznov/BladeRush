@@ -8,6 +8,7 @@
 
 class UWeaponItemInstance;
 class UDecalDataAsset;
+class UNiagaraSystem;
 
 UCLASS()
 class BLADERUSH_API ABaseWeaponActor : public AActor
@@ -18,6 +19,8 @@ public:
 	ABaseWeaponActor();
 
 	FVector GetMuzzleLocation() const;
+	FRotator GetMuzzleRotation() const;
+
 	USkeletalMeshComponent* GetWeaponMesh() const {return WeaponMesh;}
 	FTransform GetHandSocketTransform() const;
 
@@ -36,6 +39,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_ClientHit(UWeaponItemInstance* WeaponInstance);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_HandleHit(FHitResult Hit);
+	
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_OnEnterADS(UWeaponItemInstance* WeaponInstance);
 	UFUNCTION(BlueprintImplementableEvent)
@@ -77,7 +83,16 @@ protected:
 	UParticleSystem* HitParticles;
 	UPROPERTY(EditDefaultsOnly, Category = "Particles")
 	UParticleSystem* MuzzleFlashParticles;
+	UPROPERTY(EditDefaultsOnly, Category = "Particles")
+	FTransform MuzzleFlashOffset = FTransform::Identity;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Particles")
+	UNiagaraSystem* TracerParticles;
+	UPROPERTY(EditDefaultsOnly, Category = "Particles")
+	FTransform TracerParticlesOffset = FTransform::Identity;
+	UPROPERTY(EditDefaultsOnly, Category = "Particles")
+	FName TracerParticlesEndPointParam = "BeamEnd";
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Sounds", meta=(AllowPrivateAccess=true))
 	USoundBase* ShootSound;
 

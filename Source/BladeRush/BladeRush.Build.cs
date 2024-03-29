@@ -17,7 +17,8 @@ public class BladeRush : ModuleRules
 		 "Slate", "SlateCore",
 		 "CableComponent",
 		 "NetCore",
-		 "PhysicsCore"
+		 "PhysicsCore", 
+		 "Niagara"
 		});
 	}
 }
