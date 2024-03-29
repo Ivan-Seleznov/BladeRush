@@ -193,6 +193,9 @@ public:
 	UFUNCTION(BlueprintPure)
 	bool IsTurningLeft() const {return bCharacterRotatingLeft;}
 
+	UFUNCTION(BlueprintCallable)
+	void ResetAllMovementActions();
+
 protected:
 	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
 

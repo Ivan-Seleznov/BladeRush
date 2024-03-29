@@ -21,6 +21,8 @@ class UGameplayAbility;
 class UShooterCharacterData;
 class UCableComponent;
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FCharacterDeathStartedDelegate,class ABaseCharacter* DeadCharacter);
+
 UCLASS()
 class BLADERUSH_API ABaseCharacter : public ACharacter,public IAbilitySystemInterface
 {
@@ -29,8 +31,10 @@ class BLADERUSH_API ABaseCharacter : public ACharacter,public IAbilitySystemInte
 public:
 	ABaseCharacter(const FObjectInitializer& ObjectInitializer);
 
-	void PossessedBy(AController* NewController) override;
+	mutable FCharacterDeathStartedDelegate CharacterDeathStartedDelegate;
 
+	virtual void PossessedBy(AController* NewController) override;
+	
 	virtual void OnRep_PlayerState() override;
 	
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
@@ -78,6 +82,8 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	
 protected:
+	virtual void ClientPossessedBy(AController* NewController);
+	
 	UFUNCTION(Client, Unreliable)
 	void TryApplyAbilitySet_Server(const UShooterAbilitySet* AbilitySet, bool bCancelEarlySet = false);
 
@@ -108,6 +114,10 @@ protected:
 	
 	virtual void BeginPlay() override;
 
+private:
+	UFUNCTION(Reliable,Client)
+	virtual void PossessedBy_Client(AController* NewController);
+	
 	UFUNCTION(NetMulticast,Reliable)
 	virtual void Multicast_StartDeath();
 	UFUNCTION(NetMulticast,Reliable)

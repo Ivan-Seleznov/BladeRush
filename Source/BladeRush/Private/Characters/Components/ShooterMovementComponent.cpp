@@ -138,6 +138,11 @@ void UShooterMovementComponent::FSavedMove_Shooter::Clear()
 	Saved_bWantsToGrapple = 0;
 }
 
+void UShooterMovementComponent::ResetAllMovementActions()
+{
+	EndCurrentMovementAction();
+}
+
 void UShooterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
 {
 	Super::UpdateFromCompressedFlags(Flags);

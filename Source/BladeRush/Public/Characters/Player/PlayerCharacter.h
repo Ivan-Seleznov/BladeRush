@@ -47,6 +47,8 @@ public:
 	const FHandSwayData& GetHandSwayData() const {return HandSwayData;}
 
 	USpringArmComponent* GetSpringArm() const {return SpringArmComponent;}
+
+	virtual void ClientPossessedBy(AController* NewController) override;
 protected:
 	virtual void BeginPlay() override;
 	

@@ -44,11 +44,9 @@ void ABaseCharacter::PossessedBy(AController* NewController)
 	
 	if (!AbilitySystemComponent) return;
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
-
-	if (HasAuthority())
-	{
-		TryApplyAbilitySet(DefaultAbilitySet);
-	}
+	
+	PossessedBy_Client(NewController);
+	TryApplyAbilitySet(DefaultAbilitySet);
 }
 
 void ABaseCharacter::OnRep_PlayerState()
@@ -132,6 +130,10 @@ void ABaseCharacter::OnDeathStarted()
 {
 	if (HasAuthority())
 	{
+		if (CharacterDeathStartedDelegate.IsBound())
+		{
+			CharacterDeathStartedDelegate.Broadcast(this);
+		}
 		Multicast_StartDeath();
 	}
 }
@@ -217,6 +219,10 @@ void ABaseCharacter::Tick(float DeltaSeconds)
 	}
 }
 
+void ABaseCharacter::ClientPossessedBy(AController* NewController)
+{
+}
+
 void ABaseCharacter::TryApplyAbilitySet_Server_Implementation(const UShooterAbilitySet* AbilitySet,
                                                               bool bCancelEarlySet)
 {
@@ -245,15 +251,21 @@ void ABaseCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	CableComponent->SetVisibility(false);
+}
 
-	if (ABladeRushCameraManager* CameraManager = GetBladeRushCameraManager())
-	{
-		CameraManager->InitCameraManagerPawn(this);	
-	}
+void ABaseCharacter::PossessedBy_Client_Implementation(AController* NewController)
+{
+	ClientPossessedBy(NewController);
 }
 
 void ABaseCharacter::Multicast_StartDeath_Implementation()
 {
+	if (CharacterDeathStartedDelegate.IsBound())
+	{
+		CharacterDeathStartedDelegate.Broadcast(this);
+	}
+
+	ShooterMovementComponent->ResetAllMovementActions();
 	ShooterMovementComponent->DisableMovement();
 	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);

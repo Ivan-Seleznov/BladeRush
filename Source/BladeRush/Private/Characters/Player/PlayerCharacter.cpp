@@ -3,6 +3,7 @@
 
 #include "Characters/Player/PlayerCharacter.h"
 #include "EnhancedInputComponent.h"
+#include "Camera/BladeRushCameraManager.h"
 #include "Camera/CameraComponent.h"
 #include "Characters/Components/ShooterHeroComponent.h"
 #include "Characters/Components/ShooterMovementComponent.h"
@@ -23,6 +24,21 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 	
 	CameraComponent->bUsePawnControlRotation = true;
 	ShooterMovementComponent->bOrientRotationToMovement = false;
+}
+
+void APlayerCharacter::ClientPossessedBy(AController* NewController)
+{
+	Super::ClientPossessedBy(NewController);
+
+	check(NewController);
+
+	if (APlayerController* PC = Cast<APlayerController>(NewController))
+	{
+		if (ABladeRushCameraManager* BladeRushCameraManager = Cast<ABladeRushCameraManager>(PC->PlayerCameraManager))
+		{
+			BladeRushCameraManager->InitCameraManagerPawn(this);
+		}
+	}
 }
 
 void APlayerCharacter::BeginPlay()
