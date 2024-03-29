@@ -4,6 +4,7 @@
 #include "GAS/Abilities/Movement/SprintPlayerAbility.h"
 
 #include "AbilitySystemComponent.h"
+#include "BladeRushLogs.h"
 #include "Characters/BaseCharacter.h"
 #include "Characters/Components/ShooterMovementComponent.h"
 #include "GAS/Attributes/AttributeStamina.h"
@@ -18,12 +19,12 @@ void USprintPlayerAbility::InputReleased(const FGameplayAbilitySpecHandle Handle
 bool USprintPlayerAbility::CanActivateMovementAbility(ABaseCharacter* Character,
 	UShooterMovementComponent* ShooterMovementComponent) const
 {
-	const UAttributeStamina* AttributeStamina = UAttributeStamina::Find(Character->GetAbilitySystemComponent());
+	//const UAttributeStamina* AttributeStamina = UAttributeStamina::Find(Character->GetAbilitySystemComponent());
 
-	const float StaminaPoints = AttributeStamina->GetStaminaPoints();
-	const float MaxStaminaPoints = AttributeStamina->GetMaxStaminaPoints();
+	//const float StaminaPoints = AttributeStamina->GetStaminaPoints();
+	//const float MaxStaminaPoints = AttributeStamina->GetMaxStaminaPoints();
 	
-	return StaminaPoints > MaxStaminaPoints * BlockSprintMultiplier && ShooterMovementComponent->CanSprint();
+	return ShooterMovementComponent->CanSprint();
 }
 
 void USprintPlayerAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
@@ -33,13 +34,24 @@ void USprintPlayerAbility::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
 	ABaseCharacter* Character = GetCharacterFromActorInfo();
-	if (!Character) return;
+	if (!Character)
+	{
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, true);
+		return;
+	}
 
 	const UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
-	if (!MovementComponent) return;
-	
-	Character->StartSprinting();
-	UE_LOG(LogTemp,Warning,TEXT("SprintActivate"));
+	if (!MovementComponent)
+	{
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, true);
+		return;
+	}
+
+	if (Character->IsLocallyControlled())
+	{
+		Character->StartSprinting();
+		DEBUG_LOG("Activate Sprint");
+	}
 
 	const FGameplayEffectContextHandle GameplayEffectContextHandle;
 	Character->GetAbilitySystemComponent()->ApplyGameplayEffectToSelf(SprintEffect.GameplayEffect.GetDefaultObject(), SprintEffect.Level, GameplayEffectContextHandle);
@@ -56,23 +68,27 @@ void USprintPlayerAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	ABaseCharacter* Character = GetCharacterFromActorInfo();
 	
 	Character->OnCharacterMovementUpdated.RemoveAll(this);
-	Character->StopSprinting();
+	if (Character->IsLocallyControlled())
+	{
+		Character->StopSprinting();
+	}
 		
-	if (!SprintEffect.GameplayEffect) return;
-	Character->GetAbilitySystemComponent()->RemoveActiveGameplayEffectBySourceEffect(SprintEffect.GameplayEffect, nullptr);
+	if (SprintEffect.GameplayEffect)
+	{
+		Character->GetAbilitySystemComponent()->RemoveActiveGameplayEffectBySourceEffect(SprintEffect.GameplayEffect, nullptr);
+	}
 }
 
 void USprintPlayerAbility::OnMovementChanged(float DeltaSeconds, FVector OldLocation, FVector OldVelocity)
 {
 	ABaseCharacter* Character = GetCharacterFromActorInfo();
-	if (!Character) return;
+	check(Character);
 	
 	UShooterMovementComponent* MovementComponent = Character->GetShooterMovementComponent();
+	check(MovementComponent);
+	
 	if (!CanActivateMovementAbility(Character,MovementComponent))
 	{
-		//const FGameplayEffectContextHandle GameplayEffectContextHandle;
-		//Character->GetAbilitySystemComponent()->ApplyGameplayEffectToSelf(DebuffEffect.GameplayEffect.GetDefaultObject(), DebuffEffect.Level, GameplayEffectContextHandle);
-	
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 	}
 }

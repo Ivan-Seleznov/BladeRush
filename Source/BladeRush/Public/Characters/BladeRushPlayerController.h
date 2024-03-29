@@ -43,7 +43,7 @@ private:
 
 	void OnRespawnTimerEnd();
 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,meta=(AllowPrivateAccess))
 	UInventoryManagerComponent* InventoryManagerComponent;
 	
 	FTimerHandle RespawnTimerHandle;

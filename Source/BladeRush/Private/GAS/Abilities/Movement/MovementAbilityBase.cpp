@@ -5,6 +5,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "Characters/BaseCharacter.h"
+#include "Characters/Components/ShooterMovementComponent.h"
 
 void UMovementAbilityBase::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                            const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
@@ -57,4 +58,14 @@ void UMovementAbilityBase::EndAbility(const FGameplayAbilitySpecHandle Handle,
                                       bool bReplicateEndAbility, bool bWasCancelled)
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+
+UShooterMovementComponent* UMovementAbilityBase::GetShooterMovementComponent() const
+{
+	if (const ABaseCharacter* Character = GetCharacterFromActorInfo())
+	{
+		return Character->GetShooterMovementComponent();
+	}
+
+	return nullptr;
 }

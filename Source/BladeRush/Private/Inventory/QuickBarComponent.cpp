@@ -42,8 +42,7 @@ bool UQuickBarComponent::TryAddItemToSlot(UInventoryItemInstance* InventoryItemI
 	
 	if (bMakeThisSlotActive)
 	{
-		UnequipItemInActiveSlot();
-		EquipItemInActiveSlot(SlotIndex);
+		SetActiveIndex(SlotIndex);
 	}
 
 	return true;
@@ -53,36 +52,30 @@ bool UQuickBarComponent::TryAddItemToSlot(UInventoryItemInstance* InventoryItemI
 
 void UQuickBarComponent::SetActiveSlotIndex(int32 NewIndex)
 {
-	if (ActiveSlotIndex > MaxSlotsCount) return;
+	if (ActiveSlotIndex > MaxSlotsCount)
+	{
+		return;
+	}
 	
 	APawn* OwnerPawn = GetPawn<APawn>();
-	if (!OwnerPawn) return;
+	if (!OwnerPawn)
+	{
+		return;
+	}
 	
 	if (OwnerPawn->IsLocallyControlled())
 	{
 		Server_SetActiveSlotIndex(NewIndex);
 	}
+	else if (OwnerPawn->HasAuthority())
+	{
+		SetActiveIndex(NewIndex);
+	}
 }
 
-void UQuickBarComponent::Server_SetActiveSlotIndex_Implementation(const int32& NewIndex)
+void UQuickBarComponent::Server_SetActiveSlotIndex_Implementation(int32 NewIndex)
 {
-	if (ActiveSlotIndex > MaxSlotsCount) return;
-
-	if (NewIndex < 0)
-	{
-		UnequipItemInActiveSlot();
-		
-		ActiveSlotIndex = -1;
-		OnRep_ActiveSlotIndex();
-		return;	
-	}
-	
-	if (Slots.IsValidIndex(NewIndex) && Slots[NewIndex])
-	{
-		UnequipItemInActiveSlot();
-
-		EquipItemInActiveSlot(NewIndex);
-	}
+	SetActiveIndex(NewIndex);
 }
 
 UInventoryItemInstance* UQuickBarComponent::RemoveItemFromSlot(int32 SlotIndex)
@@ -166,8 +159,32 @@ void UQuickBarComponent::UnequipItemInActiveSlot()
 	
 }
 
+void UQuickBarComponent::SetActiveIndex(int32 NewIndex)
+{
+	if (ActiveSlotIndex > MaxSlotsCount)
+	{
+		return;
+	}
+
+	if (NewIndex < 0)
+	{
+		UnequipItemInActiveSlot();
+		
+		ActiveSlotIndex = -1;
+		OnRep_ActiveSlotIndex();
+		return;	
+	}
+	
+	if (Slots.IsValidIndex(NewIndex) && Slots[NewIndex])
+	{
+		UnequipItemInActiveSlot();
+
+		EquipItemInActiveSlot(NewIndex);
+	}
+}
+
 void UQuickBarComponent::Clinet_OnInventoryItemAddedToSlot_Implementation(int32 NewActiveSlotIndex,
-	const FInventoryItemInfo& InventoryItemInfo)
+                                                                          const FInventoryItemInfo& InventoryItemInfo)
 {
 	OnItemAddedToSlot.Broadcast(NewActiveSlotIndex,InventoryItemInfo);
 }

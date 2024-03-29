@@ -30,7 +30,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void SetActiveSlotIndex(int32 NewIndex);
-
+	
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
 	UInventoryItemInstance* RemoveItemFromSlot(int32 SlotIndex);
 
@@ -51,8 +51,10 @@ protected:
 	
 private:
 	UFUNCTION(Server,Reliable)
-	void Server_SetActiveSlotIndex(const int32& NewIndex);
+	void Server_SetActiveSlotIndex(int32 NewIndex);
+	void SetActiveIndex(int32 NewIndex);
 
+	
 	UFUNCTION(Client,Reliable)
 	void Clinet_OnInventoryItemAddedToSlot(int32 NewActiveSlotIndex, const FInventoryItemInfo& InventoryItemInfo);
 	

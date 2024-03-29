@@ -45,17 +45,22 @@ void UWeaponFireAbility::ActivateLocalPlayerAbility(const FGameplayAbilitySpecHa
 	const FGameplayEventData* TriggerEventData)
 {
 	ABaseCharacter* Character = GetCharacterFromActorInfo();
-	if (!Character) return;
+	check(Character);
 
 	APlayerController* PlayerController = Cast<APlayerController>(Character->GetController());
-	if (!PlayerController) return;
+	check(PlayerController);
 
 	UWeaponItemInstance* WeaponItemInstance = GetWeaponInstance();
-	if (!WeaponItemInstance) return;
+	if (!WeaponItemInstance)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo,false,true);
+		return;
+	}
 
-	UInventoryItemInstance* InventoryItemInstance = GetAssociatedInventoryItemInstance();
+	const UInventoryItemInstance* InventoryItemInstance = GetAssociatedInventoryItemInstance();
 	if (!InventoryItemInstance)
 	{
+		EndAbility(Handle, ActorInfo, ActivationInfo,false,true);
 		return;
 	}
 

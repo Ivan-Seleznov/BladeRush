@@ -24,7 +24,11 @@ void UADSAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 	UWeaponItemInstance* WeaponInstance = GetWeaponInstance();
-	if (!WeaponInstance) return;
+	if (!WeaponInstance)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo,false,true);
+		return;
+	}
 
 	WeaponInstance->OnEnterADS();
 	ActiveGameplayEffectHandle = ApplyGameplayEffect(ADSGameplayEffect);

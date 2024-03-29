@@ -13,26 +13,22 @@ UCLASS()
 class BLADERUSH_API USprintPlayerAbility : public UMovementAbilityBase
 {
 	GENERATED_BODY()
+	
 public:
 	virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 
 	virtual bool CanActivateMovementAbility(ABaseCharacter* Character, UShooterMovementComponent* ShooterMovementComponent) const override;
-	//virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;	
-
-protected:
 	
+protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
-							 const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+					 const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 	
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
-
+	
 	UFUNCTION()
 	void OnMovementChanged(float DeltaSeconds, FVector OldLocation, FVector OldVelocity);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FShooterGameplayEffect SprintEffect;
-
-	UPROPERTY(EditAnywhere, meta = (ClampMin = 0.f,ClampMax = 1.f,UIMin = 0.f,UIMax = 1.f))
-	float BlockSprintMultiplier = 0.3f;
 };
