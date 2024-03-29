@@ -23,7 +23,7 @@ void UJumpPlayerAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	ABaseCharacter* Character = GetCharacterFromActorInfo();
 	if (!Character) return;
 
-	if (Character->IsLocallyControlled() && !Character->bPlayerPressedJump)
+	if (Character->IsLocallyControlled())
 	{
 		if (Character->bIsCrouched)
 		{
@@ -45,7 +45,7 @@ void UJumpPlayerAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, con
 	ABaseCharacter* Character = GetCharacterFromActorInfo();
 	if (!Character) return;
 
-	if (Character->IsLocallyControlled() && Character->bPlayerPressedJump)
+	if (Character->IsLocallyControlled())
 	{
 		Character->StopJumping();
 	}
@@ -54,12 +54,5 @@ void UJumpPlayerAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, con
 bool UJumpPlayerAbility::CanActivateMovementAbility(ABaseCharacter* Character,
                                                     UShooterMovementComponent* ShooterMovementComponent) const
 {
-	/*const UAttributeStamina* AttributeStamina = UAttributeStamina::Find(Character->GetAbilitySystemComponent());
-
-	const float StaminaPoints = AttributeStamina->GetStaminaPoints();
-	const float MaxStaminaPoints = AttributeStamina->GetMaxStaminaPoints();
-	StaminaPoints > MaxStaminaPoints * BlockJumpMultiplier
-	old..*/
-	
-	return true;
+	return Super::CanActivateMovementAbility(Character, ShooterMovementComponent) && Character->JumpCurrentCount < 1;
 }
