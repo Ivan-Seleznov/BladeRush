@@ -3,6 +3,7 @@
 
 #include "Inventory/QuickBarComponent.h"
 
+#include "BladeRushLogs.h"
 #include "Equipment/EquipmentDefinition.h"
 #include "Equipment/EquipmentInstance.h"
 #include "Equipment/EquipmentManagerComponent.h"
@@ -98,14 +99,9 @@ UInventoryItemInstance* UQuickBarComponent::RemoveItemFromSlot(int32 SlotIndex)
 	return Result;
 }
 
-UInventoryItemInstance* UQuickBarComponent::GetCurrentInventoryItemInstance() const
+bool UQuickBarComponent::IsValidSlotIndex(int32 Index) const
 {
-	if (ActiveSlotIndex >= 0 && ActiveSlotIndex < Slots.Num())
-	{
-		return Slots[ActiveSlotIndex];
-	}
-
-	return nullptr;
+	return Index < Slots.Num() && Index >= 0;
 }
 
 void UQuickBarComponent::BeginPlay()
@@ -116,6 +112,16 @@ void UQuickBarComponent::BeginPlay()
 	{
 		Slots.AddDefaulted(MaxSlotsCount - Slots.Num());
 	}
+}
+
+UInventoryItemInstance* UQuickBarComponent::GetCurrentInventoryItemInstance() const
+{
+	if (ActiveSlotIndex >= 0 && ActiveSlotIndex < Slots.Num())
+	{
+		return Slots[ActiveSlotIndex];
+	}
+
+	return nullptr;
 }
 
 void UQuickBarComponent::EquipItemInActiveSlot(int32 NewActiveSlotIndex)

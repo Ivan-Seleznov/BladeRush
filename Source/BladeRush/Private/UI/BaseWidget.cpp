@@ -24,9 +24,15 @@ void UBaseWidget::OnPawnInitialize(APawn* NewPawn)
 void UBaseWidget::OnPawnChanged(APawn* OldPawn, APawn* NewPawn)
 {
 	ABladeRushPlayerController* PlayerController = Cast<ABladeRushPlayerController>(GetOwningPlayer());
-	if (!PlayerController) return;
+	if (!PlayerController)
+	{
+		return;
+	}
 
-	if (PlayerController->IsSpectating()) return;
+	if (PlayerController->IsSpectating())
+	{
+		return;
+	}
 
 	OnPawnInitialize(NewPawn);
 }

@@ -6,11 +6,13 @@
 #include "AbilitySystemComponent.h"
 #include "Characters/BaseCharacter.h"
 #include "Characters/Player/PlayerCharacter.h"
+#include "Data/LoadoutDataAsset.h"
 #include "GameFramework/PlayerState.h"
 #include "GameMods/BladeRushGameMode.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
 #include "Inventory/InventoryManagerComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Loadout/LoadoutComponent.h"
 #include "UI/PlayerHUD.h"
 
 
@@ -22,6 +24,7 @@ void ABladeRushPlayerController::TrySetPlayerPlay_Server_Implementation()
 ABladeRushPlayerController::ABladeRushPlayerController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	InventoryManagerComponent = CreateDefaultSubobject<UInventoryManagerComponent>(FName("InventoryManagerComponent"));
+	LoadoutComponent = CreateDefaultSubobject<ULoadoutComponent>(FName("LoadoutComponent"));
 }
 
 bool ABladeRushPlayerController::TrySetPlayerPlay()
@@ -34,8 +37,6 @@ bool ABladeRushPlayerController::TrySetPlayerPlay()
 	ABladeRushGameMode* GameMode = Cast<ABladeRushGameMode>(UGameplayStatics::GetGameMode(this));
 	if (!GameMode) return false;
 	
-	GameMode->RespawnCharacterFromSpectator(this);
-	
 	PlayerState->SetIsSpectator(false);
 	ChangeState(NAME_Playing);
 
@@ -44,6 +45,8 @@ bool ABladeRushPlayerController::TrySetPlayerPlay()
 	ClientGotoState(NAME_Playing);
 
 	HUDStateChanged_Client(EHUDState::Playing);
+
+	GameMode->RespawnPawn(this);
 	
 	return true;
 }
@@ -89,6 +92,23 @@ void ABladeRushPlayerController::ProcessPlayerInput(const float DeltaTime, const
 		if(UPlayerAbilitySystemComponent* AbilitySystemComponent = BaseCharacter->GetCharacterAbilitySystemComponent())
 		{
 			AbilitySystemComponent->ProcessAbilityInput(DeltaTime,bGamePaused);
+		}
+	}
+}
+
+void ABladeRushPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	if (LoadoutComponent)
+	{
+		if (LoadoutComponent->GetCurrentLoadout().IsEmpty())
+		{
+			LoadoutComponent->SetCurrentLoadout(DefaultLoadout->GetCharacterLoadout(),true);
+		}
+		else
+		{
+			LoadoutComponent->TryApplyCurrentLoadout();
 		}
 	}
 }

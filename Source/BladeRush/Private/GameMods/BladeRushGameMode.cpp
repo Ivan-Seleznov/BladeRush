@@ -14,6 +14,8 @@ void ABladeRushGameMode::BeginPlay()
 	Super::BeginPlay();
 	
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(),APlayerStart::StaticClass(),PlayerStarts);
+
+	SpawnPawns();
 }
 
 void ABladeRushGameMode::CharacterDied(ABaseCharacter* Character)
@@ -30,17 +32,42 @@ void ABladeRushGameMode::CharacterDied(ABaseCharacter* Character)
 	
 }
 
-void ABladeRushGameMode::RespawnCharacterFromSpectator(APlayerController* Controller)
+void ABladeRushGameMode::RespawnPawn(APlayerController* Controller)
 {
-	APawn* SpectatorPawn = Controller->GetPawnOrSpectator();
+	//APawn* SpectatorPawn = Controller->GetPawnOrSpectator();
 
 	FVector PlayerSpawnLocation = FVector::ZeroVector;
-	if (!PlayerStarts.IsEmpty())
+	FRotator PlayerSpawnRotation = FRotator::ZeroRotator;
+
+	const int32 PlayerStartIndex = FMath::RandRange(0,PlayerStarts.Num() -1);
+	if (!PlayerStarts.IsEmpty() && PlayerStarts.IsValidIndex(PlayerStartIndex))
 	{
-		PlayerSpawnLocation = PlayerStarts[UKismetMathLibrary::RandomIntegerInRange(0,PlayerStarts.Num() -1)]->GetActorLocation();;
+		const AActor* PlayerStart = PlayerStarts[PlayerStartIndex];
+		PlayerSpawnLocation = PlayerStart->GetActorLocation();
+		PlayerSpawnRotation = PlayerStart->GetActorForwardVector().Rotation();
 	}
 	
-	ABaseCharacter* BaseCharacter = GetWorld()->SpawnActor<ABaseCharacter>(DefaultPawnClass, PlayerSpawnLocation, FRotator::ZeroRotator);
-	Controller->Possess(BaseCharacter);
+	APawn* SpawnedPawn = GetWorld()->SpawnActor<APawn>(DefaultPawnClass, PlayerSpawnLocation, PlayerSpawnRotation);
+	Controller->Possess(SpawnedPawn);
+}
+
+void ABladeRushGameMode::SpawnPawns()
+{
+	if (!PawnClass)
+	{
+		return;
+	}
+	
+	DefaultPawnClass = PawnClass;
+	TArray<AActor*> PlayerControllers;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(),PlayerControllerClass,PlayerControllers);
+		
+	for (AActor* Actor : PlayerControllers)
+	{
+		if (APlayerController* PC = Cast<APlayerController>(Actor))
+		{
+			RespawnPawn(PC);
+		}
+	}
 }
 

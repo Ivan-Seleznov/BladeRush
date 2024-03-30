@@ -12,6 +12,7 @@
 #include "GameMods/BladeRushGameMode.h"
 #include "GAS/PlayerAbilitySystemComponent.h"
 #include "GAS/Attributes/AttributeHitPoints.h"
+#include "Inventory/QuickBarComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Weapons/WeaponItemInstance.h"
 
@@ -30,6 +31,8 @@ ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer)
 	
 	CableComponent = CreateDefaultSubobject<UCableComponent>("Cable");
 	CableComponent->SetupAttachment(GetMesh(),FName("hand_r"));
+
+	QuickBarComponent = CreateDefaultSubobject<UQuickBarComponent>("QuickBarComponent");
 	
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCharacterMovement()->NavAgentProps.bCanJump = true;
@@ -66,19 +69,11 @@ UAbilitySystemComponent* ABaseCharacter::GetAbilitySystemComponent() const
 
 void ABaseCharacter::TryApplyAbilitySet(const UShooterAbilitySet* AbilitySet, bool bCancelEarlySet)
 {
-	// Clear all
 	if (bCancelEarlySet)
 	{
-		//AbilitySystemComponent->ClearAllAbilities();
-		//AbilitySystemComponent->RemoveAllSpawnedAttributes();
-
 		GrantedHandles.TakeFromAbilitySystem(AbilitySystemComponent);
-		
-		//FGameplayEffectQuery Query;
-		//AbilitySystemComponent->RemoveActiveEffects(Query);
 	}
-
-	//TryApplyAbilitySet_Server(AbilitySet,bCancelEarlySet);
+	
 	if (AbilitySet)
 	{
 		AbilitySet->GiveToAbilitySystem(AbilitySystemComponent, &GrantedHandles);

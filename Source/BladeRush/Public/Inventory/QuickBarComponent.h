@@ -34,6 +34,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
 	UInventoryItemInstance* RemoveItemFromSlot(int32 SlotIndex);
 
+	UFUNCTION(BlueprintPure)
+	bool IsValidSlotIndex(int32 Index) const;
+
 	FActiveSlotIndexChanged OnActiveSlotIndexChanged;
 	FSlotsArrayChanged OnSlotsArrayChanged;
 	FOnItemAddedToSlot OnItemAddedToSlot;

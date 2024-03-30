@@ -6,8 +6,10 @@
 #include "GameFramework/PlayerController.h"
 #include "BladeRushPlayerController.generated.h"
 
+class ULoadoutDataAsset;
 class UInventoryManagerComponent;
 class ABaseCharacter;
+class ULoadoutComponent;
 /**
  * 
  */
@@ -36,7 +38,13 @@ public:
 
 protected:
 	virtual void ProcessPlayerInput(const float DeltaTime, const bool bGamePaused) override;
+	virtual void OnPossess(APawn* InPawn) override;
 	
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	ULoadoutComponent* LoadoutComponent;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	ULoadoutDataAsset* DefaultLoadout;
 private:
 	UFUNCTION(Reliable, Client)
 	void HUDStateChanged_Client(EHUDState NewState);
@@ -50,5 +58,4 @@ private:
 
 	UPROPERTY()
 	ABaseCharacter* DeadCharacter;
-	
 };

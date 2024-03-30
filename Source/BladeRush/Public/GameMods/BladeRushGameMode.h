@@ -19,14 +19,20 @@ public:
 	
 	void CharacterDied(ABaseCharacter* Character);
 
-	void RespawnCharacterFromSpectator(APlayerController* Controller);
+	void RespawnPawn(APlayerController* Controller);
 
  	FORCEINLINE float GetRespawnTimerTime() const { return RespawnTimerTime; }
+
+protected:
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite,Category="Classes")
+	TSubclassOf<APawn> PawnClass;
 	
 private:
+	void SpawnPawns();
+	
 	UPROPERTY(EditDefaultsOnly,Category="Gameplay",meta=(AllowPrivateAccess="true"))
 	float RespawnTimerTime = 5.f;
 
-
+	UPROPERTY()
 	TArray<AActor*> PlayerStarts;
 };

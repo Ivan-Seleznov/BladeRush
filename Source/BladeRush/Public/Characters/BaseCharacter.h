@@ -8,6 +8,7 @@
 #include "GAS/ShooterAbilitySet.h"
 #include "BaseCharacter.generated.h"
 
+class UQuickBarComponent;
 class ABladeRushCameraManager;
 class UEquipmentManagerComponent;
 class UPlayerHealthComponent;
@@ -24,7 +25,7 @@ class UCableComponent;
 DECLARE_MULTICAST_DELEGATE_OneParam(FCharacterDeathStartedDelegate,class ABaseCharacter* DeadCharacter);
 
 UCLASS()
-class BLADERUSH_API ABaseCharacter : public ACharacter,public IAbilitySystemInterface
+class BLADERUSH_API ABaseCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -47,6 +48,7 @@ public:
 	FORCEINLINE UPlayerHealthComponent* GetPlayerHealthComponent() const {return PlayerHealthComponent;}
 	FORCEINLINE UCableComponent* GetCableComponent() const {return CableComponent;}
 	FORCEINLINE UEquipmentManagerComponent* GetEquipmentManagerComponent() const {return EquipmentManagerComponent;}
+	FORCEINLINE UQuickBarComponent* GetQuickBarComponent() const {return QuickBarComponent;}
 
 	ABladeRushCameraManager* GetBladeRushCameraManager() const;
 	
@@ -95,10 +97,13 @@ protected:
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Components")
 	UEquipmentManagerComponent* EquipmentManagerComponent;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite, Category="Components")
+	TObjectPtr<UQuickBarComponent> QuickBarComponent;
 	
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="GAS")
 	TObjectPtr<UPlayerAbilitySystemComponent> AbilitySystemComponent;
-
+	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category="Components")
 	UCableComponent* CableComponent;
 	
