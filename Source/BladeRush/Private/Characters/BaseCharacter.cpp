@@ -105,6 +105,16 @@ void ABaseCharacter::StopJumping()
 	bPlayerPressedJump = false;
 }
 
+void ABaseCharacter::Mantle()
+{
+	ShooterMovementComponent->Safe_bWantsToMantle = true;
+}
+
+void ABaseCharacter::StopMantle()
+{
+	ShooterMovementComponent->Safe_bWantsToMantle = false;
+}
+
 void ABaseCharacter::KillYourSelf()
 {
 	KillYourSelf_Server();

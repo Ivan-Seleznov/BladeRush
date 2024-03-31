@@ -55,6 +55,11 @@ public:
 	virtual void Jump() override;
 	virtual void StopJumping() override;
 
+	UFUNCTION(BlueprintCallable)
+	virtual void Mantle();
+	UFUNCTION(BlueprintCallable)
+	virtual void StopMantle();
+	
 	UFUNCTION(Exec,Category="Commands")
 	void KillYourSelf();
 	UFUNCTION(Server,Reliable)

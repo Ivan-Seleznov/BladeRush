@@ -69,6 +69,10 @@ bool UShooterMovementComponent::FSavedMove_Shooter::CanCombineWith(const FSavedM
 	{
 		return false;
 	}
+	if (Saved_bWantsToMantle != NewShooterMove->Saved_bWantsToMantle)
+	{
+		return false;
+	}
 	
 	return FSavedMove_Character::CanCombineWith(NewMove, InCharacter, MaxDelta);
 }
@@ -81,7 +85,8 @@ uint8 UShooterMovementComponent::FSavedMove_Shooter::GetCompressedFlags() const
 	if (Saved_bWantsToSprint) Result |= FLAG_Custom_0;
 	if (Saved_bWantsToGrapple) Result |= FLAG_Custom_1;
 	if (Saved_bPressedPlayerJump) Result |= FLAG_JumpPressed;
-
+	if (Saved_bWantsToMantle) Result |= FLAG_Custom_2;
+	
 	return Result;
 }
 
@@ -103,6 +108,7 @@ void UShooterMovementComponent::FSavedMove_Shooter::SetMoveFor(ACharacter* C, fl
 	Saved_bWallRunIsRight = ShooterMovementComponent->Safe_bWallRunIsRight;
 	
 	Saved_bWantsToGrapple = ShooterMovementComponent->Safe_bWantsToGrapple;
+	Saved_bWantsToMantle = ShooterMovementComponent->Safe_bWantsToMantle;
 }
 
 void UShooterMovementComponent::FSavedMove_Shooter::PrepMoveFor(ACharacter* C)
@@ -122,6 +128,7 @@ void UShooterMovementComponent::FSavedMove_Shooter::PrepMoveFor(ACharacter* C)
 	ShooterMovementComponent->Safe_bWallRunIsRight = Saved_bWallRunIsRight;
 	
 	ShooterMovementComponent->Safe_bWantsToGrapple = Saved_bWantsToGrapple;
+	ShooterMovementComponent->Safe_bWantsToMantle = Saved_bWantsToMantle;
 }
 
 void UShooterMovementComponent::FSavedMove_Shooter::Clear()
@@ -136,6 +143,7 @@ void UShooterMovementComponent::FSavedMove_Shooter::Clear()
 	
 	Saved_bWallRunIsRight = 0;
 	Saved_bWantsToGrapple = 0;
+	Saved_bWantsToMantle = 0;
 }
 
 void UShooterMovementComponent::ResetAllMovementActions()
@@ -149,6 +157,7 @@ void UShooterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
 
 	Safe_bWantsToSprint = (Flags & FSavedMove_Shooter::FLAG_Custom_0) != 0;
 	Safe_bWantsToGrapple = (Flags & FSavedMove_Shooter::FLAG_Custom_1) != 0;
+	Safe_bWantsToMantle = (Flags & FSavedMove_Shooter::FLAG_Custom_2) != 0;
 }
 
 UShooterMovementComponent::FNetworkPredictionDataClient_Shooter::FNetworkPredictionDataClient_Shooter(const UCharacterMovementComponent& ClientMovement)
@@ -314,26 +323,28 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 	{
 		Safe_bWantsToSprint = false;
 	}
+
+	
+	if (Safe_bWantsToMantle && CurrentMovementAction != EMovementAction::Mantle && !bPrevWantsToMantle)
+	{
+		bInMantle = TryMantle();
+	}
+
+	bPrevWantsToMantle = Safe_bWantsToMantle;
 	
 	//Mantle
 	if (ShooterCharacterOwner->bPlayerPressedJump)
 	{
-		if (!bInMantle)
+		if (bInMantle || CurrentMovementAction == EMovementAction::Mantle)
 		{
-			if (TryMantle())
-			{
-				ShooterCharacterOwner->StopJumping();
-				//ShooterCharacterOwner->bUseControllerRotationYaw = false;
-				bInMantle = true;
-			}
-			else
-			{
-				GEngine->AddOnScreenDebugMessage(-1,15,FColor::Orange,"FAILED MANTLE.. JUMP");
-				ShooterCharacterOwner->bPlayerPressedJump = false;
-				CharacterOwner->bPressedJump = true;
-				/*Perform jump physics*/
-				CharacterOwner->CheckJumpInput(DeltaSeconds);
-			}
+			ShooterCharacterOwner->StopJumping();
+		}
+		else
+		{
+			ShooterCharacterOwner->bPlayerPressedJump = false;
+			CharacterOwner->bPressedJump = true;
+			/*Perform jump physics*/
+			CharacterOwner->CheckJumpInput(DeltaSeconds);
 		}
 	}
 
@@ -582,6 +593,12 @@ bool UShooterMovementComponent::CanCrouchInCurrentState() const
 {
 	return Super::CanCrouchInCurrentState() && IsMovingOnGround();
 }
+
+bool UShooterMovementComponent::CanMantle() const
+{
+	return CurrentMovementAction != EMovementAction::Mantle;
+}
+
 #pragma endregion
 
 #pragma region Mantle

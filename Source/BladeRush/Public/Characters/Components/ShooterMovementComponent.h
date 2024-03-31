@@ -79,6 +79,7 @@ class BLADERUSH_API UShooterMovementComponent : public UCharacterMovementCompone
 		uint8 Saved_bWantsToSprint:1;
 		uint8 Saved_bPressedPlayerJump:1;
 		uint8 Saved_bWantsToGrapple:1;
+		uint8 Saved_bWantsToMantle:1;
 
 		/*SavedMove variable*/
 		uint8 Saved_bWantsToSlide:1;
@@ -112,7 +113,8 @@ public:
 	/*Client flag*/
 	bool Safe_bWantsToSprint;
 	bool Safe_bWantsToGrapple;
-	
+	bool Safe_bWantsToMantle;
+
 	/*Other variables*/
 	bool Safe_bWantsToSlide;
 	bool Safe_bWallRunIsRight;
@@ -139,7 +141,7 @@ public:
 	virtual bool IsMovingOnGround() const override;
 
 	virtual bool CanCrouchInCurrentState() const override;
-
+	
 	UFUNCTION(BlueprintPure)
 	TEnumAsByte<EMovementAction> GetCurrentMovementAction() const {return CurrentMovementAction;}
 	
@@ -157,6 +159,9 @@ public:
 	UFUNCTION(BlueprintPure)
 	bool CanSlide() const;
 
+	UFUNCTION(BlueprintPure)
+	bool CanMantle() const;
+	
 	UFUNCTION(BlueprintPure)
 	bool CanUpdateCharacterRotation() const;
 	
@@ -403,6 +408,8 @@ private:
 	
 	bool bCharacterRotatingLeft = false;
 	bool bCharacterRotatingRight = false;
+
+	bool bPrevWantsToMantle = false;
 	
 	UPROPERTY()
 	UAnimMontage* CurrentProxyMontage;
