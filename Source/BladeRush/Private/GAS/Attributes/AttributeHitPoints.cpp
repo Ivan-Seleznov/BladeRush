@@ -98,26 +98,12 @@ void UAttributeHitPoints::PostGameplayEffectExecute(const FGameplayEffectModCall
 
 		// set new health
 		const float NewHealth = GetHitPoints() - LocalDamageDone;
-		if (NewHealth <= 0.f && PrevSourceCharacter != SourceCharacter)
-		{
-			if (ABladeRushPlayerState* SourcePlayerState = Cast<ABladeRushPlayerState>(SourceCharacter->GetPlayerState()))
-			{
-				SourcePlayerState->AddKill();
-				PrevSourceCharacter = SourceCharacter;
-			}
-			
-			if (ABladeRushPlayerState* TargetPlayerState = Cast<ABladeRushPlayerState>(TargetCharacter->GetPlayerState()))
-			{
-				TargetPlayerState->AddDeath();
-			}
-		}
+
 		
 		SetHitPoints(FMath::Clamp(NewHealth, 0.0f, GetMaxHitPoints()));
 
 		if (GetHitPoints() <= 0.0f)
 		{
-			bOutOfHitPoints = true;
-			
 			const FGameplayEffectContextHandle& EffectContext = Data.EffectSpec.GetEffectContext();
 			ABaseCharacter* Instigator = Cast<ABaseCharacter>(EffectContext.GetOriginalInstigator());
 			AActor* Causer = EffectContext.GetEffectCauser();
@@ -130,6 +116,25 @@ void UAttributeHitPoints::PostGameplayEffectExecute(const FGameplayEffectModCall
 			if (HitDamageReceivedDelegate.IsBound())
 			{
 				HitDamageReceivedDelegate.Broadcast(HitResult,SourceTags,Data.EffectSpec.GetContext());
+			}
+		}
+	}
+
+	if (bOutOfHitPoints && !bPrevOutOfHitPoints)
+	{
+		if (SourceController && SourceController != TargetController)
+		{
+			if (ABladeRushPlayerState* SourcePlayerState = SourceController->GetPlayerState<ABladeRushPlayerState>())
+			{
+				SourcePlayerState->AddKill();
+			}
+		}
+		
+		if (TargetController)
+		{
+			if (ABladeRushPlayerState* TargetPlayerState = TargetController->GetPlayerState<ABladeRushPlayerState>())
+			{
+				TargetPlayerState->AddDeath();
 			}
 		}
 	}
@@ -152,9 +157,11 @@ void UAttributeHitPoints::PostAttributeChange(const FGameplayAttribute& Attribut
 	Super::PostAttributeChange(Attribute, OldValue, NewValue);
 
 	ClampAttribute(Attribute,NewValue);
-	
+
 	if (Attribute == GetHitPointsAttribute())
 	{
+		bPrevOutOfHitPoints = bOutOfHitPoints;
+		
 		if (NewValue <= 0 )
 		{
 			bOutOfHitPoints = true;

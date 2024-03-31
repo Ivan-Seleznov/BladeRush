@@ -9,9 +9,17 @@
 #include "GAS/PlayerAbilitySystemComponent.h"
 #include "GAS/Attributes/AttributeHitPoints.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 UPlayerHealthComponent::UPlayerHealthComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+}
+
+void UPlayerHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ThisClass,bIsDead);
 }
 
 void UPlayerHealthComponent::BeginPlay()
@@ -46,7 +54,8 @@ void UPlayerHealthComponent::OnOutOfHealth(float OldValue)
 {
 	ABaseCharacter* Character = Cast<ABaseCharacter>(GetOwner());
 	check(Character);
-	
+
+	bIsDead = true;
 	OnDeathFinished.Broadcast(GetOwner());
 	CharacterDeath_Client(Character);
 	

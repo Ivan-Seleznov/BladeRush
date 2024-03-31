@@ -38,9 +38,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	TSubclassOf<UDeathScreenWidget> DeathWidgetClass;
 private:
-	UPROPERTY() UUserWidget* PlayerHud;
+	UPROPERTY()
+	UUserWidget* PlayerHud;
 
-	UPROPERTY() UDeathScreenWidget* DeathWidget;
+	UPROPERTY()
+	UDeathScreenWidget* DeathWidget;
 
 	EHUDState CurrentState;
 };

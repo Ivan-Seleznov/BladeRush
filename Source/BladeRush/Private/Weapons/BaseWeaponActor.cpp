@@ -3,13 +3,15 @@
 
 #include "Weapons/BaseWeaponActor.h"
 #include "Weapons/BaseWeaponActor.h"
-
+#include "UI/HitMarkerWidgetBase.h"
 #include "Characters/BaseCharacter.h"
 #include "Data/DecalDataAsset.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "Blueprint/UserWidget.h"
+#include "Characters/Components/PlayerHealthComponent.h"
 #include "Weapons/WeaponItemInstance.h"
 
 ABaseWeaponActor::ABaseWeaponActor()
@@ -128,6 +130,39 @@ void ABaseWeaponActor::OnHit_Multicast_Implementation(UWeaponItemInstance* Weapo
 	HandleHits(WeaponInstance, HitResults);
 }
 
+void ABaseWeaponActor::Destroyed()
+{
+	Super::Destroyed();
+
+	const ACharacter* Character = GetCharacterOwner<ACharacter>();
+	if (Character && Character->IsLocallyControlled() && HitMarkerWidget)
+	{
+		HitMarkerWidget->RemoveFromParent();
+	}
+}
+
+void ABaseWeaponActor::BeginPlay()
+{
+	Super::BeginPlay();
+
+	ACharacter* Character = GetCharacterOwner<ACharacter>();
+	if (!Character)
+	{
+		return;
+	}
+
+	if (Character->IsLocallyControlled() && HitMarkerWidgetClass)
+	{
+		HitMarkerWidget = CreateWidget<UHitMarkerWidgetBase>(GetWorld(),HitMarkerWidgetClass);
+		HitMarkerWidget->AddToViewport();
+	}
+}
+
+ACharacter* ABaseWeaponActor::GetCharacterOwner() const
+{
+	return Cast<ABaseCharacter>(GetOwner());
+}
+
 void ABaseWeaponActor::HandleHits(UWeaponItemInstance* WeaponInstance, const TArray<FHitResult>& HitResults)
 {
 	for (const FHitResult& Hit : HitResults)
@@ -150,7 +185,7 @@ void ABaseWeaponActor::HandleHit(UWeaponItemInstance* WeaponInstance, const FHit
 {
 	if (bDrawDebugHits && HasAuthority())
 	{
-		//DrawDebugPoint(GetWorld(),Hit.bBlockingHit ? Hit.Location : Hit.TraceEnd,5.f,FColor::Green,false,3.f);
+		DrawDebugPoint(GetWorld(),Hit.bBlockingHit ? Hit.Location : Hit.TraceEnd,5.f,FColor::Green,false,3.f);
 	}
 
 	SpawnDecal(Hit);
@@ -170,6 +205,23 @@ void ABaseWeaponActor::HandleHit(UWeaponItemInstance* WeaponInstance, const FHit
 		
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),HitParticles,SpawnTransform);
 		}
+
+		const ACharacter* CharacterOwner = GetCharacterOwner();
+		if (CharacterOwner && CharacterOwner->IsLocallyControlled())
+		{
+			if (const ABaseCharacter* HitCharacter = Cast<ABaseCharacter>(Hit.GetActor()))
+			{
+				if (const UPlayerHealthComponent* HealthComponent = HitCharacter->GetPlayerHealthComponent())
+				{
+					if (!HealthComponent->IsCharacterDead())
+					{
+						AddHitMarker();
+					}
+				}
+			}
+		}
+
+
 		K2_HandleHit(Hit);
 	}
 }
@@ -227,4 +279,16 @@ void ABaseWeaponActor::PlayCharacterAnimMontage(UAnimMontage* Montage) const
 	if (!AnimInstance) return;
 
 	AnimInstance->Montage_Play(Montage);
+}
+
+void ABaseWeaponActor::AddHitMarker()
+{
+	if (HitMarkerWidget)
+	{
+		HitMarkerWidget->AddHitMarker();
+		if (HitMarkerSound)
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(),HitMarkerSound,HitMarkerSoundVolumeMultiplier);
+		}
+	}
 }

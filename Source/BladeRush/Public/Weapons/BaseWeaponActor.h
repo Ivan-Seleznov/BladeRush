@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "BaseWeaponActor.generated.h"
 
+class UHitMarkerWidgetBase;
 class UWeaponItemInstance;
 class UDecalDataAsset;
 class UNiagaraSystem;
@@ -48,6 +49,15 @@ public:
 	void K2_OnExitADS(UWeaponItemInstance* WeaponInstance);
 
 protected:
+	virtual void Destroyed() override;
+	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintPure)
+	ACharacter* GetCharacterOwner() const;
+
+	template<typename T>
+	T* GetCharacterOwner() const;
+	
 	UFUNCTION(NetMulticast,Unreliable)
 	void OnHit_Multicast(UWeaponItemInstance* WeaponInstance,const TArray<FHitResult>& HitResults);
 
@@ -98,7 +108,20 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Sounds", meta=(AllowPrivateAccess=true))
 	USoundBase* HitSurfaceSound;
+
+	UPROPERTY(EditDefaultsOnly, Category="HitMarker")
+	TSubclassOf<UHitMarkerWidgetBase> HitMarkerWidgetClass;
+	UPROPERTY(EditDefaultsOnly, Category="HitMarker")
+	USoundBase* HitMarkerSound;
+	UPROPERTY(EditDefaultsOnly, Category="HitMarker")
+	float HitMarkerSoundVolumeMultiplier = 1.3f;
+	
 private:
+	void PlayCameraShake(TSubclassOf<UCameraShakeBase> CameraShakeClass);
+	void PlayWeaponAnimMontage(UAnimMontage* Montage) const;
+	void PlayCharacterAnimMontage(UAnimMontage* Montage) const;
+	void AddHitMarker();
+	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,meta=(AllowPrivateAccess))
 	FName MuzzleSocketName = FName("muzzle_socket");
 
@@ -107,11 +130,15 @@ private:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,meta=(AllowPrivateAccess))
 	FName RightHandSocketName = FName("hand_r");
 	
-	void PlayCameraShake(TSubclassOf<UCameraShakeBase> CameraShakeClass);
-	void PlayWeaponAnimMontage(UAnimMontage* Montage) const;
-	void PlayCharacterAnimMontage(UAnimMontage* Montage) const;
-	
-	
 	UPROPERTY(EditDefaultsOnly, Category = "Debug", meta=(AllowPrivateAccess=true))
 	bool bDrawDebugHits = true;
+
+	UPROPERTY()
+	UHitMarkerWidgetBase* HitMarkerWidget;
 };
+
+template <typename T>
+T* ABaseWeaponActor::GetCharacterOwner() const
+{
+	return Cast<T>(GetOwner());
+}

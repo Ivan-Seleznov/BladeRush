@@ -20,18 +20,22 @@ UCLASS()
 class BLADERUSH_API UPlayerHealthComponent : public UGameFrameworkComponent
 {
 	GENERATED_BODY()
+	
 public:
 	UPlayerHealthComponent(const FObjectInitializer& ObjectInitializer);
 
+	mutable FHealth_DeathEvent OnDeathFinished;
+	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void BeginPlay() override;
 	
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	float GetHealth() const;
 
-	mutable FHealth_DeathEvent OnDeathFinished;
+	UFUNCTION(BlueprintPure)
+	bool IsCharacterDead() const {return bIsDead;}
 	
 protected:
-
 	UFUNCTION(Client,Reliable)
 	void CharacterDeath_Client(ABaseCharacter* Character);
 	
@@ -40,4 +44,7 @@ private:
 
 	UPROPERTY()
 	const UAttributeHitPoints* HealthAttributeSet;
+
+	UPROPERTY(Replicated)
+	bool bIsDead = false;
 };

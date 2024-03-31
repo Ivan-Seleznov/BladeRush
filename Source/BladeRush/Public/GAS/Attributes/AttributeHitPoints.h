@@ -65,6 +65,5 @@ private:
 	
 	
 	bool bOutOfHitPoints;
-
-	ABaseCharacter* PrevSourceCharacter;
+	bool bPrevOutOfHitPoints;
 };
