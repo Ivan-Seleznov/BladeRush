@@ -37,6 +37,7 @@ public:
 	virtual void AcknowledgePossession(APawn* P) override;
 
 protected:
+	virtual void BeginPlay() override;
 	virtual void ProcessPlayerInput(const float DeltaTime, const bool bGamePaused) override;
 	virtual void OnPossess(APawn* InPawn) override;
 	

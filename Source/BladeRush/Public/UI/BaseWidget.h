@@ -16,10 +16,9 @@ class BLADERUSH_API UBaseWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-public:
+protected:
 	virtual void NativeConstruct() override;
 	
-protected:
 	UFUNCTION()
 	virtual void OnPawnInitialize(APawn* NewPawn);
 

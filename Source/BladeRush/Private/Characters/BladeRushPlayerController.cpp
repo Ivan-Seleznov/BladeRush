@@ -83,6 +83,16 @@ void ABladeRushPlayerController::AcknowledgePossession(APawn* P)
 	}
 }
 
+void ABladeRushPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (LoadoutComponent)
+	{
+		LoadoutComponent->SetCurrentLoadout(DefaultLoadout->GetCharacterLoadout());
+	}
+}
+
 void ABladeRushPlayerController::ProcessPlayerInput(const float DeltaTime, const bool bGamePaused)
 {
 	Super::ProcessPlayerInput(DeltaTime, bGamePaused);

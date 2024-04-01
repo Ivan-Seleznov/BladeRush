@@ -23,7 +23,7 @@ struct FCharacterLoadout
 
 	bool IsEmpty() const
 	{
-		return ItemsToQuickBar.IsEmpty() && ItemsToEquip.IsEmpty();
+		return ItemsToQuickBar.IsEmpty() && ItemsToEquip.IsEmpty() && !AbilityToGrant;
 	}
 };
 

@@ -1110,14 +1110,14 @@ bool UShooterMovementComponent::TryWallRun()
 	//Side casts . Velocity | WallHit.Normal must be less than 90 degrees to be able to enter wall run
 	FHitResult WallHit;
 	IsWallOnSideTrace(WallHit,false);
-	if (WallHit.IsValidBlockingHit() && (Velocity | WallHit.Normal) < 0) 
+	if (CanEnterWallRun(WallHit)) 
 	{
 		Safe_bWallRunIsRight = false;
 	}
 	else
 	{
 		IsWallOnSideTrace(WallHit,true);
-		if (WallHit.IsValidBlockingHit() && (Velocity | WallHit.Normal) < 0)
+		if (CanEnterWallRun(WallHit))
 		{
 			Safe_bWallRunIsRight = true;
 		}
@@ -1135,6 +1135,15 @@ bool UShooterMovementComponent::TryWallRun()
 	SetMovementMode(MOVE_Custom,CMOVE_WallRun);
 	
 	return true;
+}
+
+bool UShooterMovementComponent::CanEnterWallRun(const FHitResult& WallHit)
+{
+	if (WallHit.IsValidBlockingHit())
+	{
+		DEBUG_LOG("Vel | WallHit: %f", (Velocity.GetSafeNormal() | WallHit.Normal));
+	}
+	return WallHit.IsValidBlockingHit() && (Velocity.GetSafeNormal() | WallHit.Normal) < WallRunEnteredAngle;
 }
 
 void UShooterMovementComponent::PhysWallRun(float DeltaTime, int32 Iterations)

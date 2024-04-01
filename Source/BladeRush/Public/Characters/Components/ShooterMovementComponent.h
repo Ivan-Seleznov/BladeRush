@@ -292,6 +292,9 @@ protected:
 	float WallAttractionForce = 200.f;
 
 	UPROPERTY(EditDefaultsOnly,Category="WallRun")
+	float WallRunEnteredAngle = 0.f;
+	
+	UPROPERTY(EditDefaultsOnly,Category="WallRun")
 	UCurveFloat* WallRunGravityScaleCurve;
 	
 	/*Grappling hook*/
@@ -344,6 +347,7 @@ private:
 	void ExitWallRun();
 	
 	bool TryWallRun();
+	bool CanEnterWallRun(const FHitResult& WallHit);
 	void PhysWallRun(float DeltaTime, int32 Iterations);
 
 	/*Grappling hook*/
