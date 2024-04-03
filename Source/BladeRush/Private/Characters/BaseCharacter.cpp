@@ -49,7 +49,10 @@ void ABaseCharacter::PossessedBy(AController* NewController)
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
 	
 	PossessedBy_Client(NewController);
-	TryApplyAbilitySet(DefaultAbilitySet);
+	if (DefaultAbilitySet)
+	{
+		DefaultAbilitySet->GiveToAbilitySystem(AbilitySystemComponent,&DefaultGrantedHandles);
+	}
 }
 
 void ABaseCharacter::OnRep_PlayerState()

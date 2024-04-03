@@ -34,12 +34,14 @@ void UADSAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const
 	ActiveGameplayEffectHandle = ApplyGameplayEffect(ADSGameplayEffect);
 
 	ABaseWeaponActor* WeaponActor = WeaponInstance->GetSpawnedWeaponActor();
-	if (!WeaponActor) return;
-	if (!CameraModeClass) return;
+	if (!WeaponActor || !WeaponActor->GetCameraModeClass())
+	{
+		return;
+	}
 	
 	if (ABladeRushCameraManager* CameraManager = GetCameraManager())
 	{
-		UCameraMode_InterpLocation* CameraMode = NewObject<UCameraMode_InterpLocation>(CameraManager,CameraModeClass);
+		UCameraMode_InterpLocation* CameraMode = NewObject<UCameraMode_InterpLocation>(CameraManager,WeaponActor->GetCameraModeClass());
 		//CameraMode->SetTargetOffset(WeaponActor->GetAimOffset().);
 		CameraManager->SetCameraModeObject(CameraMode);
 	}

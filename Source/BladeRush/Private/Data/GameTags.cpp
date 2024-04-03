@@ -49,10 +49,11 @@ void FGameTags::AddTags()
 	AddTag(InputTag_Abilities_Weapon_Fire,"InputTag.Abilities.Weapon.Fire","On activation weapon fire ability");
 	AddTag(InputTag_Abilities_ADS,"InputTag.Abilities.ADS","On activation ads ability");
 	AddTag(InputTag_Abilities_Weapon_Reload,"InputTag.Abilities.Weapon.Reload","On activation weapon reload ability");
-
+	AddTag(InputTag_Abilities_SpeedBoost,"InputTag.Abilities.SpeedBoost","On activation speed boost ability");
+	
 	AddTag(Disable_Ability_Sprint,"Disable.Ability.Sprint","Disabled sprint ability");
 
-
+	
 	/*cost gameplay tags*/
 	AddTag(Cost_Ability_TryGrapple,"Cost.Ability.TryGrapple","TryGrapple ability cost");
 

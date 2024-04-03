@@ -10,6 +10,7 @@ class UHitMarkerWidgetBase;
 class UWeaponItemInstance;
 class UDecalDataAsset;
 class UNiagaraSystem;
+class UCameraMode_InterpLocation;
 
 UCLASS()
 class BLADERUSH_API ABaseWeaponActor : public AActor
@@ -48,6 +49,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_OnExitADS(UWeaponItemInstance* WeaponInstance);
 
+	TSubclassOf<UCameraMode_InterpLocation> GetCameraModeClass() const {return CameraModeClass;}
 protected:
 	virtual void Destroyed() override;
 	virtual void BeginPlay() override;
@@ -115,7 +117,10 @@ protected:
 	USoundBase* HitMarkerSound;
 	UPROPERTY(EditDefaultsOnly, Category="HitMarker")
 	float HitMarkerSoundVolumeMultiplier = 1.3f;
+
 	
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category="Camera")	
+	TSubclassOf<UCameraMode_InterpLocation> CameraModeClass;
 private:
 	void PlayCameraShake(TSubclassOf<UCameraShakeBase> CameraShakeClass);
 	void PlayWeaponAnimMontage(UAnimMontage* Montage) const;

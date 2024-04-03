@@ -134,7 +134,8 @@ public:
 	
 	virtual float GetMaxSpeed() const override;
 	virtual float GetMaxBrakingDeceleration() const override;
-	
+
+	virtual float GetCustomMaxSpeed() const;
 	virtual bool CanAttemptJump() const override;
 	virtual bool DoJump(bool bReplayingMoves) override;
 	
@@ -220,6 +221,9 @@ protected:
 	
 	/*Helpers*/
 	ACharacter* GetDefaultCharacter() const;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite,Replicated)
+	float MaxSpeedMultiplier = 1.f;
 	
 	/*Sprint*/
 	UPROPERTY(EditDefaultsOnly,Category="Sprint")

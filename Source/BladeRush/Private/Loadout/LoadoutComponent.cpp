@@ -75,13 +75,13 @@ void ULoadoutComponent::SetCurrentLoadoutFromDef(const FLoadoutDefinitions& Load
 		return;
 	}
 
-	CurrentLoadout = FCharacterLoadout();
+	FCharacterLoadout LoadoutToSet;
 	
 	for (const TSubclassOf<ULoadoutItemQuickBarDef> ItemQuickBarDef : LoadoutDefinitions.QuickBarDefinitions)
 	{
 		if (AvailableLoadoutDataAsset->ContainsQuickBarDef(ItemQuickBarDef))
 		{
-			CurrentLoadout.ItemsToQuickBar.Add(CreateLoadoutItem(ItemQuickBarDef));
+			LoadoutToSet.ItemsToQuickBar.Add(CreateLoadoutItem(ItemQuickBarDef));
 		}
 	}
 
@@ -89,7 +89,7 @@ void ULoadoutComponent::SetCurrentLoadoutFromDef(const FLoadoutDefinitions& Load
 	{
 		if (AvailableLoadoutDataAsset->ContainsEquipDef(EquipmDef))
 		{
-			CurrentLoadout.ItemsToQuickBar.Add(CreateLoadoutItem(EquipmDef));
+			LoadoutToSet.ItemsToQuickBar.Add(CreateLoadoutItem(EquipmDef));
 		}
 	}
 
@@ -97,9 +97,11 @@ void ULoadoutComponent::SetCurrentLoadoutFromDef(const FLoadoutDefinitions& Load
 	{
 		if (AvailableLoadoutDataAsset->ContainsAbilitiesDef(AbilitiesDef))
 		{
-			CurrentLoadout.AbilitySetsToGrant.Add(CreateLoadoutAbilities(AbilitiesDef));
+			LoadoutToSet.AbilitySetsToGrant.Add(CreateLoadoutAbilities(AbilitiesDef));
 		}
 	}
+
+	SetCurrentLoadout(LoadoutToSet);
 }
 
 FLoadoutItem ULoadoutComponent::CreateLoadoutItem(TSubclassOf<ULoadoutItemDefinition> LoadoutItemDefClass)
@@ -187,7 +189,7 @@ void ULoadoutComponent::ApplyAbilities(ABaseCharacter* Character)
 {
 	for (const FLoadoutAbilities& LoadoutAbilitySet : CurrentLoadout.AbilitySetsToGrant)
 	{
-		Character->TryApplyAbilitySet(LoadoutAbilitySet.AbilitySet);
+		Character->TryApplyAbilitySet(LoadoutAbilitySet.AbilitySet,true);
 	}
 }
 

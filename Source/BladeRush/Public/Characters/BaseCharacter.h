@@ -121,6 +121,10 @@ protected:
 	// Authority-only list of granted handles
 	UPROPERTY(VisibleAnywhere)
 	FAbilitySet_GrantedHandles GrantedHandles;
+
+	// Authority-only list of granted handles
+	UPROPERTY(VisibleAnywhere)
+	FAbilitySet_GrantedHandles DefaultGrantedHandles;	
 	
 	virtual void BeginPlay() override;
 

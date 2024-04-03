@@ -10,6 +10,7 @@ class UMagazineItemInstance;
 class UBladeRushAnimInstance;
 class UCharacterMovementComponent;
 class ABaseWeaponActor;
+class UCameraMode_InterpLocation;
 
 USTRUCT(BlueprintType)
 struct FWeaponRecoilData
@@ -99,7 +100,7 @@ public:
 	float GetWeaponDamage(float Distance) const;
 	UFUNCTION(BlueprintPure)
 	float GetCriticalDamageChance() const;
-	
+
 protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	int32 SpawnedWeaponActorIndex = 0;
@@ -166,7 +167,7 @@ protected:
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Weapon|Damage")
 	UCurveFloat* DamageDistanceCurve;
-	
+
 private:
 	double TimeLastEquipped = 0.0;
 	double TimeLastFired = 0.0;

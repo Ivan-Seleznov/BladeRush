@@ -35,6 +35,8 @@ public:
 	FGameplayTag InputTag_Abilities_Weapon_Fire;
 	FGameplayTag InputTag_Abilities_ADS;
 	FGameplayTag InputTag_Abilities_Weapon_Reload;
+	
+	FGameplayTag InputTag_Abilities_SpeedBoost;
 
 	FGameplayTag InputTag_Move;
 	FGameplayTag InputTag_Look;

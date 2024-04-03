@@ -26,9 +26,6 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	FShooterGameplayEffect ADSGameplayEffect;
-
-	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)	
-	TSubclassOf<UCameraMode_InterpLocation> CameraModeClass;
 	
 	FActiveGameplayEffectHandle ActiveGameplayEffectHandle;
 };

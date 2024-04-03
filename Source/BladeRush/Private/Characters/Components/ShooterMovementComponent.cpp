@@ -2,9 +2,7 @@
 
 
 #include "Characters/Components/ShooterMovementComponent.h"
-
 #include "BladeRushLogs.h"
-#include "BlendSpaceAnalysis.h"
 #include "CableComponent.h"
 #include "Characters/BaseCharacter.h"
 #include "Components/CapsuleComponent.h"
@@ -33,6 +31,7 @@ void UShooterMovementComponent::GetLifetimeReplicatedProps(TArray<FLifetimePrope
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ThisClass,bInMantle);
+	DOREPLIFETIME(ThisClass,MaxSpeedMultiplier);
 }
 
 
@@ -511,30 +510,26 @@ bool UShooterMovementComponent::IsRotatingAroundYaw() const
 
 float UShooterMovementComponent::GetMaxSpeed() const
 {
+	float MaxSpeed = 0.f;
 	if (IsMovementMode(MOVE_Walking) && Safe_bWantsToSprint)
 	{
-		if (bWantsToCrouch) return MaxCrouchingSprintSpeed;
+		if (bWantsToCrouch)
+		{
+			MaxSpeed = MaxCrouchingSprintSpeed;
+		}
 
-		return MaxSprintSpeed;
+		MaxSpeed = MaxSprintSpeed;
 	}
-	
-	if (MovementMode != MOVE_Custom)
+	else if (MovementMode != MOVE_Custom)
 	{
-		return Super::GetMaxSpeed();
+		MaxSpeed = Super::GetMaxSpeed();
+	}
+	else
+	{
+		MaxSpeed = GetCustomMaxSpeed();
 	}
 
-	switch (CustomMovementMode)
-	{
-	case CMOVE_Slide:
-		return MaxSlideSpeed;
-	case CMOVE_WallRun:
-		return MaxWallRunSpeed;
-	case CMOVE_Grappling:
-		return MaxGrapplingSpeed;
-	default:
-		UE_LOG(LogTemp,Fatal,TEXT("Invalid Movement Mode (getmaxspeed)"));
-		return -1.f;
-	}
+	return MaxSpeed * MaxSpeedMultiplier;
 }
 
 float UShooterMovementComponent::GetMaxBrakingDeceleration() const
@@ -551,6 +546,22 @@ float UShooterMovementComponent::GetMaxBrakingDeceleration() const
 	    return 0.f;
 	default:
 		UE_LOG(LogTemp, Fatal, TEXT("Invalid Movement Mode"))
+		return -1.f;
+	}
+}
+
+float UShooterMovementComponent::GetCustomMaxSpeed() const
+{
+	switch (CustomMovementMode)
+	{
+	case CMOVE_Slide:
+		return MaxSlideSpeed;
+	case CMOVE_WallRun:
+		return MaxWallRunSpeed;
+	case CMOVE_Grappling:
+		return MaxGrapplingSpeed;
+	default:
+		UE_LOG(LogTemp,Fatal,TEXT("Invalid Movement Mode (getmaxspeed)"));
 		return -1.f;
 	}
 }

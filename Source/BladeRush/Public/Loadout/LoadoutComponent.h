@@ -43,7 +43,7 @@ private:
 	FLoadoutItem CreateLoadoutItem(TSubclassOf<ULoadoutItemDefinition> LoadoutItemDefClass);
 	FLoadoutAbilities CreateLoadoutAbilities(TSubclassOf<ULoadoutAbilitiesDefinition> LoadoutAbilitiesDefClass);
 	
-	UFUNCTION(NetMulticast,Server,Reliable)
+	UFUNCTION(Server,Reliable)
 	void SetCurrentLoadoutFromDef_Server(const FLoadoutDefinitions& LoadoutDefinitions);
 
 	/*Helpers*/
