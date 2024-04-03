@@ -6,13 +6,16 @@
 #include "BaseWidget.h"
 #include "LoadoutSelectionWidget.generated.h"
 
+struct FLoadoutItem;
 enum class EWeaponType : uint8;
 struct FLoadoutWeapons;
 class UComboBoxString;
-class ULoadoutAbilitiesDataAsset;
 class ULoadoutEquipmentDataAsset;
 class UWeaponTypesDataAsset;
 class UButton;
+class ULoadoutComponent;
+struct FCharacterLoadout;
+
 /**
  * 
  */
@@ -45,9 +48,8 @@ protected:
 	UComboBoxString* AbilitySetComboBox;
 
 private:
-	void LoadWeapons();
-	void LoadWeaponsOfAType(EWeaponType WeaponType,UComboBoxString* ComboBox);
-	
-	void LoadEquipment();
-	void LoadAbilities();
+	void LoadLoadouts(ULoadoutComponent* LoadoutComponent);
+	void LoadCurrentLoadout(ULoadoutComponent* LoadoutComponent);
+
+	FLoadoutItem FindWeaponBySlotInCurrentLoadout(const FCharacterLoadout& CurrentLoadout,int32 SlotIndex) const;
 };

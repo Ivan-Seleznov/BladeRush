@@ -31,10 +31,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FShooterGameplayEffect SlideEffect;
-	
-	UPROPERTY(EditAnywhere, meta = (ClampMin = 0.f,ClampMax = 1.f,UIMin = 0.f,UIMax = 1.f))
-	float BlockSlideMultiplier = 0.3f;
-
 private:
 	bool bCrouching = false;
 };

@@ -44,10 +44,8 @@ void UCrouchSlidePlayerAbility::ActivateAbility(const FGameplayAbilitySpecHandle
 
 	Character->MovementModeChangedDelegate.AddDynamic(this,&ThisClass::MovementModeChanged);
 
-
-	const UAttributeStamina* AttributeStamina = UAttributeStamina::Find(Character->GetAbilitySystemComponent());
 	
-	if (MovementComponent->CanSlide() && AttributeStamina->GetStaminaPoints() > AttributeStamina->GetMaxStaminaPoints() * BlockSlideMultiplier)
+	if (MovementComponent->CanSlide())
 	{
 		ActivateSlide(Character,MovementComponent);
 	}

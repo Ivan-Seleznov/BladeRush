@@ -16,9 +16,9 @@ class BLADERUSH_API ULoadoutDataAsset : public UDataAsset
 	GENERATED_BODY()
 	
 public:
-	FCharacterLoadout GetCharacterLoadout() const {return CurrentLoadout;}
+	FLoadoutDefinitions GetCharacterLoadout() const {return CurrentLoadout;}
 	
 private:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,meta=(AllowPrivateAccess))
-	FCharacterLoadout CurrentLoadout;
+	FLoadoutDefinitions CurrentLoadout;
 };

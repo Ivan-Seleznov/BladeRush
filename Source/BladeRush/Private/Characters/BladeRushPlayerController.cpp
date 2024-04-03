@@ -89,7 +89,7 @@ void ABladeRushPlayerController::BeginPlay()
 
 	if (LoadoutComponent)
 	{
-		LoadoutComponent->SetCurrentLoadout(DefaultLoadout->GetCharacterLoadout());
+		LoadoutComponent->TrySetCurrentLoadout(DefaultLoadout->GetCharacterLoadout());
 	}
 }
 
@@ -114,12 +114,10 @@ void ABladeRushPlayerController::OnPossess(APawn* InPawn)
 	{
 		if (LoadoutComponent->GetCurrentLoadout().IsEmpty())
 		{
-			LoadoutComponent->SetCurrentLoadout(DefaultLoadout->GetCharacterLoadout(),true);
+			LoadoutComponent->TrySetCurrentLoadout(DefaultLoadout->GetCharacterLoadout());
 		}
-		else
-		{
-			LoadoutComponent->TryApplyCurrentLoadout();
-		}
+		
+		LoadoutComponent->TryApplyCurrentLoadout();
 	}
 }
 
