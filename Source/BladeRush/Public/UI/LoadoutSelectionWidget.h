@@ -6,7 +6,7 @@
 #include "BaseWidget.h"
 #include "LoadoutSelectionWidget.generated.h"
 
-struct FLoadoutItem;
+struct FLoadoutQuickBarItem;
 enum class EWeaponType : uint8;
 struct FLoadoutWeapons;
 class UComboBoxString;
@@ -51,5 +51,5 @@ private:
 	void LoadLoadouts(ULoadoutComponent* LoadoutComponent);
 	void LoadCurrentLoadout(ULoadoutComponent* LoadoutComponent);
 
-	FLoadoutItem FindWeaponBySlotInCurrentLoadout(const FCharacterLoadout& CurrentLoadout,int32 SlotIndex) const;
+	FLoadoutQuickBarItem FindWeaponBySlotInCurrentLoadout(const FCharacterLoadout& CurrentLoadout,int32 SlotIndex) const;
 };

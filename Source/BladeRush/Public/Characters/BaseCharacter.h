@@ -92,7 +92,7 @@ protected:
 	virtual void ClientPossessedBy(AController* NewController);
 	
 	UFUNCTION(Client, Unreliable)
-	void TryApplyAbilitySet_Server(const UShooterAbilitySet* AbilitySet, bool bCancelEarlySet = false);
+	void TryApplyAbilitySet_Server(const UShooterAbilitySet* AbilitySet, bool bCancelPrevSet = false);
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Movement") 
 	UShooterMovementComponent* ShooterMovementComponent;

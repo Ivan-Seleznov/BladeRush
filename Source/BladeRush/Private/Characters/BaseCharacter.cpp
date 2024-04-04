@@ -70,9 +70,9 @@ UAbilitySystemComponent* ABaseCharacter::GetAbilitySystemComponent() const
 	return AbilitySystemComponent;
 }
 
-void ABaseCharacter::TryApplyAbilitySet(const UShooterAbilitySet* AbilitySet, bool bCancelEarlySet)
+void ABaseCharacter::TryApplyAbilitySet(const UShooterAbilitySet* AbilitySet, bool bCancelPrevSet)
 {
-	if (bCancelEarlySet)
+	if (bCancelPrevSet)
 	{
 		GrantedHandles.TakeFromAbilitySystem(AbilitySystemComponent);
 	}

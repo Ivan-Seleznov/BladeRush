@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Loadout/LoadoutTypes.h"
 #include "Components/ControllerComponent.h"
+#include "GAS/ShooterAbilitySet.h"
 #include "LoadoutComponent.generated.h"
 
 
@@ -12,6 +13,7 @@ class ABaseCharacter;
 class UAvailableLoadoutDataAsset;
 class UEquipmentManagerComponent;
 class UInventoryManagerComponent;
+class UEquipmentInstance;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class BLADERUSH_API ULoadoutComponent : public UControllerComponent
@@ -38,22 +40,25 @@ private:
 	void ApplyEquipment(ABaseCharacter* Character);
 	void ApplyAbilities(ABaseCharacter* Character);
 
+	void ClearPrevLoadout();
+	
 	void SetCurrentLoadoutFromDef(const FLoadoutDefinitions& LoadoutDefinitions);
 
-	FLoadoutItem CreateLoadoutItem(TSubclassOf<ULoadoutItemDefinition> LoadoutItemDefClass);
+	FLoadoutEquipment CreateLoadoutEquipmentItem(TSubclassOf<ULoadoutEquipmentDefinition> LoadoutEquipmentDefClass);
+	FLoadoutQuickBarItem CreateLoadoutQuickBarItem(TSubclassOf<ULoadoutItemQuickBarDef> LoadoutItemDefClass);
 	FLoadoutAbilities CreateLoadoutAbilities(TSubclassOf<ULoadoutAbilitiesDefinition> LoadoutAbilitiesDefClass);
 	
 	UFUNCTION(Server,Reliable)
 	void SetCurrentLoadoutFromDef_Server(const FLoadoutDefinitions& LoadoutDefinitions);
-
-	/*Helpers*/
-	//TODO: Extend to static library
-	void TryEquipItem(UInventoryManagerComponent* InventoryComp, UEquipmentManagerComponent* EquipmentComp,TSubclassOf<UInventoryItemDefinition> ItemDef);
-
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,meta=(AllowPrivateAccess))
 	TObjectPtr<UAvailableLoadoutDataAsset> AvailableLoadoutDataAsset;
 
 	UPROPERTY(BlueprintReadOnly,Replicated,meta=(AllowPrivateAccess))
 	FCharacterLoadout CurrentLoadout;
+
+	UPROPERTY()
+	TArray<UEquipmentInstance*> CurrentEquipmentInstances;
+	
+	FAbilitySet_GrantedHandles CurrentLoadoutGrantedHandles;
 };

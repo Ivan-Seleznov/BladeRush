@@ -19,11 +19,11 @@ public:
 	const FLoadoutDefinitions& GetLoadoutDefinitions() const {return LoadoutDefinitions;}
 
 	bool ContainsQuickBarDef(TSubclassOf<ULoadoutItemQuickBarDef> QuickBarDef) const;
-	bool ContainsEquipDef(TSubclassOf<ULoadoutItemDefinition> ItemDef) const;
+	bool ContainsEquipDef(TSubclassOf<ULoadoutEquipmentDefinition> ItemDef) const;
 	bool ContainsAbilitiesDef(TSubclassOf<ULoadoutAbilitiesDefinition> AbilitiesDef) const;
 	
 	const TSubclassOf<ULoadoutItemQuickBarDef>* FindQuickBarDefByName(FName InName) const;
-	const TSubclassOf<ULoadoutItemDefinition>* FindEquipDefByName(FName InName) const;
+	const TSubclassOf<ULoadoutEquipmentDefinition>* FindEquipDefByName(FName InName) const;
 	const TSubclassOf<ULoadoutAbilitiesDefinition>* FindAbilitiesDefByName(FName InName) const;
 protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)

@@ -6,12 +6,13 @@
 #include "Characters/BaseCharacter.h"
 #include "Data/AvailableLoadoutDataAsset.h"
 #include "Equipment/EquipmentDefinition.h"
+#include "Equipment/EquipmentInstance.h"
 #include "Equipment/EquipmentManagerComponent.h"
 #include "Inventory/InventoryManagerComponent.h"
 #include "Inventory/QuickBarComponent.h"
 #include "Inventory/Fragments/EquippableItemFragment.h"
 #include "Loadout/LoadoutAbilitiesDefinition.h"
-#include "Loadout/LoadoutItemDefinition.h"
+#include "Loadout/LoadoutEquipmentDefinition.h"
 #include "Loadout/LoadoutItemQuickBarDef.h"
 #include "Net/UnrealNetwork.h"
 
@@ -43,6 +44,7 @@ bool ULoadoutComponent::TryApplyCurrentLoadout()
 	{
 		return false;
 	}
+	ClearPrevLoadout();
 	
 	ApplyAbilities(Character);
 	ApplyEquipment(Character);
@@ -81,15 +83,15 @@ void ULoadoutComponent::SetCurrentLoadoutFromDef(const FLoadoutDefinitions& Load
 	{
 		if (AvailableLoadoutDataAsset->ContainsQuickBarDef(ItemQuickBarDef))
 		{
-			LoadoutToSet.ItemsToQuickBar.Add(CreateLoadoutItem(ItemQuickBarDef));
+			LoadoutToSet.ItemsToQuickBar.Add(CreateLoadoutQuickBarItem(ItemQuickBarDef));
 		}
 	}
 
-	for (const TSubclassOf<ULoadoutItemDefinition> EquipmDef : LoadoutDefinitions.EquipmentDefinitions)
+	for (const TSubclassOf<ULoadoutEquipmentDefinition> EquipmDef : LoadoutDefinitions.EquipmentDefinitions)
 	{
 		if (AvailableLoadoutDataAsset->ContainsEquipDef(EquipmDef))
 		{
-			LoadoutToSet.ItemsToQuickBar.Add(CreateLoadoutItem(EquipmDef));
+			LoadoutToSet.ItemsToEquip.Add(CreateLoadoutEquipmentItem(EquipmDef));
 		}
 	}
 
@@ -104,18 +106,31 @@ void ULoadoutComponent::SetCurrentLoadoutFromDef(const FLoadoutDefinitions& Load
 	SetCurrentLoadout(LoadoutToSet);
 }
 
-FLoadoutItem ULoadoutComponent::CreateLoadoutItem(TSubclassOf<ULoadoutItemDefinition> LoadoutItemDefClass)
+FLoadoutEquipment ULoadoutComponent::CreateLoadoutEquipmentItem(
+	TSubclassOf<ULoadoutEquipmentDefinition> LoadoutEquipmentDefClass)
 {
-	const ULoadoutItemDefinition* LoadoutItemDefinition = LoadoutItemDefClass.GetDefaultObject();
+	const ULoadoutEquipmentDefinition* LoadoutEquipmentDefinition = LoadoutEquipmentDefClass.GetDefaultObject();
+
+	TSubclassOf<ULoadoutEquipmentDefinition> EquipmentDefClass = LoadoutEquipmentDefinition->GetEquipmentDefinitionSoftClass().LoadSynchronous();
+
+	FLoadoutEquipment LoadoutItemToEquip;
+	LoadoutItemToEquip.LoadoutDefinition = LoadoutEquipmentDefClass;
+	LoadoutItemToEquip.EquipmentDef = EquipmentDefClass;
+
+	return LoadoutItemToEquip;
+}
+
+FLoadoutQuickBarItem ULoadoutComponent::CreateLoadoutQuickBarItem(TSubclassOf<ULoadoutItemQuickBarDef> LoadoutItemDefClass)
+{
+	const ULoadoutItemQuickBarDef* LoadoutItemDefinition = LoadoutItemDefClass.GetDefaultObject();
 
 	TSubclassOf<UInventoryItemDefinition> ItemDefClass = LoadoutItemDefinition->GetItemDefinitionSoftClass().LoadSynchronous();
 	
-	FLoadoutItem LoadoutItemToEquip;
-	LoadoutItemToEquip.LoadoutDefinition = LoadoutItemDefClass;
-	LoadoutItemToEquip.ItemDef = ItemDefClass;
-	
+	FLoadoutQuickBarItem LoadoutItemToQuickBar;
+	LoadoutItemToQuickBar.LoadoutDefinition = LoadoutItemDefClass;
+	LoadoutItemToQuickBar.ItemDef = ItemDefClass;
 
-	return LoadoutItemToEquip;
+	return LoadoutItemToQuickBar;
 }
 
 FLoadoutAbilities ULoadoutComponent::CreateLoadoutAbilities(
@@ -147,7 +162,7 @@ void ULoadoutComponent::ApplyQuickBarEquipment(ABaseCharacter* Character)
 		return;
 	}
 	
-	for	(const FLoadoutItem& Item : CurrentLoadout.ItemsToQuickBar)
+	for	(const FLoadoutQuickBarItem& Item : CurrentLoadout.ItemsToQuickBar)
 	{
 		ULoadoutItemQuickBarDef* LoadoutItemQuickBarDef = Cast<ULoadoutItemQuickBarDef>(Item.LoadoutDefinition.GetDefaultObject());
 		if (!LoadoutItemQuickBarDef)
@@ -167,55 +182,67 @@ void ULoadoutComponent::ApplyQuickBarEquipment(ABaseCharacter* Character)
 
 void ULoadoutComponent::ApplyEquipment(ABaseCharacter* Character)
 {
-	UInventoryManagerComponent* InventoryManagerComponent = GetController<AController>()->FindComponentByClass<UInventoryManagerComponent>();
-	if (!InventoryManagerComponent)
-	{
-		return;
-	}
-	
 	UEquipmentManagerComponent* EquipmentManagerComponent = Character->FindComponentByClass<UEquipmentManagerComponent>();
 	if (!EquipmentManagerComponent)
 	{
 		return;
 	}
 	
-	for (const FLoadoutItem& Item : CurrentLoadout.ItemsToEquip)
+	for (const FLoadoutEquipment& Item : CurrentLoadout.ItemsToEquip)
 	{
-		TryEquipItem(InventoryManagerComponent,EquipmentManagerComponent,Item.ItemDef);
+		if (UEquipmentInstance* EquipmentInstance = EquipmentManagerComponent->EquipItem(Item.EquipmentDef))
+		{
+			CurrentEquipmentInstances.Add(EquipmentInstance);
+		}
 	}
 }
 
 void ULoadoutComponent::ApplyAbilities(ABaseCharacter* Character)
 {
+	UPlayerAbilitySystemComponent* AbilitySystemComponent = Character->GetCharacterAbilitySystemComponent();
+	if (!AbilitySystemComponent)
+	{
+		return;
+	}
+
 	for (const FLoadoutAbilities& LoadoutAbilitySet : CurrentLoadout.AbilitySetsToGrant)
 	{
-		Character->TryApplyAbilitySet(LoadoutAbilitySet.AbilitySet,true);
+		if (LoadoutAbilitySet.AbilitySet)
+		{
+			LoadoutAbilitySet.AbilitySet->GiveToAbilitySystem(AbilitySystemComponent, &CurrentLoadoutGrantedHandles);
+		}
 	}
+	
 }
 
-
-
-void ULoadoutComponent::TryEquipItem(UInventoryManagerComponent* InventoryComp, UEquipmentManagerComponent* EquipmentComp,TSubclassOf<UInventoryItemDefinition> ItemDef)
+void ULoadoutComponent::ClearPrevLoadout()
 {
-	if (!InventoryComp || !EquipmentComp)
+	APlayerController* PC = GetControllerChecked<APlayerController>();
+
+	/*Unequip prev items*/
+	UEquipmentManagerComponent* EquipmentManagerComponent = PC->FindComponentByClass<UEquipmentManagerComponent>();
+	if (!EquipmentManagerComponent)
+	{
+		return;
+	}
+
+	for (UEquipmentInstance* CurrentEquipmentInstance : CurrentEquipmentInstances)
+	{
+		EquipmentManagerComponent->UnequipItem(CurrentEquipmentInstance);
+	}
+
+	/*Remove prev ability sets*/
+	const ABaseCharacter* Character = GetPawn<ABaseCharacter>();
+	if (!Character)
 	{
 		return;
 	}
 	
-	const UInventoryItemInstance* ItemInst = InventoryComp->AddItemDefinition(ItemDef);
-	if (!ItemInst)
+	UPlayerAbilitySystemComponent* AbilitySystemComponent = Character->GetCharacterAbilitySystemComponent();
+	if (!AbilitySystemComponent)
 	{
 		return;
 	}
 
-	const UEquippableItemFragment* EquippableItemFragment = ItemInst->FindFragmentByClass<UEquippableItemFragment>();
-	if (!EquippableItemFragment)
-	{
-		return;
-	}
-
-	if (EquippableItemFragment->EquipmentDefinitionClass)
-	{
-		EquipmentComp->EquipItem(EquippableItemFragment->EquipmentDefinitionClass);
-	}
+	CurrentLoadoutGrantedHandles.TakeFromAbilitySystem(AbilitySystemComponent);
 }

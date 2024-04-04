@@ -63,7 +63,7 @@ void ULoadoutSelectionWidget::OnApplyButtonClicked()
 		LoadoutDefinitions.QuickBarDefinitions.Add(*SecondaryWeapon);
 	}
 
-	if (const TSubclassOf<ULoadoutItemDefinition>* EquipmentItem = AvailableLoadout->FindEquipDefByName(FName(EquipmentComboBox->GetSelectedOption())))
+	if (const TSubclassOf<ULoadoutEquipmentDefinition>* EquipmentItem = AvailableLoadout->FindEquipDefByName(FName(EquipmentComboBox->GetSelectedOption())))
 	{
 		LoadoutDefinitions.EquipmentDefinitions.Add(*EquipmentItem);
 	}
@@ -99,9 +99,9 @@ void ULoadoutSelectionWidget::LoadLoadouts(ULoadoutComponent* LoadoutComponent)
 		}
 	}
 
-	for (const TSubclassOf<ULoadoutItemDefinition> EquipItemDef : LoadoutDefinitions.EquipmentDefinitions)
+	for (const TSubclassOf<ULoadoutEquipmentDefinition> EquipItemDef : LoadoutDefinitions.EquipmentDefinitions)
 	{
-		ULoadoutItemDefinition* LoadoutEquipDef = EquipItemDef.GetDefaultObject();
+		ULoadoutEquipmentDefinition* LoadoutEquipDef = EquipItemDef.GetDefaultObject();
 
 		EquipmentComboBox->AddOption(LoadoutEquipDef->GetDisplayName().ToString());
 	}
@@ -118,13 +118,13 @@ void ULoadoutSelectionWidget::LoadCurrentLoadout(ULoadoutComponent* LoadoutCompo
 {
 	const FCharacterLoadout& CurrentLoadout = LoadoutComponent->GetCurrentLoadout();
 
-	FLoadoutItem FirstPrimaryItem = FindWeaponBySlotInCurrentLoadout(CurrentLoadout,0);
+	FLoadoutQuickBarItem FirstPrimaryItem = FindWeaponBySlotInCurrentLoadout(CurrentLoadout,0);
 	if (FirstPrimaryItem.LoadoutDefinition)
 	{
 		PrimaryWeaponComboBox->SetSelectedOption(FirstPrimaryItem.LoadoutDefinition.GetDefaultObject()->GetDisplayName().ToString());
 	}
 		
-	FLoadoutItem FirstSecondaryItem = FindWeaponBySlotInCurrentLoadout(CurrentLoadout,1);
+	FLoadoutQuickBarItem FirstSecondaryItem = FindWeaponBySlotInCurrentLoadout(CurrentLoadout,1);
 	if (FirstSecondaryItem.LoadoutDefinition)
 	{
 		SecondaryWeaponComboBox->SetSelectedOption(FirstSecondaryItem.LoadoutDefinition.GetDefaultObject()->GetDisplayName().ToString());
@@ -132,7 +132,7 @@ void ULoadoutSelectionWidget::LoadCurrentLoadout(ULoadoutComponent* LoadoutCompo
 	
 	if (CurrentLoadout.ItemsToEquip.IsValidIndex(0))
 	{
-		FLoadoutItem LoadoutItem = CurrentLoadout.ItemsToEquip[0];
+		FLoadoutEquipment LoadoutItem = CurrentLoadout.ItemsToEquip[0];
 		EquipmentComboBox->SetSelectedOption(LoadoutItem.LoadoutDefinition.GetDefaultObject()->GetDisplayName().ToString());
 	}
 	if (CurrentLoadout.AbilitySetsToGrant.IsValidIndex(0))
@@ -142,9 +142,9 @@ void ULoadoutSelectionWidget::LoadCurrentLoadout(ULoadoutComponent* LoadoutCompo
 	}
 }
 
-FLoadoutItem ULoadoutSelectionWidget::FindWeaponBySlotInCurrentLoadout(const FCharacterLoadout& CurrentLoadout,int32 SlotIndex) const
+FLoadoutQuickBarItem ULoadoutSelectionWidget::FindWeaponBySlotInCurrentLoadout(const FCharacterLoadout& CurrentLoadout,int32 SlotIndex) const
 {
-	for (const FLoadoutItem& ItemsToQuickBar : CurrentLoadout.ItemsToQuickBar)
+	for (const FLoadoutQuickBarItem& ItemsToQuickBar : CurrentLoadout.ItemsToQuickBar)
 	{
 		ULoadoutItemQuickBarDef* ItemDef = Cast<ULoadoutItemQuickBarDef>(ItemsToQuickBar.LoadoutDefinition.GetDefaultObject());
 		if (ItemDef && ItemDef->GetSlotIndex() == SlotIndex)
@@ -153,5 +153,5 @@ FLoadoutItem ULoadoutSelectionWidget::FindWeaponBySlotInCurrentLoadout(const FCh
 		}
 	}
 
-	return FLoadoutItem();
+	return FLoadoutQuickBarItem();
 }

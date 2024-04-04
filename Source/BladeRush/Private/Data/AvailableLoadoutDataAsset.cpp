@@ -2,13 +2,16 @@
 
 
 #include "Data/AvailableLoadoutDataAsset.h"
+#include "Loadout/LoadoutAbilitiesDefinition.h"
+#include "Loadout/LoadoutItemQuickBarDef.h"
+#include "Loadout/LoadoutEquipmentDefinition.h"
 
 bool UAvailableLoadoutDataAsset::ContainsQuickBarDef(TSubclassOf<ULoadoutItemQuickBarDef> QuickBarDef) const
 {
 	return LoadoutDefinitions.QuickBarDefinitions.Contains(QuickBarDef);
 }
 
-bool UAvailableLoadoutDataAsset::ContainsEquipDef(TSubclassOf<ULoadoutItemDefinition> ItemDef) const
+bool UAvailableLoadoutDataAsset::ContainsEquipDef(TSubclassOf<ULoadoutEquipmentDefinition> ItemDef) const
 {
 	return LoadoutDefinitions.EquipmentDefinitions.Contains(ItemDef);
 }
@@ -28,10 +31,10 @@ const TSubclassOf<ULoadoutItemQuickBarDef>* UAvailableLoadoutDataAsset::FindQuic
 		});
 }
 
-const TSubclassOf<ULoadoutItemDefinition>* UAvailableLoadoutDataAsset::FindEquipDefByName(FName InName) const
+const TSubclassOf<ULoadoutEquipmentDefinition>* UAvailableLoadoutDataAsset::FindEquipDefByName(FName InName) const
 {
 	return LoadoutDefinitions.EquipmentDefinitions.FindByPredicate(
-	[&InName](TSubclassOf<ULoadoutItemDefinition> ItemDef)
+	[&InName](TSubclassOf<ULoadoutEquipmentDefinition> ItemDef)
 		{
 			return ItemDef.GetDefaultObject()->GetDisplayName() == InName;
 		});

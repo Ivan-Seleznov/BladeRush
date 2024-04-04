@@ -2,47 +2,50 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Templates/SubclassOf.h"
-#include "Loadout/LoadoutItemDefinition.h"
-#include "Loadout/LoadoutAbilitiesDefinition.h"
-#include "Loadout/LoadoutItemQuickBarDef.h"
 #include "LoadoutTypes.generated.h"
 
-class ULoadoutDefinitionBase;
-class UEquipmentDefinition;
-class UShooterAbilitySet;
 class UInventoryItemDefinition;
 class ULoadoutItemQuickBarDef;
-class ULoadoutItemDefinition;
+class UEquipmentDefinition;
+class ULoadoutEquipmentDefinition;
+class UShooterAbilitySet;
 class ULoadoutAbilitiesDefinition;
 
-
 USTRUCT(BlueprintType)
-struct FLoadoutBase
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
-	TSubclassOf<ULoadoutDefinitionBase> LoadoutDefinition;
-};
-
-USTRUCT(BlueprintType)
-struct FLoadoutItem : public FLoadoutBase
+struct FLoadoutQuickBarItem
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	TSubclassOf<UInventoryItemDefinition> ItemDef;
+	
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	TSubclassOf<ULoadoutItemQuickBarDef> LoadoutDefinition;
 };
 
 USTRUCT(BlueprintType)
-struct FLoadoutAbilities : public FLoadoutBase
+struct FLoadoutEquipment
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	TSubclassOf<UEquipmentDefinition> EquipmentDef;
+	
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	TSubclassOf<ULoadoutEquipmentDefinition> LoadoutDefinition;
+};
+
+USTRUCT(BlueprintType)
+struct FLoadoutAbilities
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	TObjectPtr<UShooterAbilitySet> AbilitySet;
-};
 
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	TSubclassOf<ULoadoutAbilitiesDefinition> LoadoutDefinition;
+};
 
 USTRUCT(BlueprintType)
 struct FCharacterLoadout
@@ -50,10 +53,10 @@ struct FCharacterLoadout
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
-	TArray<FLoadoutItem> ItemsToQuickBar;
+	TArray<FLoadoutQuickBarItem> ItemsToQuickBar;
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
-	TArray<FLoadoutItem> ItemsToEquip;
+	TArray<FLoadoutEquipment> ItemsToEquip;
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	TArray<FLoadoutAbilities> AbilitySetsToGrant;
@@ -74,7 +77,7 @@ struct FLoadoutDefinitions
 	TArray<TSubclassOf<ULoadoutItemQuickBarDef>> QuickBarDefinitions;
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
-	TArray<TSubclassOf<ULoadoutItemDefinition>> EquipmentDefinitions;
+	TArray<TSubclassOf<ULoadoutEquipmentDefinition>> EquipmentDefinitions;
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	TArray<TSubclassOf<ULoadoutAbilitiesDefinition>> AbilityDefinitions;
