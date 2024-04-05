@@ -170,7 +170,6 @@ void UWeaponFireAbility::WeaponFire(const FGameplayAbilityActorInfo* ActorInfo,
 		Hits.Add(Hit);
 
 		WeaponInstance->UpdateFiringTime();
-		WeaponInstance->RemoveCartridge();
 
 		if (HitReactComponent && Hit.GetActor())
 		{

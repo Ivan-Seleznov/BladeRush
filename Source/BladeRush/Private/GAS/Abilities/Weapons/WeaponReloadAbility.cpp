@@ -92,14 +92,3 @@ void UWeaponReloadAbility::ReloadAmmoInMagazine(UInventoryItemInstance* Inventor
 	InventoryItemInstance->AddStatTagStack(FGameTags::Get().Weapon_MagazineAmmo,AmmoToAdd);
 	InventoryItemInstance->RemoveStatTagStack(FGameTags::Get().Weapon_SpareAmmo, AmmoToAdd);
 }
-
-UMagazineItemInstance* UWeaponReloadAbility::GetMagazineItemInstance() const
-{
-	const UWeaponItemInstance* WeaponItemInstance = GetWeaponInstance();
-	if (WeaponItemInstance)
-	{
-		return WeaponItemInstance->GetCurrentMagazine();
-	}
-
-	return nullptr;
-}

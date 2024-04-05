@@ -36,7 +36,4 @@ protected:
 	FShooterGameplayEffect ReloadEffect;
 
 	FActiveGameplayEffectHandle ReloadEffectActiveHandle;
-	
-	UFUNCTION(BlueprintPure)
-	UMagazineItemInstance* GetMagazineItemInstance() const;
 };

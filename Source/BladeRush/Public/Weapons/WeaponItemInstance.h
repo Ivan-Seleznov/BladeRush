@@ -128,6 +128,9 @@ protected:
 	float RecoilControlMultiplier = 1.f;
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly, Category="Weapon|Recoil")
 	float RecoilControlLerpMultiplier = 0.15f;
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly, Category="Weapon|Recoil")
+	float InterpSpeed = 1.f;
+
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|Trace")
 	float MaxTraceDistance = 4000.f;
@@ -171,7 +174,8 @@ protected:
 private:
 	double TimeLastEquipped = 0.0;
 	double TimeLastFired = 0.0;
-	
+
+	float RecoilValue = 0.f;
 	bool bIsInADS = false;
 
 	float RecoilControlTimeElapsed = 0.f;

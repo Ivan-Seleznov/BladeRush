@@ -9,6 +9,7 @@
 #include "Characters/Components/ShooterMovementComponent.h"
 #include "Equipment/EquipmentManagerComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Weapons/BaseWeaponActor.h"
 #include "Weapons/MagazineItemInstance.h"
 
@@ -185,6 +186,11 @@ void UWeaponItemInstance::Tick(const float& DeltaTime)
 	ABaseCharacter* BaseCharacter = GetBaseCharacter();
 	if (!BaseCharacter) return;
 
+	APlayerController* PC = Cast<APlayerController>(BaseCharacter->GetController());
+	if (!PC)
+	{
+		return;
+	}
 
 	if (ABaseWeaponActor* WeaponActor = GetSpawnedWeaponActor())
 	{
@@ -195,17 +201,19 @@ void UWeaponItemInstance::Tick(const float& DeltaTime)
 	{
 		if (RecoilControlCurve && RecoilControlTimeElapsed < RecoilControlDuration && bShouldApplyRecoilControl)
 		{
-			const float Value = FMath::Lerp(0.f,RecoilControlLerpMultiplier,RecoilControlCurve->GetFloatValue(RecoilControlTimeElapsed)) * RecoilControlMultiplier;
-			DEBUG_LOG("TIME: %f , VAL: %f",DeltaTime,-Value);
-			
-			BaseCharacter->AddControllerPitchInput(-Value);
-			
+			float Target = RecoilControlCurve->GetFloatValue(RecoilControlTimeElapsed) * RecoilControlLerpMultiplier + PC->GetControlRotation().Pitch;
+			RecoilValue = UKismetMathLibrary::FInterpTo( PC->GetControlRotation().Pitch,Target,DeltaTime,InterpSpeed) * RecoilControlLerpMultiplier;
 			RecoilControlTimeElapsed += DeltaTime;
+			
+			DEBUG_LOG("REcouil value: %f, TARGET: %f, CurveVal", RecoilValue, Target);
+
+			PC->SetControlRotation(FRotator(RecoilValue,PC->GetControlRotation().Yaw,PC->GetControlRotation().Roll));
 
 			if (RecoilControlTimeElapsed >= RecoilControlDuration)
 			{
 				bShouldApplyRecoilControl = false;
-				RecoilControlTimeElapsed = 0;
+				RecoilControlTimeElapsed = 0.f;
+				RecoilValue = 0.f;
 			}
 		}
 	}
