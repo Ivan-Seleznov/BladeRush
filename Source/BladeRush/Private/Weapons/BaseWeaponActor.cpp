@@ -22,6 +22,9 @@ ABaseWeaponActor::ABaseWeaponActor()
 	
 	AimOffsetSceneComponent = CreateDefaultSubobject<USceneComponent>("Aim offset");
 	AimOffsetSceneComponent->SetupAttachment(RootComponent);
+
+	ScopeAttachPoint = CreateDefaultSubobject<USceneComponent>("ScopeAttachPoint");
+	ScopeAttachPoint->SetupAttachment(RootComponent);
 }
 
 FVector ABaseWeaponActor::GetMuzzleLocation() const

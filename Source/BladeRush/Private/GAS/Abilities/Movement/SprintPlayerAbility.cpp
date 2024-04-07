@@ -70,6 +70,7 @@ void USprintPlayerAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	Character->OnCharacterMovementUpdated.RemoveAll(this);
 	if (Character->IsLocallyControlled())
 	{
+		DEBUG_LOG("Deactivate Sprint");
 		Character->StopSprinting();
 	}
 		

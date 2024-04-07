@@ -27,6 +27,9 @@ struct FShooterInputAction
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FGameplayTag InputTag;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bAdvancedBindAction;
 };
 
 /**

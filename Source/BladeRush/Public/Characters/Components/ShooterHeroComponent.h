@@ -67,12 +67,24 @@ void UShooterHeroComponent::BindAbilityActions(UEnhancedInputComponent* PlayerIn
 		{
 			if (PressedFunc)
 			{
-				PlayerInputComponent->BindAction(Action.InputAction, ETriggerEvent::Triggered, Object, PressedFunc, Action.InputTag);
+				ETriggerEvent PressedTriggerEvent = ETriggerEvent::Triggered;
+				if (Action.bAdvancedBindAction)
+				{
+					PressedTriggerEvent = ETriggerEvent::Started;
+				}
+
+				PlayerInputComponent->BindAction(Action.InputAction, PressedTriggerEvent, Object, PressedFunc, Action.InputTag);
 			}
 
 			if (ReleasedFunc)
 			{
-				PlayerInputComponent->BindAction(Action.InputAction,ETriggerEvent::Completed, Object, ReleasedFunc, Action.InputTag);
+				ETriggerEvent ReleaseTriggerEvent = ETriggerEvent::Completed;
+				if (Action.bAdvancedBindAction)
+				{
+					ReleaseTriggerEvent = ETriggerEvent::Triggered;
+				}
+				
+				PlayerInputComponent->BindAction(Action.InputAction,ReleaseTriggerEvent, Object, ReleasedFunc, Action.InputTag);
 			}
 		}
 	}

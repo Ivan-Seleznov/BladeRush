@@ -50,6 +50,8 @@ public:
 	void K2_OnExitADS(UWeaponItemInstance* WeaponInstance);
 
 	TSubclassOf<UCameraMode_InterpLocation> GetCameraModeClass() const {return CameraModeClass;}
+	
+	USceneComponent* GetScopeAttachPoint() const {return ScopeAttachPoint;}
 protected:
 	virtual void Destroyed() override;
 	virtual void BeginPlay() override;
@@ -70,6 +72,9 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	USceneComponent* AimOffsetSceneComponent;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	USceneComponent* ScopeAttachPoint;
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
 	USkeletalMeshComponent* WeaponMesh;
