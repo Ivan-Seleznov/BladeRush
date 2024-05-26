@@ -37,7 +37,7 @@ void UAttributeHitPoints::PostGameplayEffectExecute(const FGameplayEffectModCall
 	UAbilitySystemComponent* Source = Context.GetOriginalInstigatorAbilitySystemComponent();
 	const FGameplayTagContainer& SourceTags = *Data.EffectSpec.CapturedSourceTags.GetAggregatedTags();
 	
-	FGameplayTagContainer SpecDynamicAssetTags = Data.EffectSpec.DynamicAssetTags;
+	const FGameplayTagContainer& SpecDynamicAssetTags = Data.EffectSpec.GetDynamicAssetTags();
 	FGameplayTagContainer SpecAssetTags;	
 	Data.EffectSpec.GetAllAssetTags(SpecAssetTags);
 
