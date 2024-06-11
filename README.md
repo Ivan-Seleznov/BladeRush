@@ -1,4 +1,5 @@
 # BladeRush
+<a href="https://github.com/Ivan-Seleznov/BladeRush/releases/tag/Build">Latest test build</a>
 Multiplayer movement-oriented shooter Multiplayer Unreal Engine 5 true first person movement-oriented shooter. 
 The gamefeatures a unique blend of fast paced combat and advanced movement mechanics, including sliding, wall running, grappling hook and mantling.
 
