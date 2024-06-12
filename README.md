@@ -12,3 +12,4 @@ Multiplayer Unreal Engine 5 true first person movement-oriented shooter. The gam
 ![Screenshot 1](https://github.com/Ivan-Seleznov/BladeRush/assets/87178217/3e980304-10e9-411f-bad3-e66c8a49d864)
 ![Screenshot 2](https://github.com/Ivan-Seleznov/BladeRush/assets/87178217/e8fea09f-cd8b-42f0-a4bd-8d23a5ea421e)
 ![Screenshot 3](https://github.com/Ivan-Seleznov/BladeRush/assets/87178217/3f55508b-275c-4a1a-8eb6-4c1577916c05)
+![Screenshot 4](https://github.com/Ivan-Seleznov/BladeRush/assets/87178217/2e271bcd-103a-4d0f-97d1-9933b300571b)
