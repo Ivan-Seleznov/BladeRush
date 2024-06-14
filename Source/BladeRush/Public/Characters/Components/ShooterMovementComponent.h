@@ -80,13 +80,14 @@ class BLADERUSH_API UShooterMovementComponent : public UCharacterMovementCompone
 		uint8 Saved_bPressedPlayerJump:1;
 		uint8 Saved_bWantsToGrapple:1;
 		uint8 Saved_bWantsToMantle:1;
-
+        uint8 Saved_bWantsToDash:1;
+	    
 		/*SavedMove variable*/
 		uint8 Saved_bWantsToSlide:1;
 		uint8 Saved_bHadAnimRootMotion:1;
 		uint8 Saved_bTransitionFinished:1;
 		uint8 Saved_bWallRunIsRight:1;
-		
+	    
 		/*Check can we combine two moves*/
 		virtual bool CanCombineWith(const FSavedMovePtr& NewMove, ACharacter* InCharacter, float MaxDelta) const override;
 		
@@ -114,6 +115,7 @@ public:
 	bool Safe_bWantsToSprint;
 	bool Safe_bWantsToGrapple;
 	bool Safe_bWantsToMantle;
+    bool Safe_bWantsToDash;
 
 	/*Other variables*/
 	bool Safe_bWantsToSlide;
@@ -145,7 +147,13 @@ public:
 	
 	UFUNCTION(BlueprintPure)
 	TEnumAsByte<EMovementAction> GetCurrentMovementAction() const {return CurrentMovementAction;}
-	
+
+    UFUNCTION(BlueprintCallable)
+    void Dash();
+
+    UFUNCTION(BlueprintPure)
+    bool IsCharacterOwnerLocallyControlled() const;
+    
 	UFUNCTION(BlueprintCallable)
 	bool TryGrapple();
 	void StartGrappling(const FGrapplingHookAttachData& AttachData);
@@ -162,6 +170,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	bool CanMantle() const;
+
+	UFUNCTION(BlueprintPure)
+	bool CanDash() const;
 	
 	UFUNCTION(BlueprintPure)
 	bool CanUpdateCharacterRotation() const;
@@ -216,16 +227,35 @@ protected:
 	
 	virtual void UpdateCharacterRotation(float DeltaTime);
 
+    void EnterDash();
+    virtual void PhysFlying(float deltaTime, int32 Iterations) override;
+    
 	void StartNewMovementAction(EMovementAction NewMovementAction);
+    void ExitDash();
 	void EndCurrentMovementAction();
 	
 	/*Helpers*/
 	ACharacter* GetDefaultCharacter() const;
 
+    /*Dash*/
+    UPROPERTY(BlueprintReadOnly,Category="Dash")
+    float DashStartTime;
+    UPROPERTY(EditDefaultsOnly,BlueprintReadWrite,Category="Dash")
+    float DashImpulse = 7200.f;
+    UPROPERTY(EditDefaultsOnly,BlueprintReadWrite,Category="Dash")
+    float DashFallingImpulse = 2000.f;
+
+    UPROPERTY(EditDefaultsOnly,BlueprintReadWrite,Category="Dash")
+    float BaseDashFlyingTime = 2.f;
+    UPROPERTY(EditDefaultsOnly,BlueprintReadWrite,Category="Dash")
+    float DashFlyingTime = 2.f;
+    UPROPERTY(EditDefaultsOnly,BlueprintReadWrite,Category="Dash")
+    float FallingDashFlyingTimeMultiplier = 2.f;
+    
+    /*Sprint*/
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite,Replicated)
 	float MaxSpeedMultiplier = 1.f;
 	
-	/*Sprint*/
 	UPROPERTY(EditDefaultsOnly,Category="Sprint")
 	float MaxSprintSpeed = 500.f;
 
@@ -324,6 +354,9 @@ protected:
 	ABaseCharacter* ShooterCharacterOwner;
 
 private:
+    /*Dash*/
+    void PerformDash();
+    
 	/*Slide*/
 	void EnterSlide();
 	void ExitSlide();

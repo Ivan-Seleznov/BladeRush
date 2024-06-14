@@ -30,6 +30,7 @@ public:
 	FGameplayTag InputTag_Abilities_Crouch;
 	FGameplayTag InputTag_Abilities_Jump;
 	FGameplayTag InputTag_Abilities_DoubleJump;
+    FGameplayTag InputTag_Abilities_Dash;
 	FGameplayTag InputTag_Abilities_Mantle;
 	FGameplayTag InputTag_Abilities_TryGrappleHook;
 	FGameplayTag InputTag_Abilities_Weapon_Fire;
@@ -61,6 +62,7 @@ public:
 	FGameplayTag Ability_Sprint;
 	FGameplayTag Ability_Weapon_ADS;
 	FGameplayTag Ability_Weapon_Fire;
+    FGameplayTag Ability_Dash;
 
 	//Weapon
 	FGameplayTag Weapon_MagazineSize;

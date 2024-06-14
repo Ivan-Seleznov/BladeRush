@@ -72,7 +72,11 @@ bool UShooterMovementComponent::FSavedMove_Shooter::CanCombineWith(const FSavedM
 	{
 		return false;
 	}
-	
+    if (Saved_bWantsToDash != NewShooterMove->Saved_bWantsToDash)
+    {
+        return false;
+    }
+    
 	return FSavedMove_Character::CanCombineWith(NewMove, InCharacter, MaxDelta);
 }
 
@@ -85,7 +89,7 @@ uint8 UShooterMovementComponent::FSavedMove_Shooter::GetCompressedFlags() const
 	if (Saved_bWantsToGrapple) Result |= FLAG_Custom_1;
 	if (Saved_bPressedPlayerJump) Result |= FLAG_JumpPressed;
 	if (Saved_bWantsToMantle) Result |= FLAG_Custom_2;
-	
+    if (Saved_bWantsToDash) Result |= FLAG_Custom_3;
 	return Result;
 }
 
@@ -108,6 +112,8 @@ void UShooterMovementComponent::FSavedMove_Shooter::SetMoveFor(ACharacter* C, fl
 	
 	Saved_bWantsToGrapple = ShooterMovementComponent->Safe_bWantsToGrapple;
 	Saved_bWantsToMantle = ShooterMovementComponent->Safe_bWantsToMantle;
+
+    Saved_bWantsToDash = ShooterMovementComponent->Safe_bWantsToDash;
 }
 
 void UShooterMovementComponent::FSavedMove_Shooter::PrepMoveFor(ACharacter* C)
@@ -128,6 +134,8 @@ void UShooterMovementComponent::FSavedMove_Shooter::PrepMoveFor(ACharacter* C)
 	
 	ShooterMovementComponent->Safe_bWantsToGrapple = Saved_bWantsToGrapple;
 	ShooterMovementComponent->Safe_bWantsToMantle = Saved_bWantsToMantle;
+    
+    ShooterMovementComponent->Safe_bWantsToDash = Saved_bWantsToDash;
 }
 
 void UShooterMovementComponent::FSavedMove_Shooter::Clear()
@@ -143,6 +151,8 @@ void UShooterMovementComponent::FSavedMove_Shooter::Clear()
 	Saved_bWallRunIsRight = 0;
 	Saved_bWantsToGrapple = 0;
 	Saved_bWantsToMantle = 0;
+
+    Saved_bWantsToDash = 0;
 }
 
 void UShooterMovementComponent::ResetAllMovementActions()
@@ -157,6 +167,7 @@ void UShooterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
 	Safe_bWantsToSprint = (Flags & FSavedMove_Shooter::FLAG_Custom_0) != 0;
 	Safe_bWantsToGrapple = (Flags & FSavedMove_Shooter::FLAG_Custom_1) != 0;
 	Safe_bWantsToMantle = (Flags & FSavedMove_Shooter::FLAG_Custom_2) != 0;
+    Safe_bWantsToDash = (Flags & FSavedMove_Shooter::FLAG_Custom_3) != 0;
 }
 
 UShooterMovementComponent::FNetworkPredictionDataClient_Shooter::FNetworkPredictionDataClient_Shooter(const UCharacterMovementComponent& ClientMovement)
@@ -347,12 +358,20 @@ void UShooterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 		}
 	}
 
+    //Dash
+    if (Safe_bWantsToDash && CanDash())
+    {
+        StartNewMovementAction(EMovementAction::Dash);
+        Safe_bWantsToDash = false;
+    }
+
+    
 	//WallRun
 	if (IsFalling())
 	{
 		TryWallRun();
 	}
-	
+    
 	if (Safe_bTransitionFinished)
 	{
 		if (ShooterCharacterOwner->HasAuthority())
@@ -456,6 +475,31 @@ void UShooterMovementComponent::UpdateCharacterRotation(float DeltaTime)
 	RotationTimeElapsed += DeltaTime;
 }
 
+void UShooterMovementComponent::EnterDash()
+{
+    PerformDash();
+}
+
+void UShooterMovementComponent::PhysFlying(float deltaTime, int32 Iterations)
+{
+    Super::PhysFlying(deltaTime, Iterations);
+
+    if (CurrentMovementAction != EMovementAction::Dash)
+    {
+        return;
+    }
+
+    const float TimeSeconds = GetWorld()->GetTimeSeconds();
+    DEBUG_LOG("PhysFlying (Dash). TimeSeconds: %f", TimeSeconds)
+    if (TimeSeconds - DashStartTime >= DashFlyingTime)
+    {
+        Safe_bWantsToDash = false;
+        SetMovementMode(MOVE_Falling);
+        
+        EndCurrentMovementAction();
+    }
+}
+
 void UShooterMovementComponent::StartNewMovementAction(EMovementAction NewMovementAction)
 {
 	const EMovementAction PrevMovementAction = CurrentMovementAction;
@@ -466,12 +510,19 @@ void UShooterMovementComponent::StartNewMovementAction(EMovementAction NewMoveme
 	case EMovementAction::Mantle:
 		EnterMantle();
 		break;
-		
+	case EMovementAction::Dash:
+	    EnterDash();
+	    break;
 	default:
 		break;
 	}
 	
 	MovementActionStartedDelegate.Broadcast(CurrentMovementAction,PrevMovementAction);
+}
+
+void UShooterMovementComponent::ExitDash()
+{
+    Safe_bWantsToDash = false;
 }
 
 void UShooterMovementComponent::EndCurrentMovementAction()
@@ -486,7 +537,9 @@ void UShooterMovementComponent::EndCurrentMovementAction()
 	case EMovementAction::Mantle:
 		ExitMantle();
 		break;
-		
+	case EMovementAction::Dash:
+	    ExitDash();
+	    break;
 	default:
 		break;
 	}
@@ -608,6 +661,11 @@ bool UShooterMovementComponent::CanCrouchInCurrentState() const
 bool UShooterMovementComponent::CanMantle() const
 {
 	return CurrentMovementAction != EMovementAction::Mantle;
+}
+
+bool UShooterMovementComponent::CanDash() const
+{
+    return (IsMovementMode(MOVE_Walking) || IsMovementMode(MOVE_Falling)) && CurrentMovementAction != EMovementAction::Dash;
 }
 
 #pragma endregion
@@ -794,6 +852,25 @@ bool UShooterMovementComponent::CanSlide() const
 	return bValidSurface && bEnoughSpeed /*IsFalling()*/;
 }
 
+void UShooterMovementComponent::PerformDash()
+{
+    DashStartTime = GetWorld()->GetTimeSeconds();
+    
+    const FVector DashDirection = (Acceleration.IsNearlyZero() ? UpdatedComponent->GetForwardVector() : Acceleration).GetSafeNormal();
+    const float CurrentDashImpulse = IsFalling() ? DashFallingImpulse : DashImpulse;
+    
+    Velocity = CurrentDashImpulse * DashDirection;
+    DashFlyingTime = IsFalling() ? BaseDashFlyingTime * FallingDashFlyingTimeMultiplier : BaseDashFlyingTime;
+    
+    SetMovementMode(MOVE_Flying);
+
+    /*
+    const FQuat NewRotation = FRotationMatrix::MakeFromXZ(DashDirection,FVector::UpVector).ToQuat();
+    FHitResult Hit;
+    SafeMoveUpdatedComponent(FVector::ZeroVector,NewRotation,false,Hit);
+    */
+}
+
 void UShooterMovementComponent::EnterSlide()
 {
 	//CharacterOwner->bUseControllerRotationYaw = false;
@@ -802,7 +879,6 @@ void UShooterMovementComponent::EnterSlide()
 	Velocity += Velocity.GetSafeNormal2D() * SlideEnterImpulse;
 
 	FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, true, NULL);
-
 }
 
 void UShooterMovementComponent::ExitSlide()
@@ -1266,6 +1342,16 @@ void UShooterMovementComponent::ExitGrapple()
 	EnableGrapplingHookCableComponent(false);
 
 	OnGrappleExit.Broadcast(ShooterCharacterOwner);
+}
+
+void UShooterMovementComponent::Dash()
+{
+    Safe_bWantsToDash = true;
+}
+
+bool UShooterMovementComponent::IsCharacterOwnerLocallyControlled() const
+{
+    return CharacterOwner && CharacterOwner->IsLocallyControlled();
 }
 
 bool UShooterMovementComponent::TryGrapple()

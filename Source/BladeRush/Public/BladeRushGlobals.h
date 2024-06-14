@@ -18,5 +18,6 @@ UENUM(BlueprintType)
 enum class EMovementAction : uint8
 {
 	None,
-	Mantle
+	Mantle,
+    Dash
 };

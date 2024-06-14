@@ -44,7 +44,8 @@ void FGameTags::AddTags()
 	AddTag(InputTag_Abilities_Crouch, "InputTag.Abilities.Crouch", "On activation ability crouch.");
 	AddTag(InputTag_Abilities_Jump, "InputTag.Abilities.Jump", "On activation ability jump.");
 	AddTag(InputTag_Abilities_DoubleJump, "InputTag.Abilities.DoubleJump", "On activation ability DoubleJump.");
-	AddTag(InputTag_Abilities_Mantle, "InputTag.Abilities.Mantle", "On activation ability Mantle.");
+    AddTag(InputTag_Abilities_Dash, "InputTag.Abilities.Dash", "On activation ability Dash.");
+    AddTag(InputTag_Abilities_Mantle, "InputTag.Abilities.Mantle", "On activation ability Mantle.");
 	AddTag(InputTag_Abilities_TryGrappleHook,"InputTag.Abilities.TryGrappleHook","On activation ability TryGrappleHook.");
 	AddTag(InputTag_Abilities_Weapon_Fire,"InputTag.Abilities.Weapon.Fire","On activation weapon fire ability");
 	AddTag(InputTag_Abilities_ADS,"InputTag.Abilities.ADS","On activation ads ability");
@@ -64,6 +65,7 @@ void FGameTags::AddTags()
 	AddTag(Ability_Sprint,"Ability.Sprint","Sprint ability");
 	AddTag(Ability_Weapon_ADS,"Ability.Weapon.ADS","ADS weapon ability");
 	AddTag(Ability_Weapon_Fire,"Ability.Weapon.Fire","Weapon fire ability");
+    AddTag(Ability_Dash,"Ability.Dash","Dash ability");
 
 	AddTag(Weapon_MagazineSize,"Weapon.MagazineSize","Weapon magazine size");
 	AddTag(Weapon_MagazineAmmo,"Weapon.MagazineAmmo","Weapon magazine ammo");
