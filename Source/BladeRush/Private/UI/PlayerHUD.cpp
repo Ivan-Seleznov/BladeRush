@@ -7,6 +7,7 @@
 #include "Characters/BaseCharacter.h"
 #include "Characters/Components/PlayerHealthComponent.h"
 #include "UI/DeathScreenWidget.h"
+#include "UI/PlayerHUDWidget.h"
 
 void APlayerHUD::BeginPlay()
 {
@@ -17,7 +18,7 @@ void APlayerHUD::BeginPlay()
 
 	if (!PlayerHudClass) return;
 
-	PlayerHud = CreateWidget(Controller,PlayerHudClass);
+	PlayerHud = CreateWidget<UPlayerHUDWidget>(Controller,PlayerHudClass);
 	PlayerHud->AddToViewport();
 
 	if (!DeathWidgetClass) return;
@@ -54,7 +55,7 @@ void APlayerHUD::OnPlayerHudStateChanged(EHUDState HudState)
 	
 	if (HudState == EHUDState::OnlySpectating)
 	{
-		PlayerHud->SetVisibility(ESlateVisibility::Collapsed);
+		//PlayerHud->SetVisibility(ESlateVisibility::Collapsed);
 		DeathWidget->SetVisibility(ESlateVisibility::Visible);
 	}
 	

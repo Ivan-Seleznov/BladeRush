@@ -3,10 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PlayerHUDWidget.h"
 #include "GameFramework/HUD.h"
 #include "PlayerHUD.generated.h"
 
 
+class UKillfeedPanelWidget;
+class UPlayerHUDWidget;
 class UDeathScreenWidget;
 
 UENUM(BlueprintType)
@@ -26,8 +29,12 @@ class BLADERUSH_API APlayerHUD : public AHUD
 	GENERATED_BODY()
 	
 public:
-	
 	void OnPlayerHudStateChanged(EHUDState HudState);
+
+	UKillfeedPanelWidget* GetKillfeedPanelWidget() const
+	{
+		return PlayerHud->GetKillfeedPanel();
+	}
 	
 protected:
 	virtual void BeginPlay() override;
@@ -39,7 +46,7 @@ protected:
 	TSubclassOf<UDeathScreenWidget> DeathWidgetClass;
 private:
 	UPROPERTY()
-	UUserWidget* PlayerHud;
+	UPlayerHUDWidget* PlayerHud;
 
 	UPROPERTY()
 	UDeathScreenWidget* DeathWidget;

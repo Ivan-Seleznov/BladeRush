@@ -28,6 +28,10 @@ public:
 	UFUNCTION(BlueprintPure)
 	int32 GetDeathCount() const {return DeathCount;}
 	
+protected:
+	virtual void PostInitializeComponents() override;
+
+	virtual  void BeginPlay() override;
 private:
 	UPROPERTY(BlueprintReadOnly,Replicated,meta=(AllowPrivateAccess))
 	int32 KillCount = 0;

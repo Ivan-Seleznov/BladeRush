@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DamageCauserInterface.h"
 #include "GameFramework/Actor.h"
 #include "BaseWeaponActor.generated.h"
 
@@ -13,12 +14,14 @@ class UNiagaraSystem;
 class UCameraMode_InterpLocation;
 
 UCLASS()
-class BLADERUSH_API ABaseWeaponActor : public AActor
+class BLADERUSH_API ABaseWeaponActor : public AActor, public IDamageCauserInterface
 {
 	GENERATED_BODY()
 	
 public:	
 	ABaseWeaponActor();
+
+	virtual UTexture2D* GetCauserIcon() const override { return WeaponIcon; };
 
 	FVector GetMuzzleLocation() const;
 	FRotator GetMuzzleRotation() const;
@@ -122,10 +125,12 @@ protected:
 	USoundBase* HitMarkerSound;
 	UPROPERTY(EditDefaultsOnly, Category="HitMarker")
 	float HitMarkerSoundVolumeMultiplier = 1.3f;
-
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category="Camera")	
 	TSubclassOf<UCameraMode_InterpLocation> CameraModeClass;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	TObjectPtr<UTexture2D> WeaponIcon;
 private:
 	void PlayCameraShake(TSubclassOf<UCameraShakeBase> CameraShakeClass);
 	void PlayWeaponAnimMontage(UAnimMontage* Montage) const;

@@ -3,6 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Weapons/DamageCauserInterface.h"
+#include "BladeRushGlobals.generated.h"
+
+class ABaseWeaponActor;
 
 UENUM(BlueprintType)
 enum ECustomMovementMode
@@ -19,4 +23,25 @@ enum class EMovementAction : uint8
 {
 	None,
 	Mantle
+};
+
+USTRUCT(BlueprintType)
+struct FDeadPlayerInfo
+{
+	GENERATED_BODY()
+
+	FDeadPlayerInfo() = default;
+
+	FDeadPlayerInfo(const FString& NickName, const FString& KillerName, ABaseWeaponActor* Causer)
+		: NickName(NickName),
+		  KillerName(KillerName),
+		  Causer(Causer)
+	{
+	}
+	UPROPERTY()
+	FName NickName;
+	UPROPERTY()
+	FName KillerName;
+	UPROPERTY()
+	ABaseWeaponActor* Causer;
 };
