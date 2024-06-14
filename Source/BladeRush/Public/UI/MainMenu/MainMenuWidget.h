@@ -7,6 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "MainMenuWidget.generated.h"
 
+class UEditableText;
 class UBaseMenuContentWidget;
 class UWidgetSwitcher;
 class UBladeRushButton;
@@ -56,5 +57,11 @@ protected:
 	TObjectPtr<UBladeRushButton> OptionsButton;
 	
 	UPROPERTY(meta=(BindWidget))
+	TObjectPtr<UEditableText> NickNameInput;
+	
+	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<UBladeRushButton> ExitButton;
+
+	UFUNCTION()
+	void OnNickNameComitted(const FText& Text, ETextCommit::Type CommitMethod);
 };

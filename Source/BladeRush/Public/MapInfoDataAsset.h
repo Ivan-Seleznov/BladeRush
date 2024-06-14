@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "Kismet/GameplayStatics.h"
 #include "MapInfoDataAsset.generated.h"
 
 USTRUCT(BlueprintType)

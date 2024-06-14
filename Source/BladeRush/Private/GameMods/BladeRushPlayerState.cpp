@@ -3,6 +3,8 @@
 
 #include "GameMods/BladeRushPlayerState.h"
 
+#include "BladeRushGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
 void ABladeRushPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -22,4 +24,19 @@ void ABladeRushPlayerState::AddKill()
 void ABladeRushPlayerState::AddDeath()
 {
 	++DeathCount;
+}
+
+void ABladeRushPlayerState::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+}
+
+void ABladeRushPlayerState::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	UBladeRushGameInstance*  BladeRushGameInstance = Cast<UBladeRushGameInstance>(UGameplayStatics::GetGameInstance(this));
+	FString Name = BladeRushGameInstance->GetNickName();
+	SetPlayerName(Name);
 }

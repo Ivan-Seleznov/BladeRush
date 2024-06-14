@@ -7,7 +7,10 @@
 #include "GameplayEffectExtension.h"
 #include "Characters/BaseCharacter.h"
 #include "Characters/Player/PlayerCharacter.h"
+#include "GameMods/BladeRushGameState.h"
 #include "GameMods/BladeRushPlayerState.h"
+#include "Kismet/GameplayStatics.h"
+#include "Weapons/BaseWeaponActor.h"
 
 UAttributeHitPoints::UAttributeHitPoints()
 {
@@ -98,7 +101,6 @@ void UAttributeHitPoints::PostGameplayEffectExecute(const FGameplayEffectModCall
 
 		// set new health
 		const float NewHealth = GetHitPoints() - LocalDamageDone;
-
 		
 		SetHitPoints(FMath::Clamp(NewHealth, 0.0f, GetMaxHitPoints()));
 
@@ -107,9 +109,7 @@ void UAttributeHitPoints::PostGameplayEffectExecute(const FGameplayEffectModCall
 			const FGameplayEffectContextHandle& EffectContext = Data.EffectSpec.GetEffectContext();
 			ABaseCharacter* Instigator = Cast<ABaseCharacter>(EffectContext.GetOriginalInstigator());
 			AActor* Causer = EffectContext.GetEffectCauser();
-		}
-
-
+		} 
 		
 		if (TargetActor)
 		{
@@ -129,12 +129,26 @@ void UAttributeHitPoints::PostGameplayEffectExecute(const FGameplayEffectModCall
 				SourcePlayerState->AddKill();
 			}
 		}
-		
 		if (TargetController)
 		{
 			if (ABladeRushPlayerState* TargetPlayerState = TargetController->GetPlayerState<ABladeRushPlayerState>())
 			{
 				TargetPlayerState->AddDeath();
+			}
+		}
+		if (SourceController && TargetController)
+		{
+			ABladeRushGameState* BladeRushGameState = Cast<ABladeRushGameState>(UGameplayStatics::GetGameState(this));
+			ABladeRushPlayerState* TargetPlayerState = TargetController->GetPlayerState<ABladeRushPlayerState>();
+			ABladeRushPlayerState* SourcePlayerState = SourceController->GetPlayerState<ABladeRushPlayerState>();
+			
+			const FGameplayEffectContextHandle& EffectContext = Data.EffectSpec.GetEffectContext();
+			ABaseWeaponActor* Causer = Cast<ABaseWeaponActor>(EffectContext.GetEffectCauser());
+			
+			if (BladeRushGameState && SourcePlayerState && TargetPlayerState && Causer)
+			{
+				BladeRushGameState->NotifyPlayerDeath(FDeadPlayerInfo(TargetPlayerState->GetPlayerName(),
+					SourcePlayerState->GetPlayerName(), Causer));
 			}
 		}
 	}

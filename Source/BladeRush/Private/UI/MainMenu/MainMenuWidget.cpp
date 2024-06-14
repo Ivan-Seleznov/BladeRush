@@ -3,6 +3,8 @@
 
 #include "UI/MainMenu/MainMenuWidget.h"
 
+#include "BladeRushGameInstance.h"
+#include "Components/EditableText.h"
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "UI/BaseButton.h"
@@ -27,6 +29,7 @@ void UMainMenuWidget::NativeConstruct()
 	CreateGameButton->GetActualButton()->OnClicked.AddDynamic(this, &ThisClass::OnCreateGameClicked);
 	OptionsButton->GetActualButton()->OnClicked.AddDynamic(this, &ThisClass::OnOptionsClicked);
 	ExitButton->GetActualButton()->OnClicked.AddDynamic(this, &ThisClass::OnExitClicked);
+	NickNameInput->OnTextCommitted.AddDynamic(this, &ThisClass::OnNickNameComitted);
 }
 
 void UMainMenuWidget::OnFindGameClicked()
@@ -56,6 +59,14 @@ void UMainMenuWidget::OnOptionsClicked()
 void UMainMenuWidget::OnExitClicked()
 {
 	UKismetSystemLibrary::QuitGame(this, GetOwningPlayer(), EQuitPreference::Quit, false);
+}
+
+void UMainMenuWidget::OnNickNameComitted(const FText& Text, ETextCommit::Type CommitMethod)
+{
+	if (CommitMethod == ETextCommit::OnEnter && !Text.IsEmpty())
+	{
+		GetGameInstance<UBladeRushGameInstance>()->SetNickName(Text.ToString());
+	}
 }
 
 void UMainMenuWidget::ReturnToMainMenu()
