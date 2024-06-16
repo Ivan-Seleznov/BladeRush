@@ -3,6 +3,8 @@
 
 #include "Weapons/BaseWeaponActor.h"
 #include "Weapons/BaseWeaponActor.h"
+
+#include "BladeRushLogs.h"
 #include "UI/HitMarkerWidgetBase.h"
 #include "Characters/BaseCharacter.h"
 #include "Data/DecalDataAsset.h"

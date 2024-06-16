@@ -34,6 +34,14 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
 	UShooterInputConfig* InputConfig;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	bool bAllowSwitchSameSlot = false;
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	bool bUseSwitchSlotTimer = true;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,meta=(EditCondition="bUseSwitchSlotTimer"))
+	float SwitchSlotTimerTime = 0.2f;
 	
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
@@ -44,9 +52,15 @@ protected:
 
 	void Input_QuickBarSlot0(const FInputActionValue& Value);
 
-	void InventorySlotChanged(const float& SlotValue);
-	//float CurrentSlotIndex = -1;
+	bool TryChangeInventorySlot(int32 SlotIndex);
+	void InventorySlotChanged(int32 SlotIndex);
 private:
+	UPROPERTY()
+	FTimerHandle SlotChangedClientTimerHandle;
+	UPROPERTY()
+	int32 CurrentSlotIndex = -2;
+
+	int32 PrevSlotIndexToChange = 0;
 	
 	template<class UserClass, typename PressedFuncType, typename ReleasedFuncType>
 	void BindAbilityActions(UEnhancedInputComponent* PlayerInputComponent,UserClass* Object, PressedFuncType PressedFunc, ReleasedFuncType ReleasedFunc, TArray<uint32>& BindHandles);

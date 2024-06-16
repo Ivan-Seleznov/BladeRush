@@ -122,40 +122,67 @@ void UShooterHeroComponent::Look(const FInputActionValue& Value)
 
 void UShooterHeroComponent::Input_QuickBarSlot1(const FInputActionValue& Value)
 {
-	InventorySlotChanged(1);
+	InventorySlotChanged(0);
 }
 
 void UShooterHeroComponent::Input_QuickBarSlot2(const FInputActionValue& Value)
 {
-	InventorySlotChanged(2);
+	InventorySlotChanged(1);
 
 }
 
 void UShooterHeroComponent::Input_QuickBarSlot3(const FInputActionValue& Value)
 {
-	InventorySlotChanged(3);
+	InventorySlotChanged(2);
 }
 
 void UShooterHeroComponent::Input_QuickBarSlot0(const FInputActionValue& Value)
 {
-	InventorySlotChanged(0);
+	InventorySlotChanged(-1);
 }
 
-void UShooterHeroComponent::InventorySlotChanged(const float& SlotValue)
+bool UShooterHeroComponent::TryChangeInventorySlot(int32 SlotIndex)
 {
-	//if (CurrentSlotIndex == SlotValue) return;
-	
-	APawn* Pawn = GetPawn<APawn>();
-	if (!Pawn) return;
+	if (const APawn* Pawn = GetPawn<APawn>())
+	{
+		if (UQuickBarComponent* QuickBarComponent = Pawn->FindComponentByClass<UQuickBarComponent>())
+		{
+			if (SlotIndex < QuickBarComponent->GetMaxSlotsCount())
+			{
+				QuickBarComponent->SetActiveSlotIndex(SlotIndex);
+				return true;
+			}
+		}
+	}
 
-	UQuickBarComponent* QuickBarComponent = Pawn->FindComponentByClass<UQuickBarComponent>();
-	if (!QuickBarComponent) return;
-	
-	const float SlotIndex = SlotValue - 1;
-	if (SlotIndex >= QuickBarComponent->GetMaxSlotsCount()) return;
-	
-	GEngine->AddOnScreenDebugMessage(-1,1,FColor::White,FString::Printf(TEXT("Slot index: %f"),SlotIndex));
+	return false;
+}
 
-	QuickBarComponent->SetActiveSlotIndex(SlotIndex);
-	//CurrentSlotIndex = SlotIndex;
+void UShooterHeroComponent::InventorySlotChanged(int32 SlotIndex)
+{
+	if (!bAllowSwitchSameSlot && CurrentSlotIndex == SlotIndex)
+	{
+		return;
+	}
+	
+	if (bUseSwitchSlotTimer)
+	{
+		UWorld* World = GetWorld();
+		if (!World)
+		{
+			return;
+		}
+		
+		if (World->GetTimerManager().IsTimerActive(SlotChangedClientTimerHandle))
+		{
+			return;
+		}
+		
+		World->GetTimerManager().SetTimer(SlotChangedClientTimerHandle,SwitchSlotTimerTime,false);
+	}
+
+	if (TryChangeInventorySlot(SlotIndex))
+	{
+		CurrentSlotIndex = SlotIndex;
+	}
 }

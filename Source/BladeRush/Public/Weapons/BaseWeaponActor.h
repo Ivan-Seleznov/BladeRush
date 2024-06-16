@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "DamageCauserInterface.h"
 #include "GameFramework/Actor.h"
+#include "Inventory/InventoryItemInstance.h"
 #include "BaseWeaponActor.generated.h"
 
 class UHitMarkerWidgetBase;
@@ -31,7 +32,7 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	FTransform GetAimOffset() const;
-
+	
 	void OnStartReloading(UWeaponItemInstance* WeaponInstance);
 	void OnFinishReloading(UWeaponItemInstance* WeaponInstance);
 	

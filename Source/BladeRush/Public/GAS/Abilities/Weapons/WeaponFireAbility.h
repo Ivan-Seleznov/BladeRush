@@ -7,6 +7,7 @@
 #include "WeaponFireAbility.generated.h"
 
 class UWeaponItemInstance;
+class ABaseWeaponActor;
 
 USTRUCT()
 struct FWeaponTraceData
@@ -18,6 +19,7 @@ struct FWeaponTraceData
 	
 	FVector WeaponLocation;
 };
+
 
 /**
  * Base weapon ability class
@@ -55,5 +57,6 @@ protected:
 	FShooterGameplayEffect DamageEffect;
 	
 private:
+	bool ValidateWeaponActor(const ABaseWeaponActor* WeaponActor) const;
 	FDelegateHandle NotifyTargetDataReadyDelegateHandle;
 };

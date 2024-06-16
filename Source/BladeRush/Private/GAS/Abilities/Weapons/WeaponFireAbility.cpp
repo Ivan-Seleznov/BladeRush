@@ -74,6 +74,12 @@ void UWeaponFireAbility::ActivateLocalPlayerAbility(const FGameplayAbilitySpecHa
 	
 	
 	TArray<FHitResult> OutHits;
+	if (!ValidateWeaponActor(WeaponItemInstance->GetSpawnedWeaponActor()))
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, false,true);
+		return;
+	}
+	
 	const FWeaponTraceData StartWeaponTraceData = CalculateStartWeaponTraceData(Character,PlayerController,WeaponItemInstance);
 	
 	WeaponFire(ActorInfo,StartWeaponTraceData,WeaponItemInstance,OutHits);
@@ -305,7 +311,7 @@ FWeaponTraceData UWeaponFireAbility::CalculateStartWeaponTraceData(ABaseCharacte
 	APlayerController* PlayerController, UWeaponItemInstance* WeaponInstance) const
 {
 	const ABaseWeaponActor* WeaponActor = WeaponInstance->GetSpawnedWeaponActor();
-
+	
 	FWeaponTraceData StartWeaponTraceData;
 
 	StartWeaponTraceData.WeaponLocation = WeaponActor->GetMuzzleLocation();
@@ -361,6 +367,11 @@ void UWeaponFireAbility::NotifyTargetDataReady(const FGameplayAbilityTargetDataH
 
 	// We've processed the data, clear it from the RPC buffer
 	ASC->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
+}
+
+bool UWeaponFireAbility::ValidateWeaponActor(const ABaseWeaponActor* WeaponActor) const
+{
+	return WeaponActor && WeaponActor->IsActorInitialized() && WeaponActor->GetWeaponMesh();
 }
 
 
