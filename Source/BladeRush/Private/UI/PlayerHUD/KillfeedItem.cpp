@@ -13,7 +13,7 @@ void UKillfeedItem::Init(const FText& KillerName, const FSlateBrush& InWeaponIco
 	{
 		Background->SetBrushColor(KillColor);
 	}
-	PlayerWhoKilledNameTextBlock->SetText(KillerName);
+	KillerNameTextBlock->SetText(KillerName);
 	WeaponIcon->SetBrush(InWeaponIcon);
-	KilledPlayerNameTextBlock->SetText(DeadPlayerName);
+	DeadPlayerNameTextBlock->SetText(DeadPlayerName);
 }

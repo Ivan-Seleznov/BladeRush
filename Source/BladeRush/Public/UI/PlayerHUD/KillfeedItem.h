@@ -20,7 +20,7 @@ public:
 	
 protected:
 	UPROPERTY(meta=(BindWidget))
-	TObjectPtr<UTextBlock> PlayerWhoKilledNameTextBlock;
+	TObjectPtr<UTextBlock> KillerNameTextBlock;
 
 	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<UImage> WeaponIcon;
@@ -29,7 +29,7 @@ protected:
 	TObjectPtr<UBorder> Background;
 
 	UPROPERTY(meta=(BindWidget))
-	TObjectPtr<UTextBlock> KilledPlayerNameTextBlock;
+	TObjectPtr<UTextBlock> DeadPlayerNameTextBlock;
 
 	UPROPERTY(EditDefaultsOnly)
 	FLinearColor KillColor;
