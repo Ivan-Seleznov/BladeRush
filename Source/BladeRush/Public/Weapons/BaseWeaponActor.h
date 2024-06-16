@@ -21,7 +21,7 @@ class BLADERUSH_API ABaseWeaponActor : public AActor, public IDamageCauserInterf
 public:	
 	ABaseWeaponActor();
 
-	virtual UTexture2D* GetCauserIcon() const override { return WeaponIcon; };
+	virtual const FSlateBrush& GetCauserIcon() const override { return WeaponIcon; };
 
 	FVector GetMuzzleLocation() const;
 	FRotator GetMuzzleRotation() const;
@@ -128,9 +128,10 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category="Camera")	
 	TSubclassOf<UCameraMode_InterpLocation> CameraModeClass;
-
-	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
-	TObjectPtr<UTexture2D> WeaponIcon;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="UI")
+	FSlateBrush WeaponIcon;
+	
 private:
 	void PlayCameraShake(TSubclassOf<UCameraShakeBase> CameraShakeClass);
 	void PlayWeaponAnimMontage(UAnimMontage* Montage) const;

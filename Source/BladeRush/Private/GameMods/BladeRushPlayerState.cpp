@@ -26,17 +26,38 @@ void ABladeRushPlayerState::AddDeath()
 	++DeathCount;
 }
 
-void ABladeRushPlayerState::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-
-}
-
 void ABladeRushPlayerState::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	UBladeRushGameInstance*  BladeRushGameInstance = Cast<UBladeRushGameInstance>(UGameplayStatics::GetGameInstance(this));
-	FString Name = BladeRushGameInstance->GetNickName();
+	if (UBladeRushGameInstance* BladeRushGameInstance = Cast<UBladeRushGameInstance>(UGameplayStatics::GetGameInstance(this)))
+	{
+		APlayerController* PlayerController = GetPlayerController();
+		if (!PlayerController)
+		{
+			return;
+		}
+		const FString& Name = BladeRushGameInstance->GetNickName();
+		if (!HasAuthority())
+		{
+			SetPlayerName_Server(Name);
+		}
+		else if(PlayerController->IsLocalController() && HasAuthority())
+		{
+			if (Name.IsEmpty())
+			{
+				return;
+			}
+			SetPlayerName(Name);
+		}
+	}
+}
+
+void ABladeRushPlayerState::SetPlayerName_Server_Implementation(const FString& Name)
+{
+	if (Name.IsEmpty())
+	{
+		return;
+	}
 	SetPlayerName(Name);
 }

@@ -3,25 +3,17 @@
 
 #include "GameMods/BladeRushGameState.h"
 
-#include "Kismet/GameplayStatics.h"
-#include "UI/KillfeedPanelWidget.h"
-#include "UI/PlayerHUD.h"
+#include "UI/PlayerHUD/KillfeedPanelWidget.h"
 
 void ABladeRushGameState::NotifyPlayerDeath(const FDeadPlayerInfo& DeadPlayerInfo)
 {
 	if (HasAuthority())
 	{
-		SpawnKillfeed_Multicast(DeadPlayerInfo);
+		OnPlayerDied_Multicast(DeadPlayerInfo);
 	}
 }
 
-void ABladeRushGameState::SpawnKillfeed_Multicast_Implementation(const FDeadPlayerInfo& DeadPlayerInfo)
+void ABladeRushGameState::OnPlayerDied_Multicast_Implementation(const FDeadPlayerInfo& DeadPlayerInfo)
 {
-	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-	if (PlayerController->IsLocalController())
-	{
-		APlayerHUD* PlayerHUD = PlayerController->GetHUD<APlayerHUD>();
-
-		PlayerHUD->GetKillfeedPanelWidget()->PopulateKillfeedContainer(DeadPlayerInfo);
-	}
+	OnPlayerDied.Broadcast(DeadPlayerInfo);
 }

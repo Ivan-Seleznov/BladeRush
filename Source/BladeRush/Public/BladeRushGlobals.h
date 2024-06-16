@@ -32,16 +32,17 @@ struct FDeadPlayerInfo
 
 	FDeadPlayerInfo() = default;
 
-	FDeadPlayerInfo(const FString& NickName, const FString& KillerName, ABaseWeaponActor* Causer)
-		: NickName(NickName),
+	FDeadPlayerInfo(const FString& NickName, const FString& KillerName, AActor* Causer)
+		: DeadPlayerName(NickName),
 		  KillerName(KillerName),
 		  Causer(Causer)
 	{
 	}
+	
 	UPROPERTY()
-	FName NickName;
+	FName DeadPlayerName;
 	UPROPERTY()
 	FName KillerName;
 	UPROPERTY()
-	ABaseWeaponActor* Causer;
+	AActor* Causer;
 };

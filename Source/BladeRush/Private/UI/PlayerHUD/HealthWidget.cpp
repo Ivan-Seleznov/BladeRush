@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/HealthWidget.h"
+#include "UI/PlayerHUD/HealthWidget.h"
 #include "Characters/BaseCharacter.h"
 #include "Components/ProgressBar.h"
 #include "GAS/Attributes/AttributeHitPoints.h"

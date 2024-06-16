@@ -31,11 +31,6 @@ void UAttributeHitPoints::PostGameplayEffectExecute(const FGameplayEffectModCall
 {
 	Super::PostGameplayEffectExecute(Data);
 
-	if (Data.EvaluatedData.Attribute == GetHitPointsAttribute())
-	{
-
-	}
-	
 	FGameplayEffectContextHandle Context = Data.EffectSpec.GetContext();
 	UAbilitySystemComponent* Source = Context.GetOriginalInstigatorAbilitySystemComponent();
 	const FGameplayTagContainer& SourceTags = *Data.EffectSpec.CapturedSourceTags.GetAggregatedTags();
@@ -143,7 +138,7 @@ void UAttributeHitPoints::PostGameplayEffectExecute(const FGameplayEffectModCall
 			ABladeRushPlayerState* SourcePlayerState = SourceController->GetPlayerState<ABladeRushPlayerState>();
 			
 			const FGameplayEffectContextHandle& EffectContext = Data.EffectSpec.GetEffectContext();
-			ABaseWeaponActor* Causer = Cast<ABaseWeaponActor>(EffectContext.GetEffectCauser());
+			AActor* Causer = EffectContext.GetEffectCauser();
 			
 			if (BladeRushGameState && SourcePlayerState && TargetPlayerState && Causer)
 			{

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/StaminaWidget.h"
+#include "UI/PlayerHUD/StaminaWidget.h"
 
 #include "AbilitySystemComponent.h"
 #include "AudioDevice.h"

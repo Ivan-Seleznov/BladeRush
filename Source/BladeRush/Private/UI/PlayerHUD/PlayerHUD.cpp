@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/PlayerHUD.h"
+#include "UI/PlayerHUD/PlayerHUD.h"
 
 #include "Blueprint/UserWidget.h"
 #include "Characters/BaseCharacter.h"
 #include "Characters/Components/PlayerHealthComponent.h"
 #include "UI/DeathScreenWidget.h"
-#include "UI/PlayerHUDWidget.h"
+#include "UI/PlayerHUD/PlayerHUDWidget.h"
 
 void APlayerHUD::BeginPlay()
 {
