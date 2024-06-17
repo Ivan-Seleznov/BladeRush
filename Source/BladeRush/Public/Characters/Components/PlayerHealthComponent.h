@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BladeRushGlobals.h"
 #include "GameplayEffect.h"
 #include "Components/GameFrameworkComponent.h"
 #include "PlayerHealthComponent.generated.h"
@@ -11,11 +12,8 @@
 class UAttributeHitPoints;
 class ABaseCharacter;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHealth_DeathEvent, AActor*, OwningActor);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FHealth_DeathEvent, AActor*, OwningActor, const FDeadPlayerInfo&, DeadPlayerInfo);
 
-/**
- * 
- */
 UCLASS()
 class BLADERUSH_API UPlayerHealthComponent : public UGameFrameworkComponent
 {
@@ -37,10 +35,10 @@ public:
 	
 protected:
 	UFUNCTION(Client,Reliable)
-	void CharacterDeath_Client(ABaseCharacter* Character);
+	void CharacterDeath_Client(ABaseCharacter* Character, const FDeadPlayerInfo& DeadPlayerInfo);
 	
 private:
-	virtual void OnOutOfHealth(float OldValue);
+	virtual void OnOutOfHealth(const FDeadPlayerInfo& DeadPlayerInfo);
 
 	UPROPERTY()
 	const UAttributeHitPoints* HealthAttributeSet;

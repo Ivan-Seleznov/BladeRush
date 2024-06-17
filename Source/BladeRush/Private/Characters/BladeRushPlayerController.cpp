@@ -70,8 +70,6 @@ void ABladeRushPlayerController::SetPlayerSpectate()
 	GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle, this, &ThisClass::OnRespawnTimerEnd,RespawnTimerTime,false);
 
 	HUDStateChanged_Client(EHUDState::OnlySpectating);
-
-	
 }
 
 void ABladeRushPlayerController::AcknowledgePossession(APawn* P)

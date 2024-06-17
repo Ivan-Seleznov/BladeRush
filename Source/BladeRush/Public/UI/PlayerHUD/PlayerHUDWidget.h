@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "PlayerHUDWidget.generated.h"
 
+class UStatusBarWidget;
 class UKillfeedPanelWidget;
 
 UCLASS()
@@ -14,9 +15,13 @@ class BLADERUSH_API UPlayerHUDWidget : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	UKillfeedPanelWidget* GetKillfeedPanel() const { return KillfeedPanel; }
+	void HidePlayerHUD();
+	void ShowPlayerHUD();
 	
 protected:
 	UPROPERTY(meta=(BindWidget))
-	TObjectPtr<UKillfeedPanelWidget> KillfeedPanel;
+	TObjectPtr<UStatusBarWidget> StatusBar;
+	
+	UPROPERTY(meta=(BindWidget))
+	TObjectPtr<UUserWidget> AimPoint;
 };

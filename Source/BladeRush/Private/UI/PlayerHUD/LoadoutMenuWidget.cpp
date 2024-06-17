@@ -1,38 +1,16 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/LoadoutSelectionWidget.h"
-#include "BladeRushLogs.h"
-#include "Components/Button.h"
+#include "UI/PlayerHUD/LoadoutMenuWidget.h"
+
 #include "Components/ComboBoxString.h"
 #include "Data/AvailableLoadoutDataAsset.h"
 #include "Loadout/LoadoutAbilitiesDefinition.h"
 #include "Loadout/LoadoutComponent.h"
 #include "Loadout/LoadoutItemQuickBarDef.h"
+#include "Loadout/LoadoutTypes.h"
 
-void ULoadoutSelectionWidget::NativeConstruct()
-{
-	Super::NativeConstruct();
-	
-	APlayerController* PC = GetOwningPlayer();
-	if (!PC)
-	{
-		return;
-	}
-
-	ULoadoutComponent* LoadoutComponent = PC->FindComponentByClass<ULoadoutComponent>();
-	if (!LoadoutComponent)
-	{
-		return;
-	}
-
-	LoadLoadouts(LoadoutComponent);
-	LoadCurrentLoadout(LoadoutComponent);
-	
-	ApplyButton->OnClicked.AddDynamic(this,&ThisClass::OnApplyButtonClicked);
-}
-
-void ULoadoutSelectionWidget::OnApplyButtonClicked()
+void ULoadoutMenuWidget::ApplyLoadout()
 {
 	APlayerController* PC = GetOwningPlayer();
 	if (!PC)
@@ -62,13 +40,8 @@ void ULoadoutSelectionWidget::OnApplyButtonClicked()
 	{
 		LoadoutDefinitions.QuickBarDefinitions.Add(*SecondaryWeapon);
 	}
-
-	if (const TSubclassOf<ULoadoutEquipmentDefinition>* EquipmentItem = AvailableLoadout->FindEquipDefByName(FName(EquipmentComboBox->GetSelectedOption())))
-	{
-		LoadoutDefinitions.EquipmentDefinitions.Add(*EquipmentItem);
-	}
-
-	if (const TSubclassOf<ULoadoutAbilitiesDefinition>* AbilitiesDef = AvailableLoadout->FindAbilitiesDefByName(FName(AbilitySetComboBox->GetSelectedOption())))
+	
+	if (const TSubclassOf<ULoadoutAbilitiesDefinition>* AbilitiesDef = AvailableLoadout->FindAbilitiesDefByName(FName(AbilitiesComboBox->GetSelectedOption())))
 	{
 		LoadoutDefinitions.AbilityDefinitions.Add(*AbilitiesDef);
 	}
@@ -76,7 +49,27 @@ void ULoadoutSelectionWidget::OnApplyButtonClicked()
 	LoadoutComponent->TrySetCurrentLoadout(LoadoutDefinitions);
 }
 
-void ULoadoutSelectionWidget::LoadLoadouts(ULoadoutComponent* LoadoutComponent)
+void ULoadoutMenuWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+	
+	APlayerController* PC = GetOwningPlayer();
+	if (!PC)
+	{
+		return;
+	}
+
+	ULoadoutComponent* LoadoutComponent = PC->FindComponentByClass<ULoadoutComponent>();
+	if (!LoadoutComponent)
+	{
+		return;
+	}
+
+	LoadLoadouts(LoadoutComponent);
+	LoadCurrentLoadout(LoadoutComponent);
+}
+
+void ULoadoutMenuWidget::LoadLoadouts(ULoadoutComponent* LoadoutComponent)
 {
 	UAvailableLoadoutDataAsset* AvailableLoadout = LoadoutComponent->GetAvailableLoadoutDataAsset();
 	if (!AvailableLoadout)
@@ -99,22 +92,15 @@ void ULoadoutSelectionWidget::LoadLoadouts(ULoadoutComponent* LoadoutComponent)
 		}
 	}
 
-	for (const TSubclassOf<ULoadoutEquipmentDefinition> EquipItemDef : LoadoutDefinitions.EquipmentDefinitions)
-	{
-		ULoadoutEquipmentDefinition* LoadoutEquipDef = EquipItemDef.GetDefaultObject();
-
-		EquipmentComboBox->AddOption(LoadoutEquipDef->GetDisplayName().ToString());
-	}
-
 	for (const TSubclassOf<ULoadoutAbilitiesDefinition> AbilityDef : LoadoutDefinitions.AbilityDefinitions)
 	{
 		ULoadoutAbilitiesDefinition* LoadoutAbilitiesDef = AbilityDef.GetDefaultObject();
 
-		AbilitySetComboBox->AddOption(LoadoutAbilitiesDef->GetDisplayName().ToString());
+		AbilitiesComboBox->AddOption(LoadoutAbilitiesDef->GetDisplayName().ToString());
 	}
 }
 
-void ULoadoutSelectionWidget::LoadCurrentLoadout(ULoadoutComponent* LoadoutComponent)
+void ULoadoutMenuWidget::LoadCurrentLoadout(ULoadoutComponent* LoadoutComponent)
 {
 	const FCharacterLoadout& CurrentLoadout = LoadoutComponent->GetCurrentLoadout();
 
@@ -130,19 +116,15 @@ void ULoadoutSelectionWidget::LoadCurrentLoadout(ULoadoutComponent* LoadoutCompo
 		SecondaryWeaponComboBox->SetSelectedOption(FirstSecondaryItem.LoadoutDefinition.GetDefaultObject()->GetDisplayName().ToString());
 	}
 	
-	if (CurrentLoadout.ItemsToEquip.IsValidIndex(0))
-	{
-		FLoadoutEquipment LoadoutItem = CurrentLoadout.ItemsToEquip[0];
-		EquipmentComboBox->SetSelectedOption(LoadoutItem.LoadoutDefinition.GetDefaultObject()->GetDisplayName().ToString());
-	}
 	if (CurrentLoadout.AbilitySetsToGrant.IsValidIndex(0))
 	{
 		FLoadoutAbilities LoadoutAbilities = CurrentLoadout.AbilitySetsToGrant[0];
-		AbilitySetComboBox->SetSelectedOption(LoadoutAbilities.LoadoutDefinition.GetDefaultObject()->GetDisplayName().ToString());
+		AbilitiesComboBox->SetSelectedOption(LoadoutAbilities.LoadoutDefinition.GetDefaultObject()->GetDisplayName().ToString());
 	}
 }
 
-FLoadoutQuickBarItem ULoadoutSelectionWidget::FindWeaponBySlotInCurrentLoadout(const FCharacterLoadout& CurrentLoadout,int32 SlotIndex) const
+FLoadoutQuickBarItem ULoadoutMenuWidget::FindWeaponBySlotInCurrentLoadout(const FCharacterLoadout& CurrentLoadout,
+	int32 SlotIndex) const
 {
 	for (const FLoadoutQuickBarItem& ItemsToQuickBar : CurrentLoadout.ItemsToQuickBar)
 	{

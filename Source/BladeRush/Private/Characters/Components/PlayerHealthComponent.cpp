@@ -50,14 +50,14 @@ float UPlayerHealthComponent::GetHealth() const
 	return HealthAttributeSet ? HealthAttributeSet->GetHitPoints() : 0.f;
 }
 
-void UPlayerHealthComponent::OnOutOfHealth(float OldValue)
+void UPlayerHealthComponent::OnOutOfHealth(const FDeadPlayerInfo& DeadPlayerInfo)
 {
 	ABaseCharacter* Character = Cast<ABaseCharacter>(GetOwner());
 	check(Character);
 
 	bIsDead = true;
-	OnDeathFinished.Broadcast(GetOwner());
-	CharacterDeath_Client(Character);
+	OnDeathFinished.Broadcast(GetOwner(), DeadPlayerInfo);
+	CharacterDeath_Client(Character, DeadPlayerInfo);
 	
 	ABladeRushGameMode* GameMode = Cast<ABladeRushGameMode>(UGameplayStatics::GetGameMode(Character));
 	if (!GameMode)
@@ -68,7 +68,7 @@ void UPlayerHealthComponent::OnOutOfHealth(float OldValue)
 	GameMode->CharacterDied(Character);
 }
 
-void UPlayerHealthComponent::CharacterDeath_Client_Implementation(ABaseCharacter* Character)
+void UPlayerHealthComponent::CharacterDeath_Client_Implementation(ABaseCharacter* Character, const FDeadPlayerInfo& DeadPlayerInfo)
 {
-	OnDeathFinished.Broadcast(GetOwner());
+	OnDeathFinished.Broadcast(GetOwner(), DeadPlayerInfo);
 }

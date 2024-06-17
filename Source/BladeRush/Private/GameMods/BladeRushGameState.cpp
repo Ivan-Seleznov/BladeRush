@@ -3,6 +3,8 @@
 
 #include "GameMods/BladeRushGameState.h"
 
+#include "GameFramework/PlayerState.h"
+#include "Kismet/GameplayStatics.h"
 #include "UI/PlayerHUD/KillfeedPanelWidget.h"
 
 void ABladeRushGameState::NotifyPlayerDeath(const FDeadPlayerInfo& DeadPlayerInfo)

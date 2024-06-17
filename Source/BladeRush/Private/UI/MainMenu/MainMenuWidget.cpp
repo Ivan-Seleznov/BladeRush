@@ -63,7 +63,7 @@ void UMainMenuWidget::OnExitClicked()
 
 void UMainMenuWidget::OnNickNameComitted(const FText& Text, ETextCommit::Type CommitMethod)
 {
-	if (CommitMethod == ETextCommit::OnEnter && !Text.IsEmpty())
+	if (!Text.IsEmpty())
 	{
 		GetGameInstance<UBladeRushGameInstance>()->SetNickName(Text.ToString());
 	}

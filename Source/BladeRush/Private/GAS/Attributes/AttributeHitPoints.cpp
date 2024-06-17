@@ -142,8 +142,10 @@ void UAttributeHitPoints::PostGameplayEffectExecute(const FGameplayEffectModCall
 			
 			if (BladeRushGameState && SourcePlayerState && TargetPlayerState && Causer)
 			{
-				BladeRushGameState->NotifyPlayerDeath(FDeadPlayerInfo(TargetPlayerState->GetPlayerName(),
-					SourcePlayerState->GetPlayerName(), Causer));
+				FDeadPlayerInfo DeadPlayerInfo = FDeadPlayerInfo(TargetPlayerState->GetPlayerName(),
+					SourcePlayerState->GetPlayerName(), Causer);
+				BladeRushGameState->NotifyPlayerDeath(DeadPlayerInfo);
+				OutOfHitPointsDelegate.Broadcast(DeadPlayerInfo);
 			}
 		}
 	}
@@ -174,7 +176,7 @@ void UAttributeHitPoints::PostAttributeChange(const FGameplayAttribute& Attribut
 		if (NewValue <= 0 )
 		{
 			bOutOfHitPoints = true;
-			OutOfHitPointsDelegate.Broadcast(OldValue);
+			OldValueCached = OldValue;
 		}
 		if (bOutOfHitPoints && NewValue > 0.f)
 		{

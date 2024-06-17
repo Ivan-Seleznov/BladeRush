@@ -47,7 +47,6 @@ void UHitReactComponent::OnHitReact(FHitResult HitResult, FGameplayTagContainer 
 	{
 		return;
 	}
-
 	
 	Multicast_OnHitReact(HitResult,GetHitDirection(HitResult));
 }

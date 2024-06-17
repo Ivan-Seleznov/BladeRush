@@ -17,7 +17,6 @@ class BLADERUSH_API ABladeRushSpectatorPawn : public ASpectatorPawn
 
 public:
 	ABladeRushSpectatorPawn() { PrimaryActorTick.bCanEverTick = true; }
-	virtual void Tick(float DeltaSeconds) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 	void ViewNextPlayer();

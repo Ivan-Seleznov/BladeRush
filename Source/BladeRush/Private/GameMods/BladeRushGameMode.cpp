@@ -28,8 +28,6 @@ void ABladeRushGameMode::CharacterDied(ABaseCharacter* Character)
 		Character->OnDeathStarted();
 		PlayerController->SetPlayerSpectate();
 	}
-
-	
 }
 
 void ABladeRushGameMode::RespawnPawn(APlayerController* Controller)
