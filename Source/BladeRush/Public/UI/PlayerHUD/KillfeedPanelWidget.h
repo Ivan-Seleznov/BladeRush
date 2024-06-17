@@ -16,10 +16,12 @@ class BLADERUSH_API UKillfeedPanelWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
-public:
-	void PopulateKillfeedContainer(const FDeadPlayerInfo& DeadPlayerInfo);
-	
 protected:
+	virtual void NativeConstruct() override;
+
+	UFUNCTION()
+	void OnPlayerDied(const FDeadPlayerInfo& DeadPlayerInfo);
+	
 	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<UVerticalBox> KillfeedContainer;
  

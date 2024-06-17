@@ -8,6 +8,7 @@
 #include "PlayerHUD.generated.h"
 
 
+class UDeathScreenWidget;
 class UKillfeedPanelWidget;
 class UPlayerHUDWidget;
 class UDeathScreenWidget;
@@ -31,11 +32,6 @@ class BLADERUSH_API APlayerHUD : public AHUD
 public:
 	void OnPlayerHudStateChanged(EHUDState HudState);
 
-	UKillfeedPanelWidget* GetKillfeedPanelWidget() const
-	{
-		return PlayerHud->GetKillfeedPanel();
-	}
-	
 protected:
 	virtual void BeginPlay() override;
 	
@@ -43,7 +39,7 @@ protected:
 	TSubclassOf<UUserWidget> PlayerHudClass;
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
-	TSubclassOf<UDeathScreenWidget> DeathWidgetClass;
+	TSubclassOf<UUserWidget> DeathWidgetClass;
 private:
 	UPROPERTY()
 	UPlayerHUDWidget* PlayerHud;

@@ -13,7 +13,7 @@
 #include "Inventory/InventoryManagerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Loadout/LoadoutComponent.h"
-#include "UI/PlayerHUD.h"
+#include "UI/PlayerHUD/PlayerHUD.h"
 
 
 void ABladeRushPlayerController::TrySetPlayerPlay_Server_Implementation()
@@ -70,8 +70,6 @@ void ABladeRushPlayerController::SetPlayerSpectate()
 	GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle, this, &ThisClass::OnRespawnTimerEnd,RespawnTimerTime,false);
 
 	HUDStateChanged_Client(EHUDState::OnlySpectating);
-
-	
 }
 
 void ABladeRushPlayerController::AcknowledgePossession(APawn* P)

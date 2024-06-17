@@ -13,9 +13,9 @@ class BLADERUSH_API UBladeRushGameInstance : public UGameInstance
   
 public:
   const FString& GetNickName() { return NickName; }
-
-  void SetNickName(FString InNickName) { NickName = InNickName; }
+  void SetNickName(const FString& InNickName) { NickName = InNickName; }
   
 private:
+  UPROPERTY()
   FString NickName;
 };

@@ -6,9 +6,6 @@
 #include "GameFramework/PlayerState.h"
 #include "BladeRushPlayerState.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class BLADERUSH_API ABladeRushPlayerState : public APlayerState
 {
@@ -29,9 +26,11 @@ public:
 	int32 GetDeathCount() const {return DeathCount;}
 	
 protected:
-	virtual void PostInitializeComponents() override;
+	virtual void BeginPlay() override;
 
-	virtual  void BeginPlay() override;
+	UFUNCTION(Server, Reliable)
+	void SetPlayerName_Server(const FString& Name);
+	
 private:
 	UPROPERTY(BlueprintReadOnly,Replicated,meta=(AllowPrivateAccess))
 	int32 KillCount = 0;

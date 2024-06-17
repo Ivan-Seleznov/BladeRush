@@ -3,17 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BladeRushGlobals.h"
 #include "GAS/Attributes/AttributeBase.h"
 #include "AttributeHitPoints.generated.h"
 
 class ABaseCharacter;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FHitDamageReceivedDelegate, FHitResult, HitResult, FGameplayTagContainer,
                                                SourceTags, FGameplayEffectContextHandle, GameplayEffectSpec);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOutOfHitPointsDelegate,float OldValue);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOutOfHitPointsDelegate, const FDeadPlayerInfo& DeadPlayerInfo);
 
-/**
- * 
- */
 UCLASS()
 class BLADERUSH_API UAttributeHitPoints : public UAttributeBase
 {
@@ -63,7 +61,7 @@ private:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, ReplicatedUsing = OnRep_MaxHitPoints, Category = "Healath", Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData MaxHitPoints;
 	
-	
 	bool bOutOfHitPoints;
 	bool bPrevOutOfHitPoints;
+	float OldValueCached;
 };

@@ -19,5 +19,5 @@ class BLADERUSH_API IDamageCauserInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual UTexture2D* GetCauserIcon() const = 0;
+	virtual const FSlateBrush& GetCauserIcon() const = 0;
 };

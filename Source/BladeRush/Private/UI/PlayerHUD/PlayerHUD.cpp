@@ -1,13 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/PlayerHUD.h"
+#include "UI/PlayerHUD/PlayerHUD.h"
 
 #include "Blueprint/UserWidget.h"
 #include "Characters/BaseCharacter.h"
 #include "Characters/Components/PlayerHealthComponent.h"
-#include "UI/DeathScreenWidget.h"
-#include "UI/PlayerHUDWidget.h"
+#include "UI/PlayerHUD/DeathScreenWidget.h"
+#include "UI/PlayerHUD/DeathScreenWidget.h"
+#include "UI/PlayerHUD/PlayerHUDWidget.h"
 
 void APlayerHUD::BeginPlay()
 {
@@ -24,7 +25,10 @@ void APlayerHUD::BeginPlay()
 	if (!DeathWidgetClass) return;
 	
 	DeathWidget = CreateWidget<UDeathScreenWidget>(Controller,DeathWidgetClass);
-	
+	if (!DeathWidget)
+	{
+		return;
+	}
 	DeathWidget->SetVisibility(ESlateVisibility::Collapsed);
 	DeathWidget->AddToViewport();
 	
@@ -46,7 +50,7 @@ void APlayerHUD::OnPlayerHudStateChanged(EHUDState HudState)
 	{
 		PlayerHud->Construct();
 		
-		PlayerHud->SetVisibility(ESlateVisibility::Visible);
+		PlayerHud->ShowPlayerHUD();
 		DeathWidget->SetVisibility(ESlateVisibility::Collapsed);
 		
 		Controller->SetInputMode(FInputModeGameOnly());
@@ -55,16 +59,16 @@ void APlayerHUD::OnPlayerHudStateChanged(EHUDState HudState)
 	
 	if (HudState == EHUDState::OnlySpectating)
 	{
-		//PlayerHud->SetVisibility(ESlateVisibility::Collapsed);
+		PlayerHud->HidePlayerHUD();
 		DeathWidget->SetVisibility(ESlateVisibility::Visible);
+		
+		Controller->bShowMouseCursor = true;
+		Controller->SetInputMode(FInputModeGameAndUI());
 	}
 	
 	if (HudState == EHUDState::CanRespawnSpectating)
 	{
-		DeathWidget->ActivateRespawnButton();
-		
-		Controller->SetInputMode(FInputModeGameAndUI());
-		Controller->bShowMouseCursor = true;
+		DeathWidget->ActivateRespawn();
 	}
 	
 	CurrentState = HudState;

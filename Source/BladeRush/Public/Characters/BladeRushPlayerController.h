@@ -23,7 +23,7 @@ public:
 	
 	FORCEINLINE UInventoryManagerComponent* GetInventoryManagerComponent() const {return InventoryManagerComponent;}
 	
-	UFUNCTION(Server,Reliable)
+	UFUNCTION(BlueprintCallable, Server,Reliable)
 	void TrySetPlayerPlay_Server();
 	
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)

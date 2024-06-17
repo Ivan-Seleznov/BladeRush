@@ -16,20 +16,20 @@ class BLADERUSH_API UKillfeedItem : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	void Init(const FText& InPlayerWhoKilledName, UTexture2D* InWeaponIcon, const FText& KilledPlayerName);
+	void Init(const FText& KillerName, const FSlateBrush& InWeaponIcon, const FText& DeadPlayerName);
 	
 protected:
 	UPROPERTY(meta=(BindWidget))
-	TObjectPtr<UTextBlock> PlayerWhoKilledNameTextBlock;
+	TObjectPtr<UTextBlock> KillerNameTextBlock;
 
 	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<UImage> WeaponIcon;
 	
 	UPROPERTY(meta=(BindWidget))
-	TObjectPtr<UBorder> KillfeedBackground;
+	TObjectPtr<UBorder> Background;
 
 	UPROPERTY(meta=(BindWidget))
-	TObjectPtr<UTextBlock> KilledPlayerNameTextBlock;
+	TObjectPtr<UTextBlock> DeadPlayerNameTextBlock;
 
 	UPROPERTY(EditDefaultsOnly)
 	FLinearColor KillColor;

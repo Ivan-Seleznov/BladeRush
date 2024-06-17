@@ -5,20 +5,15 @@
 
 #include "EnhancedInputComponent.h"
 
-void ABladeRushSpectatorPawn::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-}
-
 void ABladeRushSpectatorPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	
 	UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent);
 	
-	EnhancedInput->BindAction(ViewNextInputAction,ETriggerEvent::Triggered,this,&ThisClass::ViewNextPlayer);
+	/*EnhancedInput->BindAction(ViewNextInputAction,ETriggerEvent::Triggered,this,&ThisClass::ViewNextPlayer);
 	EnhancedInput->BindAction(ViewPrevInputAction,ETriggerEvent::Triggered,this,&ThisClass::ViewPrevPlayer);
-	EnhancedInput->BindAction(ViewSelfInputAction,ETriggerEvent::Triggered,this,&ThisClass::ViewSelf);	
+	EnhancedInput->BindAction(ViewSelfInputAction,ETriggerEvent::Triggered,this,&ThisClass::ViewSelf);	*/
 }
 
 void ABladeRushSpectatorPawn::ViewNextPlayer()
