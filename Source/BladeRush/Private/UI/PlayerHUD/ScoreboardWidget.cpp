@@ -28,7 +28,7 @@ void UScoreboardWidget::UpdateScoreboard()
 		{
 			if (UScoreboardItemWidget* ScoreboardWidget = CreateWidget<UScoreboardItemWidget>(this, ScoreboardItemClass))
 			{
-				FText PingCount = FText::Format(NSLOCTEXT("ScoreboardWidget","Ping","{0}ms"), Player->GetPingInMilliseconds());
+				FText PingCount = FText::Format(NSLOCTEXT("ScoreboardWidget","Ping","{0}ms"), Player->GetCompressedPing());
 				
 				ScoreboardWidget->Init(FText::FromString(Player->GetPlayerName()),
 					FText::AsNumber(Player->GetKillCount()), FText::AsNumber(Player->GetDeathCount()), PingCount);
