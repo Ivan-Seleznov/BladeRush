@@ -10,6 +10,7 @@
 class UTextBlock;
 class UBaseButton;
 class UDeathInformationWidget;
+class UPlayerHealthComponent;
 
 UCLASS()
 class BLADERUSH_API UDeathScreenWidget : public UBaseWidget
@@ -23,6 +24,7 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual void OnPawnInitialize(APawn* NewPawn) override;
 
+	virtual void OnPawnChanged(APawn* OldPawn, APawn* NewPawn) override;
 	UFUNCTION()
 	void OnVisibilityChanged(ESlateVisibility NewVisibility);
 
@@ -48,9 +50,15 @@ protected:
 
 	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<UTextBlock> PlayerNameTextBlock;
+
+	UPROPERTY()
+	UPlayerHealthComponent* PrevPlayerHealthComponent;
 	
 	UPROPERTY(BlueprintReadOnly)
 	bool bCanRespawn = false;
 
 	FDeadPlayerInfo CurrentDeadPlayerInfo;
+
+private:
+	void BindOnOutOfHealthDelegate(APawn* Pawn);
 };

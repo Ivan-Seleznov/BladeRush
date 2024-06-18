@@ -22,9 +22,9 @@ protected:
 	UFUNCTION()
 	virtual void OnPawnInitialize(APawn* NewPawn);
 
+	UFUNCTION()
+	virtual void OnPawnChanged(APawn* OldPawn, APawn* NewPawn);
+	
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_OnPawnInitialize(APawn* NewPawn);
-private:
-	UFUNCTION()
-	void OnPawnChanged(APawn* OldPawn, APawn* NewPawn);
 };

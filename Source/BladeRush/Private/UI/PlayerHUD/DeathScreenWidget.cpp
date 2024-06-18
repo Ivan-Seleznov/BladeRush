@@ -3,6 +3,7 @@
 
 #include "UI/PlayerHUD/DeathScreenWidget.h"
 
+#include "BladeRushLogs.h"
 #include "Characters/BladeRushPlayerController.h"
 #include "Characters/Components/PlayerHealthComponent.h"
 #include "Components/TextBlock.h"
@@ -22,17 +23,22 @@ void UDeathScreenWidget::NativeConstruct()
 	NextPlayerButton->OnClicked.AddDynamic(this, &ThisClass::OnNextPlayerClicked);
 	
 	OnNativeVisibilityChanged.AddUObject(this, &ThisClass::OnVisibilityChanged);
-	if (UPlayerHealthComponent* PlayerHealthComponent = GetOwningPlayer()->GetPawn()->FindComponentByClass<UPlayerHealthComponent>())
-	{
-		PlayerHealthComponent->OnDeathFinished.AddDynamic(this, &ThisClass::OnDeathFinished);
-	}
+
+	BindOnOutOfHealthDelegate(GetOwningPlayer()->GetPawn());
 }
 
 void UDeathScreenWidget::OnPawnInitialize(APawn* NewPawn)
 {
 	Super::OnPawnInitialize(NewPawn);
-
+	
 	bCanRespawn = false;
+}
+
+void UDeathScreenWidget::OnPawnChanged(APawn* OldPawn, APawn* NewPawn)
+{
+	Super::OnPawnChanged(OldPawn, NewPawn);
+
+	BindOnOutOfHealthDelegate(NewPawn);
 }
 
 void UDeathScreenWidget::OnVisibilityChanged(ESlateVisibility NewVisibility)
@@ -84,5 +90,24 @@ void UDeathScreenWidget::OnSpectatingPlayerChanged(const APlayerController* Play
 				PlayerNameTextBlock->SetText(FText::FromString(PlayerState->GetPlayerName()));
 			}
 		}
+	}
+}
+
+void UDeathScreenWidget::BindOnOutOfHealthDelegate(APawn* Pawn)
+{
+	if (!Pawn)
+	{
+		return;
+	}
+	
+	if (PrevPlayerHealthComponent)
+	{
+		PrevPlayerHealthComponent->OnDeathFinished.RemoveAll(this);
+	}
+	
+	if (UPlayerHealthComponent* PlayerHealthComponent = Pawn->FindComponentByClass<UPlayerHealthComponent>())
+	{
+		PlayerHealthComponent->OnDeathFinished.AddDynamic(this, &ThisClass::OnDeathFinished);
+		PrevPlayerHealthComponent = PlayerHealthComponent;
 	}
 }
