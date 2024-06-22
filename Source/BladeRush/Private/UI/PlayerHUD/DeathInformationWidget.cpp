@@ -8,7 +8,7 @@
 
 void UDeathInformationWidget::SetData(const FText& KillerName, const FSlateBrush& InWeaponIcon)
 {
-	if (!KillerNameTextBlock || !WeaponIcon)
+	if (!KillerNameTextBlock || !WeaponIcon || !InWeaponIcon.IsSet() || KillerName.IsEmpty())
 	{
 		return;
 	}
