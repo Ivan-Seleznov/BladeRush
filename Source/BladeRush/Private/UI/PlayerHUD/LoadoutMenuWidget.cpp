@@ -52,21 +52,15 @@ void ULoadoutMenuWidget::ApplyLoadout()
 void ULoadoutMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
-	APlayerController* PC = GetOwningPlayer();
-	if (!PC)
-	{
-		return;
-	}
 
-	ULoadoutComponent* LoadoutComponent = PC->FindComponentByClass<ULoadoutComponent>();
-	if (!LoadoutComponent)
-	{
-		return;
-	}
+	TryLoadLoadoutsToWidget();
+}
 
-	LoadLoadouts(LoadoutComponent);
-	LoadCurrentLoadout(LoadoutComponent);
+void ULoadoutMenuWidget::OnPawnChanged(APawn* OldPawn, APawn* NewPawn)
+{
+	Super::OnPawnChanged(OldPawn, NewPawn);
+
+	TryLoadLoadoutsToWidget();
 }
 
 void ULoadoutMenuWidget::LoadLoadouts(ULoadoutComponent* LoadoutComponent)
@@ -77,6 +71,15 @@ void ULoadoutMenuWidget::LoadLoadouts(ULoadoutComponent* LoadoutComponent)
 		return;
 	}
 
+	if (!PrimaryWeaponComboBox || !SecondaryWeaponComboBox || !AbilitiesComboBox)
+	{
+		return;
+	}
+	
+	PrimaryWeaponComboBox->ClearOptions();
+	SecondaryWeaponComboBox->ClearOptions();
+	AbilitiesComboBox->ClearOptions();
+	
 	const FLoadoutDefinitions& LoadoutDefinitions = AvailableLoadout->GetLoadoutDefinitions();
 	for (const TSubclassOf<ULoadoutItemQuickBarDef>	ItemQuickBarDef : LoadoutDefinitions.QuickBarDefinitions)
 	{
@@ -123,8 +126,26 @@ void ULoadoutMenuWidget::LoadCurrentLoadout(ULoadoutComponent* LoadoutComponent)
 	}
 }
 
+void ULoadoutMenuWidget::TryLoadLoadoutsToWidget()
+{
+	APlayerController* PC = GetOwningPlayer();
+	if (!PC)
+	{
+		return;
+	}
+
+	ULoadoutComponent* LoadoutComponent = PC->FindComponentByClass<ULoadoutComponent>();
+	if (!LoadoutComponent)
+	{
+		return;
+	}
+
+	LoadLoadouts(LoadoutComponent);
+	LoadCurrentLoadout(LoadoutComponent);
+}
+
 FLoadoutQuickBarItem ULoadoutMenuWidget::FindWeaponBySlotInCurrentLoadout(const FCharacterLoadout& CurrentLoadout,
-	int32 SlotIndex) const
+                                                                          int32 SlotIndex) const
 {
 	for (const FLoadoutQuickBarItem& ItemsToQuickBar : CurrentLoadout.ItemsToQuickBar)
 	{

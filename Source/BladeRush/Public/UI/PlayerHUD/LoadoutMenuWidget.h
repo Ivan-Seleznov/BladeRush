@@ -35,9 +35,13 @@ protected:
 	UPROPERTY(BlueprintReadOnly,meta=(BindWidget))
 	UComboBoxString* AbilitiesComboBox;
 
+	virtual void OnPawnChanged(APawn* OldPawn, APawn* NewPawn) override;
+
 private:
 	void LoadLoadouts(ULoadoutComponent* LoadoutComponent);
 	void LoadCurrentLoadout(ULoadoutComponent* LoadoutComponent);
+
+	void TryLoadLoadoutsToWidget();
 
 	FLoadoutQuickBarItem FindWeaponBySlotInCurrentLoadout(const FCharacterLoadout& CurrentLoadout,int32 SlotIndex) const;
 };
